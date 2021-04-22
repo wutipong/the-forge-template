@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/the-forge-template/v16
+/project/x64/Debug
+/the-forge-lib/x64/Debug
+/x64/Debug
