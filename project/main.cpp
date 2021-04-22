@@ -50,7 +50,6 @@ UIApp gAppUI;
 GuiComponent *pGuiWindow = nullptr;
 TextDrawDesc gFrameTimeDraw = TextDrawDesc(0, 0xff00ffff, 18);
 
-
 bool bToggleVSync = false;
 
 bool gTakeScreenshot = false;
@@ -102,7 +101,38 @@ bool MainApp::Init() {
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
 
-    initInputSystem(pWindow);
+    if (!initInputSystem(pWindow))
+        return false;
+
+    // App Actions
+    InputActionDesc actionDesc = {InputBindings::BUTTON_DUMP,
+                                  [](InputActionContext *ctx) {
+                                      dumpProfileData(((Renderer *)ctx->pUserData),
+                                                      ((Renderer *)ctx->pUserData)->pName);
+                                      return true;
+                                  },
+                                  pRenderer};
+    addInputAction(&actionDesc);
+    actionDesc = {InputBindings::BUTTON_FULLSCREEN,
+                  [](InputActionContext *ctx) {
+                      toggleFullscreen(((IApp *)ctx->pUserData)->pWindow);
+                      return true;
+                  },
+                  this};
+    addInputAction(&actionDesc);
+    actionDesc = {InputBindings::BUTTON_EXIT, [](InputActionContext *ctx) {
+                      requestShutdown();
+                      return true;
+                  }};
+    addInputAction(&actionDesc);
+    actionDesc = {InputBindings::BUTTON_ANY,
+                  [](InputActionContext *ctx) {
+                      bool capture = gAppUI.OnButton(ctx->mBinding, ctx->mBool, ctx->pPosition);
+                      setEnableCaptureInput(capture && INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
+                      return true;
+                  },
+                  this};
+    addInputAction(&actionDesc);
 
     return true;
 }
@@ -228,7 +258,6 @@ void MainApp::Unload() {
 }
 
 void MainApp::Update(float deltaTime) {
-
 #if !defined(TARGET_IOS)
     if (pSwapChain->mEnableVsync != bToggleVSync) {
         waitQueueIdle(pGraphicsQueue);
