@@ -19,7 +19,7 @@ class MainApp : public IApp {
     virtual void Update(float deltaTime) override;
     virtual void Draw() override;
 
-    virtual const char *GetName() { return "9-Patch test"; };
+    virtual const char *GetName() { return "project name"; };
 
   private:
     bool addSwapChain();
