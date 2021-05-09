@@ -90,10 +90,13 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainApp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
