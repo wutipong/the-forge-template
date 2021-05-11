@@ -31,7 +31,6 @@ class Scene {
         }
 
         currentScene = std::make_unique<SceneClass>();
-        currentScene->Load();
 
         return true;
     }

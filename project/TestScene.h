@@ -2,7 +2,9 @@
 
 #include "Scene.h"
 
-class TestScene : public Scene{
+#include "Common_3/Renderer/IResourceLoader.h"
+
+class TestScene : public Scene {
   public:
     virtual void Update(float deltaTime) override;
     virtual void Draw(Cmd *cmd) override;
@@ -12,4 +14,8 @@ class TestScene : public Scene{
     virtual void Unload() override;
 
     virtual void DoUI() override;
+
+  private:
+    Geometry *pGeometry;
+    Texture *pTexture;
 };
