@@ -91,12 +91,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MainApp.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="TestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainApp.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="TestScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

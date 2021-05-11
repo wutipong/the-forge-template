@@ -42,13 +42,13 @@ class MainApp : public IApp {
     Renderer *pRenderer = nullptr;
     Queue *pGraphicsQueue = nullptr;
     std::array<CmdPool *, ImageCount> pCmdPools = {nullptr};
-    std::array<Cmd *, ImageCount>pCmds = {nullptr};
+    std::array<Cmd *, ImageCount> pCmds = {nullptr};
 
     SwapChain *pSwapChain = nullptr;
     RenderTarget *pDepthBuffer = nullptr;
     Semaphore *pImageAcquiredSemaphore = nullptr;
-    std::array<Fence *, ImageCount>pRenderCompleteFences = {nullptr};
-    std::array<Semaphore *, ImageCount>pRenderCompleteSemaphores = {nullptr};
+    std::array<Fence *, ImageCount> pRenderCompleteFences = {nullptr};
+    std::array<Semaphore *, ImageCount> pRenderCompleteSemaphores = {nullptr};
 
     uint32_t gFrameIndex = 0;
 

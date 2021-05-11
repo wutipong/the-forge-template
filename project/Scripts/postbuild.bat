@@ -9,6 +9,9 @@ XCOPY %ProjectDir%Shaders\ %OutputDir%Shaders\ /Y /S
 ECHO Copying texture files.
 XCOPY %ProjectDir%Textures\ %OutputDir%Textures\ /Y /S
 
+ECHO Copying meshes files
+XCOPY %ProjectDir%Meshes\ %OutputDir%Meshes\ /Y /S
+
 ECHO Copying font files.
 XCOPY %ProjectDir%Fonts\ %OutputDir%Fonts\ /Y /S
 

@@ -2,6 +2,8 @@
 
 #include <array>
 
+#include "TestScene.h"
+
 DEFINE_APPLICATION_MAIN(MainApp)
 
 MainApp *MainApp::pApp;
@@ -48,6 +50,7 @@ bool MainApp::Init() {
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SHADER_BINARIES, "CompiledShaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_GPU_CONFIG, "GPUCfg");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_TEXTURES, "Textures");
+    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_MESHES, "Meshes");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
 
@@ -90,6 +93,8 @@ bool MainApp::Init() {
     } else {
         auto err = GetLastError();
     }
+
+    Scene::ChangeScene<TestScene>();
 
     return true;
 }
@@ -172,9 +177,13 @@ bool MainApp::Load() {
 
     waitForAllResourceLoads();
 
+    Scene::LoadCurrent();
+
     return true;
 }
 void MainApp::Unload() {
+    Scene::UnloadCurrent();
+
     waitQueueIdle(pGraphicsQueue);
 
     appUI.Unload();
@@ -231,6 +240,8 @@ void MainApp::Update(float deltaTime) {
     // Update GUI
     /************************************************************************/
     appUI.Update(deltaTime);
+
+    Scene::UpdateCurrent(deltaTime);
 }
 
 void MainApp::Draw() {
@@ -289,6 +300,10 @@ void MainApp::Draw() {
     appUI.Gui(pGuiWindow);
     appUI.Draw(cmd);
     cmdBindRenderTargets(cmd, 0, NULL, NULL, NULL, NULL, NULL, -1, -1);
+    cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
+
+    cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
+    Scene::DrawCurrent(cmd);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};
