@@ -9,7 +9,7 @@ void TestScene::DoUI() {}
 bool TestScene::Load() {
 
     {
-        TextureLoadDesc desc;
+        TextureLoadDesc desc{};
         desc.pFileName = "texture";
         desc.ppTexture = &pTexture;
 
@@ -17,7 +17,7 @@ bool TestScene::Load() {
     }
 
     {
-        VertexLayout gVertexLayoutDefault;
+        VertexLayout gVertexLayoutDefault{};
         gVertexLayoutDefault.mAttribCount = 3;
         gVertexLayoutDefault.mAttribs[0].mSemantic = SEMANTIC_POSITION;
         gVertexLayoutDefault.mAttribs[0].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
@@ -35,13 +35,15 @@ bool TestScene::Load() {
         gVertexLayoutDefault.mAttribs[2].mBinding = 0;
         gVertexLayoutDefault.mAttribs[2].mOffset = 6 * sizeof(float);
 
-        GeometryLoadDesc desc;
-        desc.pFileName = "model";
+        GeometryLoadDesc desc{};
+        desc.pFileName = "model.gltf";
         desc.ppGeometry = &pGeometry;
         desc.pVertexLayout = &gVertexLayoutDefault;
 
         addResource(&desc, nullptr);
     }
+
+    waitForAllResourceLoads();
     return true;
 }
 

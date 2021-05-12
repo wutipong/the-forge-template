@@ -44,6 +44,7 @@ auto MainApp::AddDepthBuffer() -> bool {
 
 auto MainApp::Init() -> bool {
     pApp = this;
+    currentScene = std::make_unique<TestScene>();
 
     // FILE PATHS
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
@@ -92,8 +93,6 @@ auto MainApp::Init() -> bool {
         auto RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
         RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&rdoc_api);
     }
-
-    ChangeScene<TestScene>();
 
     return true;
 }
