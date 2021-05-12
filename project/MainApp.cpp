@@ -8,7 +8,7 @@ DEFINE_APPLICATION_MAIN(MainApp)
 
 MainApp *MainApp::pApp;
 
-bool MainApp::AddSwapChain() {
+auto MainApp::AddSwapChain() -> bool {
     SwapChainDesc swapChainDesc = {};
     swapChainDesc.mWindowHandle = pWindow->handle;
     swapChainDesc.mPresentQueueCount = 1;
@@ -20,14 +20,14 @@ bool MainApp::AddSwapChain() {
     swapChainDesc.mEnableVsync = mSettings.mDefaultVSyncEnabled;
     ::addSwapChain(pRenderer, &swapChainDesc, &pSwapChain);
 
-    return pSwapChain != NULL;
+    return pSwapChain != nullptr;
 }
 
-bool MainApp::AddDepthBuffer() {
+auto MainApp::AddDepthBuffer() -> bool {
     // Add depth buffer
     RenderTargetDesc depthRT = {};
     depthRT.mArraySize = 1;
-    depthRT.mClearValue.depth = 0.0f;
+    depthRT.mClearValue.depth = 0.0F;
     depthRT.mClearValue.stencil = 0;
     depthRT.mDepth = 1;
     depthRT.mFormat = TinyImageFormat_D32_SFLOAT;
@@ -39,10 +39,10 @@ bool MainApp::AddDepthBuffer() {
     depthRT.mFlags = TEXTURE_CREATION_FLAG_ON_TILE;
     addRenderTarget(pRenderer, &depthRT, &pDepthBuffer);
 
-    return pDepthBuffer != NULL;
+    return pDepthBuffer != nullptr;
 }
 
-bool MainApp::Init() {
+auto MainApp::Init() -> bool {
     pApp = this;
 
     // FILE PATHS
@@ -54,8 +54,9 @@ bool MainApp::Init() {
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
 
-    if (!initInputSystem(pWindow))
+    if (!initInputSystem(pWindow)) {
         return false;
+    }
 
     // App Actions
     InputActionDesc actionDesc = {InputBindings::BUTTON_DUMP,
@@ -88,25 +89,24 @@ bool MainApp::Init() {
     addInputAction(&actionDesc);
 
     if (auto mod = GetModuleHandleA("renderdoc.dll")) {
-        pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
-        int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&rdoc_api);
-    } else {
-        auto err = GetLastError();
+        auto RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+        RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&rdoc_api);
     }
 
-    Scene::ChangeScene<TestScene>();
+    ChangeScene<TestScene>();
 
     return true;
 }
 void MainApp::Exit() { exitInputSystem(); }
-bool MainApp::Load() {
-    if (mSettings.mResetGraphics || !pRenderer) {
+auto MainApp::Load() -> bool {
+    if (mSettings.mResetGraphics || (pRenderer == nullptr)) {
         // window and renderer setup
-        RendererDesc settings = {0};
+        RendererDesc settings = {nullptr};
         initRenderer(GetName(), &settings, &pRenderer);
         // check for init success
-        if (!pRenderer)
+        if (pRenderer == nullptr) {
             return false;
+        }
 
         QueueDesc queueDesc = {};
         queueDesc.mType = QUEUE_TYPE_GRAPHICS;
@@ -130,8 +130,9 @@ bool MainApp::Load() {
 
         initScreenshotInterface(pRenderer, pGraphicsQueue);
 
-        if (!appUI.Init(pRenderer))
+        if (!appUI.Init(pRenderer)) {
             return false;
+        }
 
         appUI.LoadFont("TitilliumText/TitilliumText-Bold.otf");
 
@@ -146,7 +147,7 @@ bool MainApp::Load() {
         // GUI
         /************************************************************************/
         GuiDesc guiDesc = {};
-        guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f);
+        guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01F, mSettings.mHeight * 0.2F);
         pGuiWindow = appUI.AddGuiComponent(GetName(), &guiDesc);
 #if !defined(TARGET_IOS)
         pGuiWindow->AddWidget(CheckboxWidget("Toggle VSync\t\t\t\t\t", &bToggleVSync));
@@ -157,7 +158,7 @@ bool MainApp::Load() {
         screenshot.pOnEdited = [] { MainApp::Instance()->TakeScreenshot(); };
         pGuiWindow->AddWidget(screenshot);
 
-        if (rdoc_api) {
+        if (rdoc_api != nullptr) {
             ButtonWidget captureBtn("Capture Frame");
             captureBtn.pOnEdited = [] { MainApp::Instance()->Capture(); };
             pGuiWindow->AddWidget(captureBtn);
@@ -166,23 +167,26 @@ bool MainApp::Load() {
         waitForAllResourceLoads();
     }
 
-    if (!AddSwapChain())
+    if (!AddSwapChain()) {
         return false;
+    }
 
-    if (!AddDepthBuffer())
+    if (!AddDepthBuffer()) {
         return false;
+    }
 
-    if (!appUI.Load(pSwapChain->ppRenderTargets, 1))
+    if (!appUI.Load(pSwapChain->ppRenderTargets, 1)) {
         return false;
+    }
 
     waitForAllResourceLoads();
 
-    Scene::LoadCurrent();
+    currentScene->Load();
 
     return true;
 }
 void MainApp::Unload() {
-    Scene::UnloadCurrent();
+    currentScene->Unload();
 
     waitQueueIdle(pGraphicsQueue);
 
@@ -221,7 +225,7 @@ void MainApp::Unload() {
 void MainApp::Update(float deltaTime) {
 
 #if !defined(TARGET_IOS)
-    if (pSwapChain->mEnableVsync != bToggleVSync) {
+    if (pSwapChain->mEnableVsync != static_cast<int>(bToggleVSync)) {
         waitQueueIdle(pGraphicsQueue);
         gFrameIndex = 0;
         ::toggleVSync(pRenderer, &pSwapChain);
@@ -233,23 +237,23 @@ void MainApp::Update(float deltaTime) {
     /************************************************************************/
     // Scene Update
     /************************************************************************/
-    static float currentTime = 0.0f;
-    currentTime += deltaTime * 1000.0f;
+    static float currentTime = 0.0F;
+    currentTime += deltaTime * 1000.0F;
 
     /************************************************************************/
     // Update GUI
     /************************************************************************/
     appUI.Update(deltaTime);
 
-    Scene::UpdateCurrent(deltaTime);
+    currentScene->Update(deltaTime);
 }
 
 void MainApp::Draw() {
     if (isCapturing) {
-        rdoc_api->StartFrameCapture(NULL, NULL);
+        rdoc_api->StartFrameCapture(nullptr, nullptr);
     }
     uint32_t swapchainImageIndex;
-    acquireNextImage(pRenderer, pSwapChain, pImageAcquiredSemaphore, NULL, &swapchainImageIndex);
+    acquireNextImage(pRenderer, pSwapChain, pImageAcquiredSemaphore, nullptr, &swapchainImageIndex);
 
     RenderTarget *pRenderTarget = pSwapChain->ppRenderTargets[swapchainImageIndex];
     Semaphore *pRenderCompleteSemaphore = pRenderCompleteSemaphores[gFrameIndex];
@@ -258,8 +262,9 @@ void MainApp::Draw() {
     // Stall if CPU is running "Swap Chain Buffer Count" frames ahead of GPU
     FenceStatus fenceStatus;
     getFenceStatus(pRenderer, pRenderCompleteFence, &fenceStatus);
-    if (fenceStatus == FENCE_STATUS_INCOMPLETE)
+    if (fenceStatus == FENCE_STATUS_INCOMPLETE) {
         waitForFences(pRenderer, 1, &pRenderCompleteFence);
+    }
 
     // Reset cmd pool for this frame
     resetCmdPool(pRenderer, pCmdPools[gFrameIndex]);
@@ -272,42 +277,42 @@ void MainApp::Draw() {
     RenderTargetBarrier barriers[] = {
         {pRenderTarget, RESOURCE_STATE_PRESENT, RESOURCE_STATE_RENDER_TARGET},
     };
-    cmdResourceBarrier(cmd, 0, NULL, 0, NULL, 1, barriers);
+    cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     // simply record the screen cleaning command
     LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
     loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
+    loadActions.mClearDepth.depth = 0.0F;
     loadActions.mClearDepth.stencil = 0;
-    cmdBindRenderTargets(cmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, NULL, NULL, -1, -1);
-    cmdSetViewport(cmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdBindRenderTargets(cmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(cmd, 0.0F, 0.0F, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0F, 1.0F);
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    cmdSetViewport(cmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetViewport(cmd, 0.0F, 0.0F, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0F, 1.0F);
 
     loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
-    cmdBindRenderTargets(cmd, 1, &pRenderTarget, NULL, &loadActions, NULL, NULL, -1, -1);
+    cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
 
-    const float txtIndent = 8.f;
-    float2 txtSizePx = cmdDrawCpuProfile(cmd, float2(txtIndent, 15.f), &gFrameTimeDraw);
-    cmdDrawGpuProfile(cmd, float2(txtIndent, txtSizePx.y + 30.f), gGpuProfileToken, &gFrameTimeDraw);
+    const float txtIndent = 8.F;
+    float2 txtSizePx = cmdDrawCpuProfile(cmd, float2(txtIndent, 15.F), &gFrameTimeDraw);
+    cmdDrawGpuProfile(cmd, float2(txtIndent, txtSizePx.y + 30.F), gGpuProfileToken, &gFrameTimeDraw);
 
     cmdDrawProfilerUI();
 
     appUI.Gui(pGuiWindow);
     appUI.Draw(cmd);
-    cmdBindRenderTargets(cmd, 0, NULL, NULL, NULL, NULL, NULL, -1, -1);
+    cmdBindRenderTargets(cmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    Scene::DrawCurrent(cmd);
+    currentScene->Draw(cmd);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};
-    cmdResourceBarrier(cmd, 0, NULL, 0, NULL, 1, barriers);
+    cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     cmdEndGpuFrameProfile(cmd, gGpuProfileToken);
     endCmd(cmd);
@@ -347,7 +352,7 @@ void MainApp::Draw() {
 
     gFrameIndex = (gFrameIndex + 1) % ImageCount;
     if (isCapturing) {
-        rdoc_api->EndFrameCapture(NULL, NULL);
+        rdoc_api->EndFrameCapture(nullptr, nullptr);
         isCapturing = false;
     }
 }

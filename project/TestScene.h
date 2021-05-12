@@ -6,14 +6,14 @@
 
 class TestScene : public Scene {
   public:
-    virtual void Update(float deltaTime) override;
-    virtual void Draw(Cmd *cmd) override;
+    void Update(float deltaTime) override;
+    void Draw(Cmd *cmd) override;
 
-    virtual bool Load() override;
+    auto Load() -> bool override;
 
-    virtual void Unload() override;
+    void Unload() override;
 
-    virtual void DoUI() override;
+    void DoUI() override;
 
   private:
     Geometry *pGeometry;

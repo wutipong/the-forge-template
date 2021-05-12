@@ -10,34 +10,47 @@
 #include <Common_3/Renderer/IResourceLoader.h>
 #include <Common_3/ThirdParty/OpenSource/renderdoc/renderdoc_app.h>
 #include <Middleware_3/UI/AppUI.h>
+
 #include <array>
+#include <memory>
+
+#include "Scene.h"
 
 class MainApp : public IApp {
   public:
-    virtual bool Init() override;
-    virtual void Exit() override;
+    auto Init() -> bool override;
+    void Exit() override;
 
-    virtual bool Load() override;
-    virtual void Unload() override;
+    auto Load() -> bool override;
+    void Unload() override;
 
-    virtual void Update(float deltaTime) override;
-    virtual void Draw() override;
+    void Update(float deltaTime) override;
+    void Draw() override;
 
-    virtual const char *GetName() { return "Template Application"; };
+    auto GetName() -> const char * override { return "Template Application"; };
 
-    bool CanCapture() { return rdoc_api != nullptr; };
+    auto CanCapture() -> bool { return rdoc_api != nullptr; };
     void Capture() { isCapturing = true; }
     void TakeScreenshot() { isTakingScreenshot = true; }
+
+    template <class SceneClass> void ChangeScene() {
+        if (currentScene != nullptr) {
+            currentScene->Unload();
+        }
+
+        currentScene = std::make_unique<SceneClass>();
+        currentScene->Load();
+    }
 
     UIApp appUI;
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
 
-    static MainApp *Instance() { return pApp; }
+    static auto Instance() -> MainApp * { return pApp; }
     static constexpr int ImageCount = 3;
 
   private:
-    bool AddSwapChain();
-    bool AddDepthBuffer();
+    auto AddSwapChain() -> bool;
+    auto AddDepthBuffer() -> bool;
 
     Renderer *pRenderer = nullptr;
     Queue *pGraphicsQueue = nullptr;
@@ -56,8 +69,9 @@ class MainApp : public IApp {
     GuiComponent *pGuiWindow = nullptr;
     TextDrawDesc gFrameTimeDraw = TextDrawDesc(0, 0xff00ffff, 18);
 
-    RENDERDOC_API_1_1_2 *rdoc_api = NULL;
+    RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 
+    std::unique_ptr<Scene> currentScene;
     bool bToggleVSync = false;
     bool isTakingScreenshot = false;
     bool isCapturing = false;
