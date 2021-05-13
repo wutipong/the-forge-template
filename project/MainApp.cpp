@@ -180,12 +180,12 @@ auto MainApp::Load() -> bool {
 
     waitForAllResourceLoads();
 
-    currentScene->Load();
+    currentScene->Load(pRenderer);
 
     return true;
 }
 void MainApp::Unload() {
-    currentScene->Unload();
+    currentScene->Unload(pRenderer);
 
     waitQueueIdle(pGraphicsQueue);
 

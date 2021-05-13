@@ -6,7 +6,7 @@ void TestScene::Draw(Cmd *cmd) {}
 
 void TestScene::DoUI() {}
 
-bool TestScene::Load() {
+bool TestScene::Load(Renderer *pRenderer) {
 
     {
         TextureLoadDesc desc{};
@@ -44,10 +44,18 @@ bool TestScene::Load() {
     }
 
     waitForAllResourceLoads();
+    {
+        ShaderLoadDesc desc{};
+        desc.mStages[0] = {"model.vert", nullptr, 0};
+        desc.mStages[1] = {"model.frag", nullptr, 0};
+
+        addShader(pRenderer, &desc, &pShader);
+    }
     return true;
 }
 
-void TestScene::Unload() {
+void TestScene::Unload(Renderer *pRenderer) {
     removeResource(pTexture);
     removeResource(pGeometry);
+    removeShader(pRenderer, pShader);
 }

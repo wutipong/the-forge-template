@@ -9,13 +9,14 @@ class TestScene : public Scene {
     void Update(float deltaTime) override;
     void Draw(Cmd *cmd) override;
 
-    auto Load() -> bool override;
+    auto Load(Renderer *pRenderer) -> bool override;
 
-    void Unload() override;
+    void Unload(Renderer *pRenderer) override;
 
     void DoUI() override;
 
   private:
     Geometry *pGeometry;
     Texture *pTexture;
+    Shader *pShader;
 };
