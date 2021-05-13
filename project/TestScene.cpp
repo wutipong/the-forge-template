@@ -1,8 +1,19 @@
 #include "TestScene.h"
 
+namespace {
+struct UniformBlock {
+    mat4 projectView;
+    mat4 world;
+};
+} // namespace
+
 void TestScene::Update(float deltaTime) {}
 
-void TestScene::Draw(Cmd *cmd) {}
+void TestScene::Draw(Cmd *cmd) {
+    UniformBlock uniform;
+    uniform.projectView = mat4::identity();
+    uniform.projectView = mat4::identity();
+}
 
 void TestScene::DoUI() {}
 

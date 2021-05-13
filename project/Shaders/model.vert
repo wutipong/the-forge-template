@@ -13,13 +13,13 @@ struct VsOut
 cbuffer uRootConstants : register(b0)
 {
     float4x4 world;
-	float4x4 viewProj;
+	float4x4 projectView;
 };
 
 VsOut main(VsIn input)
 {
 	VsOut output = (VsOut)0;
-	output.position = mul(mul(input.position, world), viewProj);
+	output.position = mul(mul(input.position, world), projectView);
 	output.texcoord = input.texcoord;
 
 	return output;
