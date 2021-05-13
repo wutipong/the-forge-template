@@ -36,7 +36,7 @@ bool TestScene::Load() {
         gVertexLayoutDefault.mAttribs[2].mOffset = 6 * sizeof(float);
 
         GeometryLoadDesc desc{};
-        desc.pFileName = "model.gltf";
+        desc.pFileName = "model.glb";
         desc.ppGeometry = &pGeometry;
         desc.pVertexLayout = &gVertexLayoutDefault;
 
