@@ -2,6 +2,8 @@
 
 #include "Scene.h"
 
+#include "MainApp.h"
+
 #include "Common_3/Renderer/IResourceLoader.h"
 
 class TestScene : public Scene {
@@ -16,7 +18,13 @@ class TestScene : public Scene {
     void DoUI() override;
 
   private:
-    Geometry *pGeometry;
-    Texture *pTexture;
-    Shader *pShader;
+    Geometry *pGeometry = nullptr;
+    Texture *pTexture = nullptr;
+    Shader *pShader = nullptr;
+    Sampler *pSampler = nullptr;
+    RootSignature *pRootSignature = nullptr;
+
+    std::array<Buffer *, MainApp::ImageCount> pUniformBuffer = {nullptr};
+    DescriptorSet *pDescriptorSetTexture = {nullptr};
+    DescriptorSet *pDescriptorSetUniforms = {nullptr};
 };
