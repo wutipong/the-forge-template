@@ -9,12 +9,18 @@ struct UniformBlock {
 #pragma pack(pop)
 } // namespace
 
-void TestScene::Update(float deltaTime) {}
+void TestScene::Update(float deltaTime) { pCameraController->update(deltaTime); }
 
 void TestScene::Draw(Cmd *cmd, int imageIndex) {
+    mat4 viewMat = pCameraController->getViewMatrix();
+    const float aspectInverse =
+        (float)MainApp::Instance()->mSettings.mHeight / (float)MainApp::Instance()->mSettings.mWidth;
+    const float horizontal_fov = PI / 2.0f;
+    mat4 projMat = mat4::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
+
     UniformBlock uniform;
     uniform.world = mat4::identity();
-    uniform.projectView = mat4::identity();
+    uniform.projectView = projMat * viewMat;
 
     BufferUpdateDesc viewProjCbv = {pUniformBuffers[imageIndex]};
     beginUpdateResource(&viewProjCbv);
@@ -174,6 +180,14 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
         addPipeline(pRenderer, &desc, &pPipeline);
     }
 
+    CameraMotionParameters cmp{160.0f, 600.0f, 200.0f};
+    vec3 camPos{48.0f, 48.0f, 20.0f};
+    vec3 lookAt{vec3(0)};
+
+    pCameraController = createFpsCameraController(camPos, lookAt);
+
+    pCameraController->setMotionParameters(cmp);
+
     return true;
 }
 
@@ -192,4 +206,6 @@ void TestScene::Unload(Renderer *pRenderer) {
     removeSampler(pRenderer, pSampler);
     removeDescriptorSet(pRenderer, pDescriptorSetTexture);
     removeDescriptorSet(pRenderer, pDescriptorSetUniforms);
+
+    destroyCameraController(pCameraController);
 }

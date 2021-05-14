@@ -19,7 +19,9 @@ cbuffer uniformBlock : register(b0, UPDATE_FREQ_PER_FRAME)
 VsOut main(VsIn input)
 {
 	VsOut output = (VsOut)0;
-	output.position = mul(mul(input.position, world), projectView);
+    float4x4 tempMat = mul(projectView, world);
+    output.position = mul(tempMat, input.position);
+
 	output.texcoord = input.texcoord;
 
 	return output;

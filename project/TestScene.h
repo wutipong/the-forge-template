@@ -5,6 +5,7 @@
 #include "MainApp.h"
 
 #include "Common_3/Renderer/IResourceLoader.h"
+#include "Common_3/OS/Interfaces/ICameraController.h"
 
 class TestScene : public Scene {
   public:
@@ -28,4 +29,6 @@ class TestScene : public Scene {
     std::array<Buffer *, MainApp::ImageCount> pUniformBuffers = {nullptr};
     DescriptorSet *pDescriptorSetTexture = {nullptr};
     DescriptorSet *pDescriptorSetUniforms = {nullptr};
+
+    ICameraController *pCameraController = nullptr;
 };
