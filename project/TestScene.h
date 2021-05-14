@@ -9,9 +9,9 @@
 class TestScene : public Scene {
   public:
     void Update(float deltaTime) override;
-    void Draw(Cmd *cmd) override;
+    void Draw(Cmd *cmd, int imageIndex) override;
 
-    auto Load(Renderer *pRenderer) -> bool override;
+    auto Load(Renderer *pRenderer, SwapChain *pSwapChain) -> bool override;
 
     void Unload(Renderer *pRenderer) override;
 
@@ -23,8 +23,9 @@ class TestScene : public Scene {
     Shader *pShader = nullptr;
     Sampler *pSampler = nullptr;
     RootSignature *pRootSignature = nullptr;
+    Pipeline *pPipeline = nullptr;
 
-    std::array<Buffer *, MainApp::ImageCount> pUniformBuffer = {nullptr};
+    std::array<Buffer *, MainApp::ImageCount> pUniformBuffers = {nullptr};
     DescriptorSet *pDescriptorSetTexture = {nullptr};
     DescriptorSet *pDescriptorSetUniforms = {nullptr};
 };

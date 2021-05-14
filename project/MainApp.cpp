@@ -180,14 +180,15 @@ auto MainApp::Load() -> bool {
 
     waitForAllResourceLoads();
 
-    currentScene->Load(pRenderer);
+    currentScene->Load(pRenderer, pSwapChain);
 
     return true;
 }
 void MainApp::Unload() {
-    currentScene->Unload(pRenderer);
 
     waitQueueIdle(pGraphicsQueue);
+
+    currentScene->Unload(pRenderer);
 
     appUI.Unload();
 
@@ -307,7 +308,7 @@ void MainApp::Draw() {
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    currentScene->Draw(cmd);
+    currentScene->Draw(cmd, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};

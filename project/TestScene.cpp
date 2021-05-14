@@ -1,25 +1,38 @@
 #include "TestScene.h"
 
 namespace {
+#pragma pack(push, 1)
 struct UniformBlock {
-    mat4 projectView;
     mat4 world;
+    mat4 projectView;
 };
+#pragma pack(pop)
 } // namespace
 
 void TestScene::Update(float deltaTime) {}
 
-void TestScene::Draw(Cmd *cmd) {
+void TestScene::Draw(Cmd *cmd, int imageIndex) {
     UniformBlock uniform;
-    uniform.projectView = mat4::identity();
+    uniform.world = mat4::identity();
     uniform.projectView = mat4::identity();
 
+    BufferUpdateDesc viewProjCbv = {pUniformBuffers[imageIndex]};
+    beginUpdateResource(&viewProjCbv);
+    *(UniformBlock *)viewProjCbv.pMappedData = uniform;
+    endUpdateResource(&viewProjCbv, NULL);
 
+    for (int i = 0; i < pGeometry->mVertexBufferCount; i++) {
+        cmdBindPipeline(cmd, pPipeline);
+        cmdBindDescriptorSet(cmd, 0, pDescriptorSetTexture);
+        cmdBindDescriptorSet(cmd, imageIndex, pDescriptorSetUniforms);
+        cmdBindVertexBuffer(cmd, 1, &pGeometry->pVertexBuffers[i], &pGeometry->mVertexStrides[i], NULL);
+        cmdDraw(cmd, pGeometry->mVertexCount, 0);
+    }
 }
 
 void TestScene::DoUI() {}
 
-bool TestScene::Load(Renderer *pRenderer) {
+bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
 
     {
         TextureLoadDesc desc{};
@@ -30,7 +43,16 @@ bool TestScene::Load(Renderer *pRenderer) {
     }
 
     {
-        VertexLayout gVertexLayoutDefault{};
+        ShaderLoadDesc desc{};
+        desc.mStages[0] = {"model.vert", nullptr, 0};
+        desc.mStages[1] = {"model.frag", nullptr, 0};
+
+        addShader(pRenderer, &desc, &pShader);
+    }
+
+
+    VertexLayout gVertexLayoutDefault{};
+    {
         gVertexLayoutDefault.mAttribCount = 3;
         gVertexLayoutDefault.mAttribs[0].mSemantic = SEMANTIC_POSITION;
         gVertexLayoutDefault.mAttribs[0].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
@@ -64,21 +86,13 @@ bool TestScene::Load(Renderer *pRenderer) {
         ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
         ubDesc.pData = NULL;
 
-        for (auto &buffer : pUniformBuffer) {
+        for (auto &buffer : pUniformBuffers) {
             ubDesc.ppBuffer = &buffer;
             addResource(&ubDesc, NULL);
         }
-
     }
 
     waitForAllResourceLoads();
-    {
-        ShaderLoadDesc desc{};
-        desc.mStages[0] = {"model.vert", nullptr, 0};
-        desc.mStages[1] = {"model.frag", nullptr, 0};
-
-        addShader(pRenderer, &desc, &pShader);
-    }
 
     SamplerDesc samplerDesc = {FILTER_LINEAR,
                                FILTER_LINEAR,
@@ -97,25 +111,85 @@ bool TestScene::Load(Renderer *pRenderer) {
     rootDesc.ppShaders = &pShader;
     addRootSignature(pRenderer, &rootDesc, &pRootSignature);
 
-    DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
-    addDescriptorSet(pRenderer, &desc, &pDescriptorSetTexture);
-    desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, MainApp::ImageCount };
-    addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
+    {
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetTexture);
+
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, MainApp::ImageCount};
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
+    }
+
+    {
+        DescriptorData params = {};
+        params.pName = "uTex";
+        params.ppTextures = &pTexture;
+        updateDescriptorSet(pRenderer, 0, pDescriptorSetTexture, 1, &params);
+    }
+    
+
+    for (uint32_t i = 0; i < MainApp::ImageCount; ++i) {
+        DescriptorData params{};
+        auto size = sizeof(UniformBlock);
+        params.pName = "uniformBlock";
+        params.ppBuffers = &pUniformBuffers[i];
+
+        updateDescriptorSet(pRenderer, i, pDescriptorSetUniforms, 1, &params);
+    }
+
+    {
+        RasterizerStateDesc rasterizerStateDesc = {};
+        rasterizerStateDesc.mCullMode = CULL_MODE_BACK;
+
+        DepthStateDesc depthStateDesc = {};
+        depthStateDesc.mDepthTest = true;
+        depthStateDesc.mDepthWrite = true;
+        depthStateDesc.mDepthFunc = CMP_GEQUAL;
+
+        BlendStateDesc blendStateAlphaDesc = {};
+        blendStateAlphaDesc.mSrcFactors[0] = BC_SRC_ALPHA;
+        blendStateAlphaDesc.mDstFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
+        blendStateAlphaDesc.mBlendModes[0] = BM_ADD;
+        blendStateAlphaDesc.mSrcAlphaFactors[0] = BC_ONE;
+        blendStateAlphaDesc.mDstAlphaFactors[0] = BC_ZERO;
+        blendStateAlphaDesc.mBlendAlphaModes[0] = BM_ADD;
+        blendStateAlphaDesc.mMasks[0] = ALL;
+        blendStateAlphaDesc.mRenderTargetMask = BLEND_STATE_TARGET_0;
+        blendStateAlphaDesc.mIndependentBlend = false;
+
+        PipelineDesc desc = {};
+
+        desc.mType = PIPELINE_TYPE_GRAPHICS;
+        GraphicsPipelineDesc &pipelineSettings = desc.mGraphicsDesc;
+        pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
+        pipelineSettings.mRenderTargetCount = 1;
+        pipelineSettings.pDepthState = NULL;
+        pipelineSettings.pBlendState = &blendStateAlphaDesc;
+        pipelineSettings.pColorFormats = &pSwapChain->ppRenderTargets[0]->mFormat;
+        pipelineSettings.mSampleCount = pSwapChain->ppRenderTargets[0]->mSampleCount;
+        pipelineSettings.mSampleQuality = pSwapChain->ppRenderTargets[0]->mSampleQuality;
+        pipelineSettings.pRootSignature = pRootSignature;
+        pipelineSettings.pVertexLayout = &gVertexLayoutDefault;
+        pipelineSettings.pRasterizerState = &rasterizerStateDesc;
+        pipelineSettings.pShaderProgram = pShader;
+        addPipeline(pRenderer, &desc, &pPipeline);
+    }
 
     return true;
 }
 
 void TestScene::Unload(Renderer *pRenderer) {
+    removeRootSignature(pRenderer, pRootSignature);
+    removePipeline(pRenderer, pPipeline);
+
     removeResource(pTexture);
     removeResource(pGeometry);
     removeShader(pRenderer, pShader);
 
-    for (auto &buffer : pUniformBuffer) {
+    for (auto &buffer : pUniformBuffers) {
         removeResource(buffer);
     }
 
     removeSampler(pRenderer, pSampler);
     removeDescriptorSet(pRenderer, pDescriptorSetTexture);
     removeDescriptorSet(pRenderer, pDescriptorSetUniforms);
-
 }

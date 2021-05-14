@@ -10,7 +10,7 @@ struct VsOut
 	float2 texcoord : TEXCOORD0;
 };
 
-cbuffer uRootConstants : register(b0)
+cbuffer uniformBlock : register(b0, UPDATE_FREQ_PER_FRAME)
 {
     float4x4 world;
 	float4x4 projectView;
