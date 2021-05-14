@@ -181,7 +181,7 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
     }
 
     CameraMotionParameters cmp{160.0f, 600.0f, 200.0f};
-    vec3 camPos{48.0f, 48.0f, 20.0f};
+    vec3 camPos{2.0f, 2.0f, 2.0f};
     vec3 lookAt{vec3(0)};
 
     pCameraController = createFpsCameraController(camPos, lookAt);
