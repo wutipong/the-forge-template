@@ -32,7 +32,8 @@ void TestScene::Draw(Cmd *cmd, int imageIndex) {
         cmdBindDescriptorSet(cmd, 0, pDescriptorSetTexture);
         cmdBindDescriptorSet(cmd, imageIndex, pDescriptorSetUniforms);
         cmdBindVertexBuffer(cmd, 1, &pGeometry->pVertexBuffers[i], &pGeometry->mVertexStrides[i], NULL);
-        cmdDraw(cmd, pGeometry->mVertexCount, 0);
+        cmdBindIndexBuffer(cmd, &pGeometry->pIndexBuffer[i], pGeometry->mIndexType, 0);
+        cmdDrawIndexed(cmd, pGeometry->mIndexCount, 0, 0);
     }
 }
 

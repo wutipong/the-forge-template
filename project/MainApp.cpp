@@ -293,6 +293,15 @@ void MainApp::Draw() {
 
     loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
+
+    cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
+    cmdBindRenderTargets(cmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(cmd, 0.0F, 0.0F, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0F, 1.0F);
+    cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
+    currentScene->Draw(cmd, gFrameIndex);
+    cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
+
     cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
 
@@ -305,10 +314,6 @@ void MainApp::Draw() {
     appUI.Gui(pGuiWindow);
     appUI.Draw(cmd);
     cmdBindRenderTargets(cmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
-    cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
-
-    cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    currentScene->Draw(cmd, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};
