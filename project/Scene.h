@@ -12,7 +12,7 @@ class Scene {
 
     virtual void Update(float deltaTime) = 0;
     virtual void Draw(Cmd *cmd, int imageIndex) = 0;
-    virtual void DoUI() = 0;
+    virtual void DrawUI() = 0;
     virtual void Unload(Renderer *pRenderer) = 0;
 
     virtual ~Scene(){};

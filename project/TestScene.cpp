@@ -37,7 +37,7 @@ void TestScene::Draw(Cmd *cmd, int imageIndex) {
     }
 }
 
-void TestScene::DoUI() {}
+void TestScene::DrawUI() {}
 
 bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
 

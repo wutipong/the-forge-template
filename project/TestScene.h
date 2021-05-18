@@ -16,7 +16,7 @@ class TestScene : public Scene {
 
     void Unload(Renderer *pRenderer) override;
 
-    void DoUI() override;
+    void DrawUI() override;
 
   private:
     Geometry *pGeometry = nullptr;
