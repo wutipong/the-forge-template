@@ -1,19 +1,15 @@
 #pragma once
 
-#include <memory>
+#include <functional>
 
 struct Cmd;
 struct Renderer;
 struct SwapChain;
 
-class Scene {
-  public:
-    virtual auto Load(Renderer *pRenderer, SwapChain *pSwapChain) -> bool = 0;
-
-    virtual void Update(float deltaTime) = 0;
-    virtual void Draw(Cmd *cmd, int imageIndex) = 0;
-    virtual void DrawUI() = 0;
-    virtual void Unload(Renderer *pRenderer) = 0;
-
-    virtual ~Scene(){};
+struct Scene {
+    std::function<bool(Renderer *pRenderer, SwapChain *pSwapChain)> Load;
+    std::function<void(float)> Update;
+    std::function<void(Cmd *cmd, int imageIndex)> Draw;
+    std::function<void()> DrawUI;
+    std::function<void(Renderer *pRenderer)> Unload;
 };

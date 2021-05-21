@@ -1,5 +1,8 @@
 #include "TestScene.h"
 
+#include <Common_3/OS/Interfaces/ICameraController.h>
+#include <Common_3/Renderer/IResourceLoader.h>
+
 namespace {
 #pragma pack(push, 1)
 struct UniformBlock {
@@ -7,7 +10,33 @@ struct UniformBlock {
     mat4 projectView;
 };
 #pragma pack(pop)
+Geometry *pGeometry = nullptr;
+Texture *pTexture = nullptr;
+Shader *pShader = nullptr;
+Sampler *pSampler = nullptr;
+RootSignature *pRootSignature = nullptr;
+Pipeline *pPipeline = nullptr;
+
+std::array<Buffer *, MainApp::ImageCount> pUniformBuffers = {nullptr};
+DescriptorSet *pDescriptorSetTexture = {nullptr};
+DescriptorSet *pDescriptorSetUniforms = {nullptr};
+
+ICameraController *pCameraController = nullptr;
 } // namespace
+
+using namespace TestScene;
+
+Scene TestScene::Create() {
+    Scene out;
+
+    out.Draw = Draw;
+    out.Load = Load;
+    out.DrawUI = DrawUI;
+    out.Unload = Unload;
+    out.Update = Update;
+
+    return out;
+}
 
 void TestScene::Update(float deltaTime) { pCameraController->update(deltaTime); }
 
@@ -56,7 +85,6 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
 
         addShader(pRenderer, &desc, &pShader);
     }
-
 
     VertexLayout gVertexLayoutDefault{};
     {
@@ -132,7 +160,6 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
         params.ppTextures = &pTexture;
         updateDescriptorSet(pRenderer, 0, pDescriptorSetTexture, 1, &params);
     }
-    
 
     for (uint32_t i = 0; i < MainApp::ImageCount; ++i) {
         DescriptorData params{};

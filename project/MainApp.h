@@ -71,7 +71,7 @@ class MainApp : public IApp {
 
     RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 
-    std::unique_ptr<Scene> currentScene;
+    Scene currentScene;
     bool bToggleVSync = false;
     bool isTakingScreenshot = false;
     bool isCapturing = false;

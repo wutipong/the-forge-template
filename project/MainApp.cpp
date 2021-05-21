@@ -44,7 +44,7 @@ auto MainApp::AddDepthBuffer() -> bool {
 
 auto MainApp::Init() -> bool {
     pApp = this;
-    currentScene = std::make_unique<TestScene>();
+    currentScene = TestScene::Create();
 
     // FILE PATHS
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
@@ -180,7 +180,7 @@ auto MainApp::Load() -> bool {
 
     waitForAllResourceLoads();
 
-    currentScene->Load(pRenderer, pSwapChain);
+    currentScene.Load(pRenderer, pSwapChain);
 
     return true;
 }
@@ -188,7 +188,7 @@ void MainApp::Unload() {
 
     waitQueueIdle(pGraphicsQueue);
 
-    currentScene->Unload(pRenderer);
+    currentScene.Unload(pRenderer);
 
     appUI.Unload();
 
@@ -245,7 +245,7 @@ void MainApp::Update(float deltaTime) {
     /************************************************************************/
     appUI.Update(deltaTime);
 
-    currentScene->Update(deltaTime);
+    currentScene.Update(deltaTime);
 }
 
 void MainApp::Draw() {
@@ -290,7 +290,7 @@ void MainApp::Draw() {
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    currentScene->Draw(cmd, gFrameIndex);
+    currentScene.Draw(cmd, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     loadActions = {};
