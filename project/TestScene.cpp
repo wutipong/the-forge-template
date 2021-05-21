@@ -38,6 +38,23 @@ Scene TestScene::Create() {
     return out;
 }
 
+static bool onCameraInput(InputActionContext *ctx) {
+    if (MainApp::Instance()->appUI.IsFocused() || *ctx->pCaptured) {
+        return true;
+    }
+
+    switch (ctx->mBinding) {
+    case InputBindings::FLOAT_LEFTSTICK:
+        pCameraController->onMove(ctx->mFloat2);
+        break;
+
+    case InputBindings::FLOAT_RIGHTSTICK:
+        pCameraController->onRotate(ctx->mFloat2);
+        break;
+    }
+    return true;
+};
+
 void TestScene::Update(float deltaTime) { pCameraController->update(deltaTime); }
 
 void TestScene::Draw(Cmd *cmd, int imageIndex) {
@@ -213,8 +230,13 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
     vec3 lookAt{vec3(0)};
 
     pCameraController = createFpsCameraController(camPos, lookAt);
-
     pCameraController->setMotionParameters(cmp);
+
+    InputActionDesc actionDesc{InputBindings::FLOAT_RIGHTSTICK, onCameraInput, NULL, 0.1f, 1.0f, 0.05f};
+    addInputAction(&actionDesc);
+
+    actionDesc = {InputBindings::FLOAT_LEFTSTICK, onCameraInput, NULL, 0.1f, 1.0f, 0.1f};
+    addInputAction(&actionDesc);
 
     return true;
 }
