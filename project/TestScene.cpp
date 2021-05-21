@@ -39,7 +39,7 @@ Scene TestScene::Create() {
 }
 
 static bool onCameraInput(InputActionContext *ctx) {
-    if (MainApp::Instance()->appUI.IsFocused() || *ctx->pCaptured) {
+    if (MainApp::Instance()->appUI.IsFocused() || !*ctx->pCaptured) {
         return true;
     }
 
@@ -189,7 +189,7 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
 
     {
         RasterizerStateDesc rasterizerStateDesc = {};
-        rasterizerStateDesc.mCullMode = CULL_MODE_BACK;
+        rasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
 
         DepthStateDesc depthStateDesc = {};
         depthStateDesc.mDepthTest = true;
