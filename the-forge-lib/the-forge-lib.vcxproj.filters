@@ -2,166 +2,187 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Common_3\OS\Camera">
-      <UniqueIdentifier>{28793a13-4fa0-4db4-9cf1-1d5d00b1add2}</UniqueIdentifier>
+      <UniqueIdentifier>{9bacfcce-c474-4aed-bed9-75313c018ddd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS">
-      <UniqueIdentifier>{9b7a8b9e-f501-4be5-9ec7-3a4c5758bda3}</UniqueIdentifier>
+      <UniqueIdentifier>{2397fcf7-c10d-493f-88c3-d78d1e8155cd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3">
-      <UniqueIdentifier>{4c782dee-ab0b-4a3d-9615-559651703485}</UniqueIdentifier>
+      <UniqueIdentifier>{50c4a69b-22e4-4f49-9b90-9cd38dfa52b3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Core">
-      <UniqueIdentifier>{da2c6363-1729-41f6-a24f-5f1e8e6d6fda}</UniqueIdentifier>
+      <UniqueIdentifier>{2b5d7d81-2560-47b9-b87c-84f4a9d68f96}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\FileSystem">
-      <UniqueIdentifier>{637026c0-bbba-4945-b876-ee935e2f5394}</UniqueIdentifier>
+      <UniqueIdentifier>{505d9e15-90ff-4870-9b2b-da8b21d24f68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\OS\Fonts">
+      <UniqueIdentifier>{fdbaebba-7bb3-45bf-bf61-cf65f3900361}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Input">
-      <UniqueIdentifier>{6dd5400a-e7ad-4a24-bfd1-491ac4508969}</UniqueIdentifier>
+      <UniqueIdentifier>{693c6a53-2654-45cd-a5d3-d8d3e78a3391}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Logging">
-      <UniqueIdentifier>{60a68c6d-41fd-4518-9f6d-7b7d30f1f07b}</UniqueIdentifier>
+      <UniqueIdentifier>{ecbf4525-f248-405a-9b22-b8b5ed146a54}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\MemoryTracking">
-      <UniqueIdentifier>{ff51f7a8-9825-4ebf-a0f5-09b860035bc6}</UniqueIdentifier>
+      <UniqueIdentifier>{a8497f8d-f0dc-4cf9-8c77-a277f8bd11bd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Profiler">
-      <UniqueIdentifier>{8a69034a-f97d-4dbf-a810-a747445d6e9c}</UniqueIdentifier>
+      <UniqueIdentifier>{89df0bad-6eca-47b4-928f-1ce3b0819665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\OS\Scripting">
+      <UniqueIdentifier>{82dd9948-2625-4614-8a2d-1595e59d294b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\OS\UI">
+      <UniqueIdentifier>{f1ee5b14-53ed-4432-8bbf-5d38c8ecb35f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Windows">
-      <UniqueIdentifier>{8b1c6021-be7a-417f-9670-8f630a9260d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common_3\Renderer">
-      <UniqueIdentifier>{ac4c7300-443a-4770-ab86-3b8acbf0e9a5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common_3\Renderer\Direct3D12">
-      <UniqueIdentifier>{7f30aec5-38df-4c7c-8068-ced85c2b32b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common_3\Renderer\Vulkan">
-      <UniqueIdentifier>{340956af-ce70-402d-9153-f7e88a40e101}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common_3\ThirdParty\OpenSource\basis_universal">
-      <UniqueIdentifier>{85937ed4-b03c-42c2-a397-b31e8275e7a0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common_3\ThirdParty\OpenSource">
-      <UniqueIdentifier>{bd8ef42b-dd56-4e40-8401-1af08d52d30b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Common_3\ThirdParty">
-      <UniqueIdentifier>{bb5de52f-b4de-4cd6-9c7d-bf5bdfc3477f}</UniqueIdentifier>
+      <UniqueIdentifier>{782c3288-a6eb-48a1-9674-7be34c8b57f9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\basis_universal\transcoder">
-      <UniqueIdentifier>{7efa424f-053a-4637-b1a1-dec3ea1e4ae3}</UniqueIdentifier>
+      <UniqueIdentifier>{188331a9-8ffe-4265-ae22-09446d516214}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\ThirdParty\OpenSource\basis_universal">
+      <UniqueIdentifier>{8647c0e6-fb75-4e8f-b0cf-73bb470a3eb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\ThirdParty\OpenSource">
+      <UniqueIdentifier>{172c2233-e8fd-4ecb-a4d4-49d2bdb269f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\ThirdParty">
+      <UniqueIdentifier>{9896df89-c81c-4097-84ca-38b6b88d66fe}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\lua-5.3.5\src">
-      <UniqueIdentifier>{87e67a61-8269-416f-9b66-adc952a3f51e}</UniqueIdentifier>
+      <UniqueIdentifier>{1a8ef0fe-b679-4362-a268-48ed8595e6d0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\lua-5.3.5">
-      <UniqueIdentifier>{93b201a4-986c-465b-a97d-0e329eed9d04}</UniqueIdentifier>
+      <UniqueIdentifier>{06e3114f-ca45-476d-a8ae-ccfc1e7efc06}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL">
-      <UniqueIdentifier>{76513f86-a2eb-435c-828a-59bdb616c30c}</UniqueIdentifier>
+      <UniqueIdentifier>{ff8173cb-98da-4cd6-a6d4-5d52c33821c9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL\EAStdC">
-      <UniqueIdentifier>{75b6c286-586a-4d06-ac06-b3507b7745ae}</UniqueIdentifier>
+      <UniqueIdentifier>{b0d0fa0d-a99c-460f-a3be-6323081baaaf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput">
-      <UniqueIdentifier>{dcb98779-e31c-4e10-a849-64fc08d5501d}</UniqueIdentifier>
+      <UniqueIdentifier>{64be429b-e2b9-431e-8126-6c07515fd769}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source">
-      <UniqueIdentifier>{21874248-f5a2-44b1-8767-cd5f5fa18c2d}</UniqueIdentifier>
+      <UniqueIdentifier>{8f9726e5-06be-406a-97bb-32a403d522d0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib">
-      <UniqueIdentifier>{96e4f027-c473-4da0-b079-3bd9b9a81bb4}</UniqueIdentifier>
+      <UniqueIdentifier>{0599bb02-4ed6-4750-b465-400c8d1aa171}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput">
-      <UniqueIdentifier>{6eac0f62-5620-4926-96c6-a2c0c9cce55a}</UniqueIdentifier>
+      <UniqueIdentifier>{eb74be5f-10eb-4ace-8122-40588acfc72d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\builtin">
-      <UniqueIdentifier>{291e66e3-8620-4ce1-b6a8-4d32f79db60f}</UniqueIdentifier>
+      <UniqueIdentifier>{7fedb3dd-0ba7-46da-ae29-9078aa432636}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\dev">
-      <UniqueIdentifier>{f75a5cf4-d6f3-4a31-84a9-78400351f6fc}</UniqueIdentifier>
+      <UniqueIdentifier>{38c5e27c-ddc0-4d99-af16-bd2fde2f241a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\gestures">
-      <UniqueIdentifier>{0c83df23-588c-4080-b651-bcceff707b78}</UniqueIdentifier>
+      <UniqueIdentifier>{244326c8-ea0c-4365-937c-5e73402628a2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\keyboard">
-      <UniqueIdentifier>{f05db43a-f358-48c4-aefc-712ac3af7760}</UniqueIdentifier>
+      <UniqueIdentifier>{982c9637-11ba-4a15-9a83-c905cb7799ed}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\mouse">
-      <UniqueIdentifier>{e241d8cc-aa58-4605-af5d-7e27af208816}</UniqueIdentifier>
+      <UniqueIdentifier>{ae1a82a4-a9f0-4452-ab7b-2b10d53785be}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\pad">
-      <UniqueIdentifier>{a0c3b898-42e2-468b-9dcd-df1ace283fa5}</UniqueIdentifier>
+      <UniqueIdentifier>{050add4f-f469-4159-9770-21e99d2b011f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\recorder">
-      <UniqueIdentifier>{541f306e-886b-4357-af62-a028fe828f7a}</UniqueIdentifier>
+      <UniqueIdentifier>{3a6083ee-afc6-4980-87cc-03e5371aa7b2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\touch">
-      <UniqueIdentifier>{cb7bf7e1-a7d0-4fca-887a-404533258bb9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\Animation">
-      <UniqueIdentifier>{b2b19876-d62f-4acb-bb6f-6f21d593ba0c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3">
-      <UniqueIdentifier>{49507c67-c03f-497c-8d06-c957e663b7b6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\ECS">
-      <UniqueIdentifier>{a32cb76c-b8a1-45a4-8152-66a3fb714e5f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\LUA">
-      <UniqueIdentifier>{cbf68747-3874-45e8-aa11-ab9b2e1c31af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\PaniniProjection">
-      <UniqueIdentifier>{d717146a-845b-4964-b757-310069eceeeb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\ParallelPrimitives">
-      <UniqueIdentifier>{7c86d8ad-2dc4-4640-834e-a787ef9aa71d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\Text">
-      <UniqueIdentifier>{be49bcc8-ace8-43ea-9201-1e2354629f95}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Middleware_3\UI">
-      <UniqueIdentifier>{995b69a1-66a4-4c2b-a92e-ff986042a396}</UniqueIdentifier>
+      <UniqueIdentifier>{f18dc722-23fd-4023-8689-2d7c565d7945}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\imgui">
-      <UniqueIdentifier>{0e4645d3-3efe-4516-a2d9-30c01e7e5715}</UniqueIdentifier>
+      <UniqueIdentifier>{9b7f26d8-1c1f-42e6-8901-92221d881629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\Renderer">
+      <UniqueIdentifier>{a939f836-a852-422f-a4d9-6560ab82d9cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\Renderer\Direct3D11">
+      <UniqueIdentifier>{6d11e0d8-956e-46e7-831f-e2c215e190ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\Renderer\Direct3D12">
+      <UniqueIdentifier>{0c744ad7-4acd-4c60-9951-9782daccb21d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\Renderer\Vulkan">
+      <UniqueIdentifier>{c07343fe-f837-448d-a86f-97d4b73e9b63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\Tools\SpirvTools">
+      <UniqueIdentifier>{7c7cfd82-d65c-445e-b248-81000cb02094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\Tools">
+      <UniqueIdentifier>{755e6610-04b8-4f92-bb32-77c39efc6cb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Middleware_3\Animation">
+      <UniqueIdentifier>{ca47a528-0a26-4fbb-b93b-15fb79ede3ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Middleware_3">
+      <UniqueIdentifier>{74162d67-c6cc-4e1a-b963-1a9da36db254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Middleware_3\ECS">
+      <UniqueIdentifier>{c0659ec1-fa86-4134-85dc-a0a02d761eeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Middleware_3\PaniniProjection">
+      <UniqueIdentifier>{9d0c178b-5ef6-494e-bb28-18a5fb25c613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Middleware_3\ParallelPrimitives">
+      <UniqueIdentifier>{db07a302-4737-49d5-935a-92988a3346d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\ThirdParty\OpenSource\SPIRV_Cross">
+      <UniqueIdentifier>{84427136-d5d1-4a3d-b9e1-fa1dfe5db82f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\OS\Fonts\Shaders\FSL">
+      <UniqueIdentifier>{018a048c-d99c-4f8b-a2e1-a7a03395ac32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\OS\Fonts\Shaders">
+      <UniqueIdentifier>{9f2d4975-4fde-4928-af10-7c126442af90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common_3\OS\Fonts\Shaders\FSL\Quest">
+      <UniqueIdentifier>{f856fb9a-b4b5-43d2-bef9-f19614cc1305}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Interfaces">
-      <UniqueIdentifier>{e307954e-c34a-4d8a-ae84-d54b31c9e694}</UniqueIdentifier>
+      <UniqueIdentifier>{a2273675-a51f-4055-a79a-f6463c6afa0e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\OS\Math">
-      <UniqueIdentifier>{5618be6f-d9ca-417a-911b-2d57746a9d06}</UniqueIdentifier>
+      <UniqueIdentifier>{03ba965a-e00e-4bcc-8e91-3d77fb342465}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL\bonus">
-      <UniqueIdentifier>{6be38e11-6c79-4be1-975a-4a3047437e69}</UniqueIdentifier>
+      <UniqueIdentifier>{754200e7-9037-4189-9187-98032fb9d778}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL\EAAssert">
-      <UniqueIdentifier>{9572bc1c-8974-45d9-85fc-3c6762c57b64}</UniqueIdentifier>
+      <UniqueIdentifier>{6bedb7cd-5658-4705-9029-5e907b2d39f7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL\EABase">
-      <UniqueIdentifier>{64404365-e720-4229-808b-9eaf5e98c22f}</UniqueIdentifier>
+      <UniqueIdentifier>{85893498-366d-43c7-b904-5feddf83bd6d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL\EABase\config">
-      <UniqueIdentifier>{a885a8ef-6b62-4006-bb5a-4ece01cf8663}</UniqueIdentifier>
+      <UniqueIdentifier>{b9073a40-0484-4082-9104-a7af7c481769}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\EASTL\internal">
-      <UniqueIdentifier>{0affbcec-2937-46d6-ab80-09abf1d06952}</UniqueIdentifier>
+      <UniqueIdentifier>{5d3aa814-356f-415c-b619-c7a516edcf5b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\include\gainput">
-      <UniqueIdentifier>{c830b84f-27e8-4fe8-bcf3-c63a45b66002}</UniqueIdentifier>
+      <UniqueIdentifier>{de2fb9b5-9988-4d5f-9848-d33f98a5d3dc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\include">
-      <UniqueIdentifier>{ca318ac2-4c7b-4ba7-9def-6587ae02ba5b}</UniqueIdentifier>
+      <UniqueIdentifier>{60957f7a-36b8-4f13-b248-f2ce247b1968}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\include\gainput\gestures">
-      <UniqueIdentifier>{a9f0ea06-07fd-482e-85b2-6bdc50957b78}</UniqueIdentifier>
+      <UniqueIdentifier>{97186486-287b-4310-8826-817d21acae6b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\gainput\lib\include\gainput\recorder">
-      <UniqueIdentifier>{6d740bd3-8a5a-492f-8609-2da6b5862235}</UniqueIdentifier>
+      <UniqueIdentifier>{36d09145-6d3c-4f5a-9194-ae247b1882eb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common_3\ThirdParty\OpenSource\lua-5.3.5\doc">
-      <UniqueIdentifier>{5107271a-7bf5-4298-aa16-c4fa5deaebc3}</UniqueIdentifier>
+      <UniqueIdentifier>{814f9237-ad37-4715-8635-cd6b22b82de0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -174,7 +195,7 @@
     <ClCompile Include="..\the-forge\Common_3\OS\Core\ThreadSystem.cpp">
       <Filter>Common_3\OS\Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\Core\Timer.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\Core\Timer.c">
       <Filter>Common_3\OS\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\FileSystem.cpp">
@@ -183,16 +204,19 @@
     <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\SystemRun.cpp">
       <Filter>Common_3\OS\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\ZipFileSystem.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\ZipFileSystem.c">
       <Filter>Common_3\OS\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\OS\Fonts\FontSystem.cpp">
+      <Filter>Common_3\OS\Fonts</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Common_3\OS\Input\InputSystem.cpp">
       <Filter>Common_3\OS\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\Logging\Log.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\Logging\Log.c">
       <Filter>Common_3\OS\Logging</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\MemoryTracking\MemoryTracking.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\MemoryTracking\MemoryTracking.c">
       <Filter>Common_3\OS\MemoryTracking</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Common_3\OS\Profiler\GpuProfiler.cpp">
@@ -201,8 +225,20 @@
     <ClCompile Include="..\the-forge\Common_3\OS\Profiler\ProfilerBase.cpp">
       <Filter>Common_3\OS\Profiler</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\Profiler\ProfilerWidgetsUI.cpp">
-      <Filter>Common_3\OS\Profiler</Filter>
+    <ClCompile Include="..\the-forge\Common_3\OS\Scripting\LuaManager.cpp">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\OS\Scripting\LuaManagerImpl.cpp">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\OS\Scripting\LuaSystem.cpp">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\OS\UI\imgui_user.cpp">
+      <Filter>Common_3\OS\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\OS\UI\UI.cpp">
+      <Filter>Common_3\OS\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsBase.cpp">
       <Filter>Common_3\OS\Windows</Filter>
@@ -210,44 +246,17 @@
     <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsFileSystem.cpp">
       <Filter>Common_3\OS\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsLog.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsLog.c">
       <Filter>Common_3\OS\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsStackTraceDump.cpp">
       <Filter>Common_3\OS\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsThread.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsThread.c">
       <Filter>Common_3\OS\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsTime.cpp">
+    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsTime.c">
       <Filter>Common_3\OS\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\CommonShaderReflection.cpp">
-      <Filter>Common_3\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\ResourceLoader.cpp">
-      <Filter>Common_3\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12.cpp">
-      <Filter>Common_3\Renderer\Direct3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Hooks.cpp">
-      <Filter>Common_3\Renderer\Direct3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Raytracing.cpp">
-      <Filter>Common_3\Renderer\Direct3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12ShaderReflection.cpp">
-      <Filter>Common_3\Renderer\Direct3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\Vulkan.cpp">
-      <Filter>Common_3\Renderer\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanRaytracing.cpp">
-      <Filter>Common_3\Renderer\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanShaderReflection.cpp">
-      <Filter>Common_3\Renderer\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\basis_universal\transcoder\basisu_transcoder.cpp">
       <Filter>Common_3\ThirdParty\OpenSource\basis_universal\transcoder</Filter>
@@ -483,6 +492,60 @@
     <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\touch\GainputInputDeviceTouch.cpp">
       <Filter>Common_3\ThirdParty\OpenSource\gainput\lib\source\gainput\touch</Filter>
     </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_demo.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_draw.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_widgets.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\CommonShaderReflection.cpp">
+      <Filter>Common_3\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Renderer.cpp">
+      <Filter>Common_3\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\ResourceLoader.cpp">
+      <Filter>Common_3\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11.cpp">
+      <Filter>Common_3\Renderer\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11Raytracing.cpp">
+      <Filter>Common_3\Renderer\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11ShaderReflection.cpp">
+      <Filter>Common_3\Renderer\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12.cpp">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Hooks.cpp">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Raytracing.cpp">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12ShaderReflection.cpp">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\Vulkan.cpp">
+      <Filter>Common_3\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanRaytracing.cpp">
+      <Filter>Common_3\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanShaderReflection.cpp">
+      <Filter>Common_3\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\Tools\SpirvTools\SpirvTools.cpp">
+      <Filter>Common_3\Tools\SpirvTools</Filter>
+    </ClCompile>
     <ClCompile Include="..\the-forge\Middleware_3\Animation\AnimatedObject.cpp">
       <Filter>Middleware_3\Animation</Filter>
     </ClCompile>
@@ -513,48 +576,48 @@
     <ClCompile Include="..\the-forge\Middleware_3\ECS\EntityManager.cpp">
       <Filter>Middleware_3\ECS</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Middleware_3\LUA\LuaManager.cpp">
-      <Filter>Middleware_3\LUA</Filter>
-    </ClCompile>
-    <ClCompile Include="..\the-forge\Middleware_3\LUA\LuaManagerImpl.cpp">
-      <Filter>Middleware_3\LUA</Filter>
-    </ClCompile>
     <ClCompile Include="..\the-forge\Middleware_3\PaniniProjection\Panini.cpp">
       <Filter>Middleware_3\PaniniProjection</Filter>
     </ClCompile>
     <ClCompile Include="..\the-forge\Middleware_3\ParallelPrimitives\ParallelPrimitives.cpp">
       <Filter>Middleware_3\ParallelPrimitives</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Middleware_3\Text\Fontstash.cpp">
-      <Filter>Middleware_3\Text</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cfg.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Middleware_3\UI\AppUI.cpp">
-      <Filter>Middleware_3\UI</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cpp.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Middleware_3\UI\ImguiGUIDriver.cpp">
-      <Filter>Middleware_3\UI</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Middleware_3\UI\imgui_user.cpp">
-      <Filter>Middleware_3\UI</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_parsed_ir.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui.cpp">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_util.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_demo.cpp">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_glsl.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_draw.cpp">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_hlsl.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
-    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_widgets.cpp">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_msl.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_parser.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClCompile>
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_reflect.cpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\the-forge\Common_3\OS\Core\Atomics.h">
       <Filter>Common_3\OS\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\OS\Core\Compiler.h">
+    <ClInclude Include="..\the-forge\Common_3\OS\Core\Config.h">
       <Filter>Common_3\OS\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Core\DLL.h">
@@ -572,6 +635,15 @@
     <ClInclude Include="..\the-forge\Common_3\OS\Core\ThreadSystem.h">
       <Filter>Common_3\OS\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Core\UnixThreadID.h">
+      <Filter>Common_3\OS\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Fonts\Shaders\FSL\resources.h">
+      <Filter>Common_3\OS\Fonts\Shaders\FSL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Fonts\Shaders\FSL\Quest\resources.h">
+      <Filter>Common_3\OS\Fonts\Shaders\FSL\Quest</Filter>
+    </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Logging\Log.h">
       <Filter>Common_3\OS\Logging</Filter>
     </ClInclude>
@@ -587,6 +659,21 @@
     <ClInclude Include="..\the-forge\Common_3\OS\Profiler\ProfilerHTML.h">
       <Filter>Common_3\OS\Profiler</Filter>
     </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LuaManager.h">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LuaManagerCommon.h">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LuaManagerImpl.h">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LunaV.hpp">
+      <Filter>Common_3\OS\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\UI\imgui_user.h">
+      <Filter>Common_3\OS\UI</Filter>
+    </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Windows\WindowsStackTraceDump.h">
       <Filter>Common_3\OS\Windows</Filter>
     </ClInclude>
@@ -597,6 +684,9 @@
       <Filter>Common_3\OS\Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IFileSystem.h">
+      <Filter>Common_3\OS\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IFont.h">
       <Filter>Common_3\OS\Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IInput.h">
@@ -620,35 +710,20 @@
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IScreenshot.h">
       <Filter>Common_3\OS\Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IScripting.h">
+      <Filter>Common_3\OS\Interfaces</Filter>
+    </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IThread.h">
       <Filter>Common_3\OS\Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\ITime.h">
       <Filter>Common_3\OS\Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IUI.h">
+      <Filter>Common_3\OS\Interfaces</Filter>
+    </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\OS\Math\MathTypes.h">
       <Filter>Common_3\OS\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\IRay.h">
-      <Filter>Common_3\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\IRenderer.h">
-      <Filter>Common_3\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\IResourceLoader.h">
-      <Filter>Common_3\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\IShaderReflection.h">
-      <Filter>Common_3\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12CapBuilder.h">
-      <Filter>Common_3\Renderer\Direct3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Hooks.h">
-      <Filter>Common_3\Renderer\Direct3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanCapsBuilder.h">
-      <Filter>Common_3\Renderer\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\basis_universal\transcoder\basisu.h">
       <Filter>Common_3\ThirdParty\OpenSource\basis_universal\transcoder</Filter>
@@ -1400,6 +1475,57 @@
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\gainput\lib\include\gainput\recorder\GainputInputRecording.h">
       <Filter>Common_3\ThirdParty\OpenSource\gainput\lib\include\gainput\recorder</Filter>
     </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imconfig.h">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui.h">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_internal.h">
+      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\IRay.h">
+      <Filter>Common_3\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\IRenderer.h">
+      <Filter>Common_3\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\IResourceLoader.h">
+      <Filter>Common_3\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\IShaderReflection.h">
+      <Filter>Common_3\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\RendererConfig.h">
+      <Filter>Common_3\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11CapBuilder.h">
+      <Filter>Common_3\Renderer\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11Commands.h">
+      <Filter>Common_3\Renderer\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11Config.h">
+      <Filter>Common_3\Renderer\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12CapBuilder.h">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Config.h">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Hooks.h">
+      <Filter>Common_3\Renderer\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanCapsBuilder.h">
+      <Filter>Common_3\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanConfig.h">
+      <Filter>Common_3\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\Tools\SpirvTools\SpirvTools.h">
+      <Filter>Common_3\Tools\SpirvTools</Filter>
+    </ClInclude>
     <ClInclude Include="..\the-forge\Middleware_3\Animation\AnimatedObject.h">
       <Filter>Middleware_3\Animation</Filter>
     </ClInclude>
@@ -1430,41 +1556,59 @@
     <ClInclude Include="..\the-forge\Middleware_3\ECS\EntityManager.h">
       <Filter>Middleware_3\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LuaManager.h">
-      <Filter>Middleware_3\LUA</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LuaManagerCommon.h">
-      <Filter>Middleware_3\LUA</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LuaManagerImpl.h">
-      <Filter>Middleware_3\LUA</Filter>
-    </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LunaV.hpp">
-      <Filter>Middleware_3\LUA</Filter>
-    </ClInclude>
     <ClInclude Include="..\the-forge\Middleware_3\PaniniProjection\Panini.h">
       <Filter>Middleware_3\PaniniProjection</Filter>
     </ClInclude>
     <ClInclude Include="..\the-forge\Middleware_3\ParallelPrimitives\ParallelPrimitives.h">
       <Filter>Middleware_3\ParallelPrimitives</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\Text\Fontstash.h">
-      <Filter>Middleware_3\Text</Filter>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\GLSL.std.450.h">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\UI\AppUI.h">
-      <Filter>Middleware_3\UI</Filter>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv.h">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Middleware_3\UI\imgui_user.h">
-      <Filter>Middleware_3\UI</Filter>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imconfig.h">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cfg.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui.h">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_common.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClInclude>
-    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\imgui\imgui_internal.h">
-      <Filter>Common_3\ThirdParty\OpenSource\imgui</Filter>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cpp.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_containers.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_error_handling.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_parsed_ir.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_util.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_glsl.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_hlsl.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_msl.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_parser.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
+    </ClInclude>
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_reflect.hpp">
+      <Filter>Common_3\ThirdParty\OpenSource\SPIRV_Cross</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

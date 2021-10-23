@@ -34,12 +34,14 @@ Scene TestScene::Create() {
     out.DrawUI = DrawUI;
     out.Unload = Unload;
     out.Update = Update;
+    out.Init = Init;
+    out.Exit = Exit;
 
     return out;
 }
 
 static bool onCameraInput(InputActionContext *ctx) {
-    if (MainApp::Instance()->appUI.IsFocused() || !*ctx->pCaptured) {
+    if (!uiIsFocused() || !*ctx->pCaptured) {
         return true;
     }
 
@@ -54,6 +56,10 @@ static bool onCameraInput(InputActionContext *ctx) {
     }
     return true;
 };
+
+void TestScene::Init() {
+
+}
 
 void TestScene::Update(float deltaTime) { pCameraController->update(deltaTime); }
 
@@ -229,7 +235,7 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
     vec3 camPos{2.0f, 2.0f, 2.0f};
     vec3 lookAt{vec3(0)};
 
-    pCameraController = createFpsCameraController(camPos, lookAt);
+    pCameraController = initFpsCameraController(camPos, lookAt);
     pCameraController->setMotionParameters(cmp);
 
     InputActionDesc actionDesc{InputBindings::FLOAT_RIGHTSTICK, onCameraInput, NULL, 0.1f, 1.0f, 0.05f};
@@ -256,6 +262,7 @@ void TestScene::Unload(Renderer *pRenderer) {
     removeSampler(pRenderer, pSampler);
     removeDescriptorSet(pRenderer, pDescriptorSetTexture);
     removeDescriptorSet(pRenderer, pDescriptorSetUniforms);
-
-    destroyCameraController(pCameraController);
 }
+
+void TestScene::Exit() { exitCameraController(pCameraController); }
+

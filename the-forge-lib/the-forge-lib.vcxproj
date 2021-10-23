@@ -50,7 +50,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;DIRECT3D12;SCREENSHOT_ENABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;SCREENSHOT_ENABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -62,6 +62,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
     </Link>
@@ -83,27 +84,36 @@
     <ClCompile Include="..\the-forge\Common_3\OS\Camera\CameraController.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\Core\Screenshot.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\Core\ThreadSystem.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\Core\Timer.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Core\Timer.c" />
     <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\FileSystem.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\SystemRun.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\ZipFileSystem.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\FileSystem\ZipFileSystem.c" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Fonts\FontSystem.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\Input\InputSystem.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\Logging\Log.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\MemoryTracking\MemoryTracking.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Logging\Log.c" />
+    <ClCompile Include="..\the-forge\Common_3\OS\MemoryTracking\MemoryTracking.c" />
     <ClCompile Include="..\the-forge\Common_3\OS\Profiler\GpuProfiler.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\Profiler\ProfilerBase.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\Profiler\ProfilerWidgetsUI.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Scripting\LuaManager.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Scripting\LuaManagerImpl.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Scripting\LuaSystem.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\UI\imgui_user.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\UI\UI.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsBase.cpp" />
     <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsFileSystem.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsLog.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsLog.c" />
     <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsStackTraceDump.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsThread.cpp" />
-    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsTime.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsThread.c" />
+    <ClCompile Include="..\the-forge\Common_3\OS\Windows\WindowsTime.c" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\CommonShaderReflection.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11Raytracing.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11ShaderReflection.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Hooks.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Raytracing.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12ShaderReflection.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\Renderer\Renderer.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\ResourceLoader.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\Vulkan.cpp" />
     <ClCompile Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanRaytracing.cpp" />
@@ -190,6 +200,17 @@
     <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\lua-5.3.5\src\lutf8lib.c" />
     <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\lua-5.3.5\src\lvm.c" />
     <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\lua-5.3.5\src\lzio.c" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cfg.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cpp.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_parsed_ir.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_util.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_glsl.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_hlsl.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_msl.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_parser.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_reflect.cpp" />
+    <ClCompile Include="..\the-forge\Common_3\Tools\SpirvTools\SpirvTools.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\Animation\AnimatedObject.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\Animation\Animation.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\Animation\Clip.cpp" />
@@ -200,26 +221,24 @@
     <ClCompile Include="..\the-forge\Middleware_3\ECS\BaseComponent.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\ECS\ComponentRepresentation.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\ECS\EntityManager.cpp" />
-    <ClCompile Include="..\the-forge\Middleware_3\LUA\LuaManager.cpp" />
-    <ClCompile Include="..\the-forge\Middleware_3\LUA\LuaManagerImpl.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\PaniniProjection\Panini.cpp" />
     <ClCompile Include="..\the-forge\Middleware_3\ParallelPrimitives\ParallelPrimitives.cpp" />
-    <ClCompile Include="..\the-forge\Middleware_3\Text\Fontstash.cpp" />
-    <ClCompile Include="..\the-forge\Middleware_3\UI\AppUI.cpp" />
-    <ClCompile Include="..\the-forge\Middleware_3\UI\ImguiGUIDriver.cpp" />
-    <ClCompile Include="..\the-forge\Middleware_3\UI\imgui_user.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\the-forge\Common_3\OS\Core\Atomics.h" />
-    <ClInclude Include="..\the-forge\Common_3\OS\Core\Compiler.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Core\Config.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Core\DLL.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Core\GPUConfig.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Core\RingBuffer.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Core\TextureContainers.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Core\ThreadSystem.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Core\UnixThreadID.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Fonts\Shaders\FSL\Quest\resources.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Fonts\Shaders\FSL\resources.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IApp.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\ICameraController.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IFileSystem.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IFont.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IInput.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\ILog.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IMemory.h" />
@@ -227,22 +246,35 @@
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IOperatingSystem.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IProfiler.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IScreenshot.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IScripting.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IThread.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\ITime.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Interfaces\IUI.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Logging\Log.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Math\MathTypes.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\MemoryTracking\NoMemoryDefines.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Profiler\GpuProfiler.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Profiler\ProfilerBase.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Profiler\ProfilerHTML.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LuaManager.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LuaManagerCommon.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LuaManagerImpl.h" />
+    <ClInclude Include="..\the-forge\Common_3\OS\Scripting\LunaV.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\OS\UI\imgui_user.h" />
     <ClInclude Include="..\the-forge\Common_3\OS\Windows\WindowsStackTraceDump.h" />
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11CapBuilder.h" />
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11Commands.h" />
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D11\Direct3D11Config.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12CapBuilder.h" />
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Config.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\Direct3D12\Direct3D12Hooks.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\IRay.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\IRenderer.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\IResourceLoader.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\IShaderReflection.h" />
+    <ClInclude Include="..\the-forge\Common_3\Renderer\RendererConfig.h" />
     <ClInclude Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanCapsBuilder.h" />
+    <ClInclude Include="..\the-forge\Common_3\Renderer\Vulkan\VulkanConfig.h" />
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\basis_universal\transcoder\basisu.h" />
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\basis_universal\transcoder\basisu_file_headers.h" />
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\basis_universal\transcoder\basisu_global_selector_cb.h" />
@@ -496,6 +528,23 @@
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\lua-5.3.5\src\lundump.h" />
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\lua-5.3.5\src\lvm.h" />
     <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\lua-5.3.5\src\lzio.h" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\GLSL.std.450.h" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv.h" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cfg.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_common.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cpp.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_containers.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_error_handling.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_parsed_ir.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_cross_util.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_glsl.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_hlsl.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_msl.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_parser.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\ThirdParty\OpenSource\SPIRV_Cross\spirv_reflect.hpp" />
+    <ClInclude Include="..\the-forge\Common_3\Tools\SpirvTools\SpirvTools.h" />
     <ClInclude Include="..\the-forge\Middleware_3\Animation\AnimatedObject.h" />
     <ClInclude Include="..\the-forge\Middleware_3\Animation\Animation.h" />
     <ClInclude Include="..\the-forge\Middleware_3\Animation\Clip.h" />
@@ -506,15 +555,8 @@
     <ClInclude Include="..\the-forge\Middleware_3\ECS\BaseComponent.h" />
     <ClInclude Include="..\the-forge\Middleware_3\ECS\ComponentRepresentation.h" />
     <ClInclude Include="..\the-forge\Middleware_3\ECS\EntityManager.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LuaManager.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LuaManagerCommon.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LuaManagerImpl.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\LUA\LunaV.hpp" />
     <ClInclude Include="..\the-forge\Middleware_3\PaniniProjection\Panini.h" />
     <ClInclude Include="..\the-forge\Middleware_3\ParallelPrimitives\ParallelPrimitives.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\Text\Fontstash.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\UI\AppUI.h" />
-    <ClInclude Include="..\the-forge\Middleware_3\UI\imgui_user.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\the-forge\Common_3\ThirdParty\OpenSource\basis_universal\transcoder\basisu_transcoder_tables_astc.inc" />

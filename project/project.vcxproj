@@ -50,15 +50,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;DIRECT3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)the-forge;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)the-forge;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\DirectXShaderCompiler\lib\x64;$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\winpixeventruntime\bin;$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\ags\ags_lib\lib;$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\nvapi\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\DirectXShaderCompiler\lib\x64;$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\winpixeventruntime\bin;$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\ags\ags_lib\lib;$(SolutionDir)the-forge\Common_3\ThirdParty\OpenSource\nvapi\amd64;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>the-forge-lib.lib;dxcompiler.lib;WinPixEventRuntime.lib;amd_ags_x64.lib;nvapi64.lib;XInput.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>

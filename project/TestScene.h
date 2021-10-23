@@ -12,4 +12,6 @@ void Draw(Cmd *cmd, int imageIndex);
 auto Load(Renderer *pRenderer, SwapChain *pSwapChain) -> bool;
 void Unload(Renderer *pRenderer);
 void DrawUI();
+void Init();
+void Exit();
 }; // namespace TestScene

@@ -12,4 +12,6 @@ struct Scene {
     std::function<void(Cmd *cmd, int imageIndex)> Draw;
     std::function<void()> DrawUI;
     std::function<void(Renderer *pRenderer)> Unload;
+    std::function<void()> Init;
+    std::function<void()> Exit;
 };

@@ -8,6 +8,12 @@ DEFINE_APPLICATION_MAIN(MainApp)
 
 MainApp *MainApp::pApp;
 
+static std::function<void()> doTakeScreenshot;
+static void takeScreenshot() { doTakeScreenshot(); }
+
+static std::function<void()> doCapture;
+static void capture() { doCapture(); }
+
 auto MainApp::AddSwapChain() -> bool {
     SwapChainDesc swapChainDesc = {};
     swapChainDesc.mWindowHandle = pWindow->handle;
@@ -55,39 +61,114 @@ auto MainApp::Init() -> bool {
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
 
-    if (!initInputSystem(pWindow)) {
+    // window and renderer setup
+    RendererDesc settings = {};
+    initRenderer(GetName(), &settings, &pRenderer);
+    // check for init success
+    if (pRenderer == nullptr) {
         return false;
     }
 
-    // App Actions
-    InputActionDesc actionDesc = {InputBindings::BUTTON_DUMP,
-                                  [](InputActionContext *ctx) {
-                                      dumpProfileData(((Renderer *)ctx->pUserData),
-                                                      ((Renderer *)ctx->pUserData)->pName);
-                                      return true;
-                                  },
-                                  pRenderer};
-    addInputAction(&actionDesc);
-    actionDesc = {InputBindings::BUTTON_FULLSCREEN,
-                  [](InputActionContext *ctx) {
-                      toggleFullscreen(((IApp *)ctx->pUserData)->pWindow);
-                      return true;
-                  },
-                  this};
-    addInputAction(&actionDesc);
-    actionDesc = {InputBindings::BUTTON_EXIT, [](InputActionContext *ctx) {
-                      requestShutdown();
-                      return true;
-                  }};
-    addInputAction(&actionDesc);
-    actionDesc = {InputBindings::BUTTON_ANY,
-                  [](InputActionContext *ctx) {
-                      bool capture = MainApp::Instance()->appUI.OnButton(ctx->mBinding, ctx->mBool, ctx->pPosition);
-                      setEnableCaptureInput(capture && INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
-                      return true;
-                  },
-                  this};
-    addInputAction(&actionDesc);
+    // Load fonts
+    FontDesc font{};
+    font.pFontPath = "TitilliumText/TitilliumText-Bold.otf";
+    fntDefineFonts(&font, 1, &gFontID);
+
+    FontSystemDesc fontRenderDesc{};
+    fontRenderDesc.pRenderer = pRenderer;
+    if (!initFontSystem(&fontRenderDesc))
+        return false; // report?
+
+    // Initialize Forge User Interface Rendering
+    UserInterfaceDesc uiRenderDesc{};
+    uiRenderDesc.pRenderer = pRenderer;
+    initUserInterface(&uiRenderDesc);
+
+    // Initialize micro profiler and its UI.
+    ProfilerDesc profiler{};
+    profiler.pRenderer = pRenderer;
+    profiler.mWidthUI = mSettings.mWidth;
+    profiler.mHeightUI = mSettings.mHeight;
+    initProfiler(&profiler);
+
+    // Gpu profiler can only be added after initProfile.
+    gGpuProfileToken = addGpuProfiler(pRenderer, pGraphicsQueue, "Graphics");
+
+    /************************************************************************/
+    // GUI
+    /************************************************************************/
+    UIComponentDesc guiDesc{};
+    guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f);
+    uiCreateComponent(GetName(), &guiDesc, &pGuiWindow);
+
+#if !defined(TARGET_IOS)
+    CheckboxWidget cbVsync;
+    cbVsync.pData = &bToggleVSync;
+    uiCreateComponentWidget(pGuiWindow, "Toggle VSync", &cbVsync, WIDGET_TYPE_CHECKBOX);
+#endif
+
+    if (rdoc_api != nullptr) {
+
+        // Take a screenshot with a button.
+        ButtonWidget button;
+        UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Capture Frame", &button, WIDGET_TYPE_BUTTON);
+        uiSetWidgetOnEditedCallback(pScreenshot, capture);
+        doCapture = [this] { Capture(); };
+    }
+
+    // Take a screenshot with a button.
+    ButtonWidget screenshot;
+    UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Screenshot", &screenshot, WIDGET_TYPE_BUTTON);
+    uiSetWidgetOnEditedCallback(pScreenshot, takeScreenshot);
+    doTakeScreenshot = [this] {
+        if (!gTakeScreenshot)
+            gTakeScreenshot = true;
+    };
+
+    InputSystemDesc inputDesc{};
+    inputDesc.pRenderer = pRenderer;
+    inputDesc.pWindow = pWindow;
+    if (!initInputSystem(&inputDesc)) {
+        return false;
+    }
+
+    {
+        InputActionDesc actionDesc{InputBindings::BUTTON_DUMP,
+                                   [](InputActionContext *ctx) {
+                                       dumpProfileData(((Renderer *)ctx->pUserData)->pName);
+                                       return true;
+                                   },
+                                   pRenderer};
+        addInputAction(&actionDesc);
+    }
+    {
+
+        InputActionDesc actionDesc{InputBindings::BUTTON_FULLSCREEN,
+                                   [](InputActionContext *ctx) {
+                                       toggleFullscreen(((IApp *)ctx->pUserData)->pWindow);
+                                       return true;
+                                   },
+                                   this};
+        addInputAction(&actionDesc);
+    }
+    {
+
+        InputActionDesc actionDesc{InputBindings::BUTTON_EXIT, [](InputActionContext *ctx) {
+                                       requestShutdown();
+                                       return true;
+                                   }};
+        addInputAction(&actionDesc);
+    }
+    {
+        InputActionDesc actionDesc{InputBindings::BUTTON_ANY,
+                                   [](InputActionContext *ctx) {
+                                       bool capture = uiOnButton(ctx->mBinding, ctx->mBool, ctx->pPosition);
+                                       setEnableCaptureInput(capture && INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
+                                       return true;
+                                   },
+                                   this};
+        addInputAction(&actionDesc);
+    }
 
     if (auto mod = GetModuleHandleA("renderdoc.dll")) {
         auto RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
@@ -96,75 +177,36 @@ auto MainApp::Init() -> bool {
 
     return true;
 }
-void MainApp::Exit() { exitInputSystem(); }
-auto MainApp::Load() -> bool {
-    if (mSettings.mResetGraphics || (pRenderer == nullptr)) {
-        // window and renderer setup
-        RendererDesc settings = {nullptr};
-        initRenderer(GetName(), &settings, &pRenderer);
-        // check for init success
-        if (pRenderer == nullptr) {
-            return false;
-        }
+void MainApp::Exit() {
+    currentScene.Exit();
+    exitInputSystem();
 
-        QueueDesc queueDesc = {};
-        queueDesc.mType = QUEUE_TYPE_GRAPHICS;
-        queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
-        addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
+    exitUserInterface();
+    exitFontSystem();
 
-        for (uint32_t i = 0; i < ImageCount; ++i) {
-            CmdPoolDesc cmdPoolDesc = {};
-            cmdPoolDesc.pQueue = pGraphicsQueue;
-            addCmdPool(pRenderer, &cmdPoolDesc, &pCmdPools[i]);
-            CmdDesc cmdDesc = {};
-            cmdDesc.pPool = pCmdPools[i];
-            addCmd(pRenderer, &cmdDesc, &pCmds[i]);
+    // Exit profile
+    exitProfiler();
 
-            addFence(pRenderer, &pRenderCompleteFences[i]);
-            addSemaphore(pRenderer, &pRenderCompleteSemaphores[i]);
-        }
-        addSemaphore(pRenderer, &pImageAcquiredSemaphore);
+    for (uint32_t i = 0; i < ImageCount; ++i) {
+        removeFence(pRenderer, pRenderCompleteFences[i]);
+        removeSemaphore(pRenderer, pRenderCompleteSemaphores[i]);
 
-        initResourceLoaderInterface(pRenderer);
-
-        initScreenshotInterface(pRenderer, pGraphicsQueue);
-
-        if (!appUI.Init(pRenderer)) {
-            return false;
-        }
-
-        appUI.LoadFont("TitilliumText/TitilliumText-Bold.otf");
-
-        // Initialize micro profiler and it's UI.
-        initProfiler();
-        initProfilerUI(&appUI, mSettings.mWidth, mSettings.mHeight);
-
-        // Gpu profiler can only be added after initProfile.
-        gGpuProfileToken = addGpuProfiler(pRenderer, pGraphicsQueue, "Graphics");
-
-        /************************************************************************/
-        // GUI
-        /************************************************************************/
-        GuiDesc guiDesc = {};
-        guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01F, mSettings.mHeight * 0.2F);
-        pGuiWindow = appUI.AddGuiComponent(GetName(), &guiDesc);
-#if !defined(TARGET_IOS)
-        pGuiWindow->AddWidget(CheckboxWidget("Toggle VSync\t\t\t\t\t", &bToggleVSync));
-#endif
-
-        // Take a screenshot with a button.
-        ButtonWidget screenshot("Screenshot");
-        screenshot.pOnEdited = [] { MainApp::Instance()->TakeScreenshot(); };
-        pGuiWindow->AddWidget(screenshot);
-
-        if (rdoc_api != nullptr) {
-            ButtonWidget captureBtn("Capture Frame");
-            captureBtn.pOnEdited = [] { MainApp::Instance()->Capture(); };
-            pGuiWindow->AddWidget(captureBtn);
-        }
-
-        waitForAllResourceLoads();
+        removeCmd(pRenderer, pCmds[i]);
+        removeCmdPool(pRenderer, pCmdPools[i]);
     }
+
+    removeSemaphore(pRenderer, pImageAcquiredSemaphore);
+
+    exitResourceLoaderInterface(pRenderer);
+    exitScreenshotInterface();
+
+    removeQueue(pRenderer, pGraphicsQueue);
+
+    exitRenderer(pRenderer);
+    pRenderer = nullptr;
+}
+
+auto MainApp::Load() -> bool {
 
     if (!AddSwapChain()) {
         return false;
@@ -174,13 +216,37 @@ auto MainApp::Load() -> bool {
         return false;
     }
 
-    if (!appUI.Load(pSwapChain->ppRenderTargets, 1)) {
+    if (!addUserInterfacePipelines(pSwapChain->ppRenderTargets[0])) {
         return false;
     }
 
     waitForAllResourceLoads();
 
     currentScene.Load(pRenderer, pSwapChain);
+
+    QueueDesc queueDesc = {};
+    queueDesc.mType = QUEUE_TYPE_GRAPHICS;
+    queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
+    addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
+
+    for (uint32_t i = 0; i < ImageCount; ++i) {
+        CmdPoolDesc cmdPoolDesc = {};
+        cmdPoolDesc.pQueue = pGraphicsQueue;
+        addCmdPool(pRenderer, &cmdPoolDesc, &pCmdPools[i]);
+        CmdDesc cmdDesc = {};
+        cmdDesc.pPool = pCmdPools[i];
+        addCmd(pRenderer, &cmdDesc, &pCmds[i]);
+
+        addFence(pRenderer, &pRenderCompleteFences[i]);
+        addSemaphore(pRenderer, &pRenderCompleteSemaphores[i]);
+    }
+    addSemaphore(pRenderer, &pImageAcquiredSemaphore);
+
+    initResourceLoaderInterface(pRenderer);
+
+    initScreenshotInterface(pRenderer, pGraphicsQueue);
+
+    waitForAllResourceLoads();
 
     return true;
 }
@@ -190,7 +256,8 @@ void MainApp::Unload() {
 
     currentScene.Unload(pRenderer);
 
-    appUI.Unload();
+    removeUserInterfacePipelines();
+    removeFontSystemPipelines();
 
 #if defined(USE_BREADCRUMB)
     removePipeline(pRenderer, pCrashPipeline);
@@ -198,28 +265,17 @@ void MainApp::Unload() {
     removeSwapChain(pRenderer, pSwapChain);
     removeRenderTarget(pRenderer, pDepthBuffer);
 
-    if (mSettings.mResetGraphics || mSettings.mQuit) {
-        exitProfilerUI();
+    // Exit profile
+    exitProfiler();
 
-        appUI.Exit();
+    for (uint32_t i = 0; i < ImageCount; ++i) {
+        removeFence(pRenderer, pRenderCompleteFences[i]);
+        removeSemaphore(pRenderer, pRenderCompleteSemaphores[i]);
 
-        // Exit profile
-        exitProfiler();
-
-        for (uint32_t i = 0; i < ImageCount; ++i) {
-            removeFence(pRenderer, pRenderCompleteFences[i]);
-            removeSemaphore(pRenderer, pRenderCompleteSemaphores[i]);
-
-            removeCmd(pRenderer, pCmds[i]);
-            removeCmdPool(pRenderer, pCmdPools[i]);
-        }
-        removeSemaphore(pRenderer, pImageAcquiredSemaphore);
-
-        exitResourceLoaderInterface(pRenderer);
-        exitScreenshotInterface();
-        removeQueue(pRenderer, pGraphicsQueue);
-        removeRenderer(pRenderer);
+        removeCmd(pRenderer, pCmds[i]);
+        removeCmdPool(pRenderer, pCmdPools[i]);
     }
+    removeSemaphore(pRenderer, pImageAcquiredSemaphore);
 }
 
 void MainApp::Update(float deltaTime) {
@@ -239,11 +295,6 @@ void MainApp::Update(float deltaTime) {
     /************************************************************************/
     static float currentTime = 0.0F;
     currentTime += deltaTime * 1000.0F;
-
-    /************************************************************************/
-    // Update GUI
-    /************************************************************************/
-    appUI.Update(deltaTime);
 
     currentScene.Update(deltaTime);
 }
@@ -290,7 +341,7 @@ void MainApp::Draw() {
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    currentScene.Draw(cmd, gFrameIndex);
+    { currentScene.Draw(cmd, gFrameIndex); }
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     loadActions = {};
@@ -298,17 +349,21 @@ void MainApp::Draw() {
 
     cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
+    {
+        gFrameTimeDraw.mFontColor = 0xff00ffff;
+        gFrameTimeDraw.mFontSize = 18.0f;
+        gFrameTimeDraw.mFontID = gFontID;
 
-    const float txtIndent = 8.F;
-    float2 txtSizePx = cmdDrawCpuProfile(cmd, float2(txtIndent, 15.F), &gFrameTimeDraw);
-    cmdDrawGpuProfile(cmd, float2(txtIndent, txtSizePx.y + 30.F), gGpuProfileToken, &gFrameTimeDraw);
+        const float txtIndent = 8.F;
+        float2 txtSizePx = cmdDrawCpuProfile(cmd, float2(txtIndent, 15.F), &gFrameTimeDraw);
+        cmdDrawGpuProfile(cmd, float2(txtIndent, txtSizePx.y + 30.F), gGpuProfileToken, &gFrameTimeDraw);
 
-    cmdDrawProfilerUI();
+        cmdDrawGpuProfile(cmd, float2(8.f, txtSizePx.y + 30.f), gGpuProfileToken, &gFrameTimeDraw);
 
-    appUI.Gui(pGuiWindow);
-    appUI.Draw(cmd);
+        cmdDrawUserInterface(cmd);
 
-    cmdBindRenderTargets(cmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+        cmdBindRenderTargets(cmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    }
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};
@@ -342,13 +397,8 @@ void MainApp::Draw() {
         }
     }
 
-    PresentStatus presentStatus = queuePresent(pGraphicsQueue, &presentDesc);
+    queuePresent(pGraphicsQueue, &presentDesc);
     flipProfiler();
-
-    if (presentStatus == PRESENT_STATUS_DEVICE_RESET) {
-        Thread::Sleep(5000); // Wait for a few seconds to allow the driver to come back online before doing a reset.
-        mSettings.mResetGraphics = true;
-    }
 
     gFrameIndex = (gFrameIndex + 1) % ImageCount;
     if (isCapturing) {

@@ -2,14 +2,15 @@
 
 #include <Common_3/OS/Interfaces/IApp.h>
 #include <Common_3/OS/Interfaces/IFileSystem.h>
+#include <Common_3/OS/Interfaces/IFont.h>
 #include <Common_3/OS/Interfaces/IInput.h>
 #include <Common_3/OS/Interfaces/ILog.h>
 #include <Common_3/OS/Interfaces/IProfiler.h>
 #include <Common_3/OS/Interfaces/IScreenshot.h>
+#include <Common_3/OS/Interfaces/IUI.h>
 #include <Common_3/Renderer/IRenderer.h>
 #include <Common_3/Renderer/IResourceLoader.h>
 #include <Common_3/ThirdParty/OpenSource/renderdoc/renderdoc_app.h>
-#include <Middleware_3/UI/AppUI.h>
 
 #include <array>
 #include <memory>
@@ -42,7 +43,6 @@ class MainApp : public IApp {
         currentScene->Load();
     }
 
-    UIApp appUI;
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
 
     static auto Instance() -> MainApp * { return pApp; }
@@ -66,8 +66,8 @@ class MainApp : public IApp {
     uint32_t gFrameIndex = 0;
 
     /// UI
-    GuiComponent *pGuiWindow = nullptr;
-    TextDrawDesc gFrameTimeDraw = TextDrawDesc(0, 0xff00ffff, 18);
+    UIComponent *pGuiWindow{nullptr};
+    FontDrawDesc gFrameTimeDraw;
 
     RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 
@@ -75,6 +75,9 @@ class MainApp : public IApp {
     bool bToggleVSync = false;
     bool isTakingScreenshot = false;
     bool isCapturing = false;
+
+    uint32_t gFontID;
+    bool gTakeScreenshot{false};
 
     static MainApp *pApp;
 };
