@@ -69,6 +69,27 @@ auto MainApp::Init() -> bool {
         return false;
     }
 
+    QueueDesc queueDesc = {};
+    queueDesc.mType = QUEUE_TYPE_GRAPHICS;
+    queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
+    addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
+
+    for (uint32_t i = 0; i < ImageCount; ++i) {
+        CmdPoolDesc cmdPoolDesc = {};
+        cmdPoolDesc.pQueue = pGraphicsQueue;
+        addCmdPool(pRenderer, &cmdPoolDesc, &pCmdPools[i]);
+        CmdDesc cmdDesc = {};
+        cmdDesc.pPool = pCmdPools[i];
+        addCmd(pRenderer, &cmdDesc, &pCmds[i]);
+
+        addFence(pRenderer, &pRenderCompleteFences[i]);
+        addSemaphore(pRenderer, &pRenderCompleteSemaphores[i]);
+    }
+    addSemaphore(pRenderer, &pImageAcquiredSemaphore);
+
+    initResourceLoaderInterface(pRenderer);
+    initScreenshotInterface(pRenderer, pGraphicsQueue);
+
     // Load fonts
     FontDesc font{};
     font.pFontPath = "TitilliumText/TitilliumText-Bold.otf";
@@ -175,10 +196,12 @@ auto MainApp::Init() -> bool {
         RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&rdoc_api);
     }
 
+    currentScene.Init(pRenderer);
+
     return true;
 }
 void MainApp::Exit() {
-    currentScene.Exit();
+    currentScene.Exit(pRenderer);
     exitInputSystem();
 
     exitUserInterface();
@@ -216,35 +239,17 @@ auto MainApp::Load() -> bool {
         return false;
     }
 
-    if (!addUserInterfacePipelines(pSwapChain->ppRenderTargets[0])) {
+    RenderTarget *ppPipelineRenderTargets[]{pSwapChain->ppRenderTargets[0], pDepthBuffer};
+    if (!addFontSystemPipelines(ppPipelineRenderTargets, 2, nullptr))
+        return false;
+
+    if (!addUserInterfacePipelines(ppPipelineRenderTargets[0])) {
         return false;
     }
 
     waitForAllResourceLoads();
 
     currentScene.Load(pRenderer, pSwapChain);
-
-    QueueDesc queueDesc = {};
-    queueDesc.mType = QUEUE_TYPE_GRAPHICS;
-    queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
-    addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
-
-    for (uint32_t i = 0; i < ImageCount; ++i) {
-        CmdPoolDesc cmdPoolDesc = {};
-        cmdPoolDesc.pQueue = pGraphicsQueue;
-        addCmdPool(pRenderer, &cmdPoolDesc, &pCmdPools[i]);
-        CmdDesc cmdDesc = {};
-        cmdDesc.pPool = pCmdPools[i];
-        addCmd(pRenderer, &cmdDesc, &pCmds[i]);
-
-        addFence(pRenderer, &pRenderCompleteFences[i]);
-        addSemaphore(pRenderer, &pRenderCompleteSemaphores[i]);
-    }
-    addSemaphore(pRenderer, &pImageAcquiredSemaphore);
-
-    initResourceLoaderInterface(pRenderer);
-
-    initScreenshotInterface(pRenderer, pGraphicsQueue);
 
     waitForAllResourceLoads();
 

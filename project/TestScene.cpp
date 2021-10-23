@@ -57,8 +57,54 @@ static bool onCameraInput(InputActionContext *ctx) {
     return true;
 };
 
-void TestScene::Init() {
+void TestScene::Init(Renderer *pRenderer) {
+    {
+        TextureLoadDesc desc{};
+        desc.pFileName = "texture";
+        desc.ppTexture = &pTexture;
 
+        addResource(&desc, nullptr);
+    }
+
+    {
+        ShaderLoadDesc desc{};
+        desc.mStages[0] = {"model.vert", nullptr, 0};
+        desc.mStages[1] = {"model.frag", nullptr, 0};
+
+        addShader(pRenderer, &desc, &pShader);
+    }
+
+    SamplerDesc samplerDesc = {FILTER_LINEAR,
+                               FILTER_LINEAR,
+                               MIPMAP_MODE_NEAREST,
+                               ADDRESS_MODE_CLAMP_TO_EDGE,
+                               ADDRESS_MODE_CLAMP_TO_EDGE,
+                               ADDRESS_MODE_CLAMP_TO_EDGE};
+    addSampler(pRenderer, &samplerDesc, &pSampler);
+
+    const char *pStaticSamplers[] = {"uSampler0"};
+    RootSignatureDesc rootDesc = {};
+    rootDesc.mStaticSamplerCount = 1;
+    rootDesc.ppStaticSamplerNames = pStaticSamplers;
+    rootDesc.ppStaticSamplers = &pSampler;
+    rootDesc.mShaderCount = 1;
+    rootDesc.ppShaders = &pShader;
+    addRootSignature(pRenderer, &rootDesc, &pRootSignature);
+
+    {
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetTexture);
+
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, MainApp::ImageCount};
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
+    }
+
+    {
+        DescriptorData params = {};
+        params.pName = "uTex";
+        params.ppTextures = &pTexture;
+        updateDescriptorSet(pRenderer, 0, pDescriptorSetTexture, 1, &params);
+    }
 }
 
 void TestScene::Update(float deltaTime) { pCameraController->update(deltaTime); }
@@ -92,23 +138,6 @@ void TestScene::Draw(Cmd *cmd, int imageIndex) {
 void TestScene::DrawUI() {}
 
 bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
-
-    {
-        TextureLoadDesc desc{};
-        desc.pFileName = "texture";
-        desc.ppTexture = &pTexture;
-
-        addResource(&desc, nullptr);
-    }
-
-    {
-        ShaderLoadDesc desc{};
-        desc.mStages[0] = {"model.vert", nullptr, 0};
-        desc.mStages[1] = {"model.frag", nullptr, 0};
-
-        addShader(pRenderer, &desc, &pShader);
-    }
-
     VertexLayout gVertexLayoutDefault{};
     {
         gVertexLayoutDefault.mAttribCount = 3;
@@ -151,38 +180,6 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
     }
 
     waitForAllResourceLoads();
-
-    SamplerDesc samplerDesc = {FILTER_LINEAR,
-                               FILTER_LINEAR,
-                               MIPMAP_MODE_NEAREST,
-                               ADDRESS_MODE_CLAMP_TO_EDGE,
-                               ADDRESS_MODE_CLAMP_TO_EDGE,
-                               ADDRESS_MODE_CLAMP_TO_EDGE};
-    addSampler(pRenderer, &samplerDesc, &pSampler);
-
-    const char *pStaticSamplers[] = {"uSampler0"};
-    RootSignatureDesc rootDesc = {};
-    rootDesc.mStaticSamplerCount = 1;
-    rootDesc.ppStaticSamplerNames = pStaticSamplers;
-    rootDesc.ppStaticSamplers = &pSampler;
-    rootDesc.mShaderCount = 1;
-    rootDesc.ppShaders = &pShader;
-    addRootSignature(pRenderer, &rootDesc, &pRootSignature);
-
-    {
-        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetTexture);
-
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, MainApp::ImageCount};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
-    }
-
-    {
-        DescriptorData params = {};
-        params.pName = "uTex";
-        params.ppTextures = &pTexture;
-        updateDescriptorSet(pRenderer, 0, pDescriptorSetTexture, 1, &params);
-    }
 
     for (uint32_t i = 0; i < MainApp::ImageCount; ++i) {
         DescriptorData params{};
@@ -248,21 +245,23 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
 }
 
 void TestScene::Unload(Renderer *pRenderer) {
-    removeRootSignature(pRenderer, pRootSignature);
-    removePipeline(pRenderer, pPipeline);
-
-    removeResource(pTexture);
-    removeResource(pGeometry);
-    removeShader(pRenderer, pShader);
 
     for (auto &buffer : pUniformBuffers) {
         removeResource(buffer);
     }
 
+    removePipeline(pRenderer, pPipeline);
+}
+
+void TestScene::Exit(Renderer *pRenderer) {
+    exitCameraController(pCameraController);
+    removeRootSignature(pRenderer, pRootSignature);
+
+    removeResource(pTexture);
+    removeResource(pGeometry);
+    removeShader(pRenderer, pShader);
+
     removeSampler(pRenderer, pSampler);
     removeDescriptorSet(pRenderer, pDescriptorSetTexture);
     removeDescriptorSet(pRenderer, pDescriptorSetUniforms);
 }
-
-void TestScene::Exit() { exitCameraController(pCameraController); }
-
