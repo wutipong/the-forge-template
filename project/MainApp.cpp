@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "TestScene.h"
+#include "NopScene.h"
 
 DEFINE_APPLICATION_MAIN(MainApp)
 
@@ -50,7 +50,7 @@ auto MainApp::AddDepthBuffer() -> bool {
 
 auto MainApp::Init() -> bool {
     pApp = this;
-    currentScene = TestScene::Create();
+    currentScene = NopScene::Create();
 
     // FILE PATHS
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
