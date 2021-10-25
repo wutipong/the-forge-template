@@ -1,9 +1,18 @@
-@ECHO OFF
+REM @ECHO OFF
 
-SET ProjectDir=%1%
+SET SolutionDir=%1%
 SET OutputDir=%2%
 
-ECHO Copying shader files.
+SET ProjectDir=%SolutionDir%project\
+
+SET ScriptDir=%ProjectDir%Scripts\
+SET CompileShaders=%ScriptDir%\compile_shaders.py
+SET PythonExec=python
+
+ECHO compile shader files.
+%PythonExec% %CompileShaders% -d %OutputDir%Shaders -b %OutputDir%CompiledShaders -s %SolutionDir% %SolutionDir%the-forge\Common_3\OS\UI\Shaders\FSL
+%PythonExec% %CompileShaders% -d %OutputDir%Shaders -b %OutputDir%CompiledShaders -s %SolutionDir% %SolutionDir%the-forge\Common_3\OS\Fonts\Shaders\FSL
+
 XCOPY %ProjectDir%Shaders\ %OutputDir%Shaders\ /Y /S
 
 ECHO Copying texture files.
