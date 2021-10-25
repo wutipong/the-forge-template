@@ -1,14 +1,58 @@
 #include "MainApp.h"
 
-#include <array>
-
 #include "NopScene.h"
+#include "Scene.h"
+#include <Common_3/OS/Interfaces/IFileSystem.h>
+#include <Common_3/OS/Interfaces/IFont.h>
+#include <Common_3/OS/Interfaces/IInput.h>
+#include <Common_3/OS/Interfaces/ILog.h>
+#include <Common_3/OS/Interfaces/IProfiler.h>
+#include <Common_3/OS/Interfaces/IScreenshot.h>
+#include <Common_3/OS/Interfaces/IUI.h>
+#include <Common_3/Renderer/IRenderer.h>
+#include <Common_3/Renderer/IResourceLoader.h>
+#include <Common_3/ThirdParty/OpenSource/renderdoc/renderdoc_app.h>
+#include <array>
+#include <memory>
 
-DEFINE_APPLICATION_MAIN(MainApp)
+namespace {
+IApp *pAppInstance;
+ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
 
-MainApp *MainApp::pApp;
+Renderer *pRenderer = nullptr;
+Queue *pGraphicsQueue = nullptr;
+std::array<CmdPool *, ImageCount> pCmdPools = {nullptr};
+std::array<Cmd *, ImageCount> pCmds = {nullptr};
 
-auto MainApp::AddSwapChain() -> bool {
+SwapChain *pSwapChain = nullptr;
+RenderTarget *pDepthBuffer = nullptr;
+Semaphore *pImageAcquiredSemaphore = nullptr;
+std::array<Fence *, ImageCount> pRenderCompleteFences = {nullptr};
+std::array<Semaphore *, ImageCount> pRenderCompleteSemaphores = {nullptr};
+
+uint32_t gFrameIndex = 0;
+
+/// UI
+UIComponent *pGuiWindow{nullptr};
+FontDrawDesc gFrameTimeDraw;
+
+RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
+
+Scene currentScene;
+bool bToggleVSync = false;
+bool bIsCapturing = false;
+bool bIsTakingScreenshot = false;
+
+uint32_t gFontID;
+
+} // namespace
+
+auto AppInstance() -> IApp * { return pAppInstance; }
+
+static auto AddSwapChain() -> bool {
+    auto &&mSettings = pAppInstance->mSettings;
+    auto &&pWindow = pAppInstance->pWindow;
+
     SwapChainDesc swapChainDesc = {};
     swapChainDesc.mWindowHandle = pWindow->handle;
     swapChainDesc.mPresentQueueCount = 1;
@@ -23,7 +67,8 @@ auto MainApp::AddSwapChain() -> bool {
     return pSwapChain != nullptr;
 }
 
-auto MainApp::AddDepthBuffer() -> bool {
+static auto AddDepthBuffer() -> bool {
+    auto &&mSettings = pAppInstance->mSettings;
     // Add depth buffer
     RenderTargetDesc depthRT = {};
     depthRT.mArraySize = 1;
@@ -42,8 +87,11 @@ auto MainApp::AddDepthBuffer() -> bool {
     return pDepthBuffer != nullptr;
 }
 
-auto MainApp::Init() -> bool {
-    pApp = this;
+auto Init(IApp *app) -> bool {
+    ::pAppInstance = app;
+    auto &&mSettings = pAppInstance->mSettings;
+    auto &&pWindow = pAppInstance->pWindow;
+
     currentScene = NopScene::Create();
 
     // FILE PATHS
@@ -57,7 +105,7 @@ auto MainApp::Init() -> bool {
 
     // window and renderer setup
     RendererDesc settings = {};
-    initRenderer(GetName(), &settings, &pRenderer);
+    initRenderer(AppInstance()->GetName(), &settings, &pRenderer);
     // check for init success
     if (pRenderer == nullptr) {
         return false;
@@ -114,7 +162,7 @@ auto MainApp::Init() -> bool {
     /************************************************************************/
     UIComponentDesc guiDesc{};
     guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f);
-    uiCreateComponent(GetName(), &guiDesc, &pGuiWindow);
+    uiCreateComponent(AppInstance()->GetName(), &guiDesc, &pGuiWindow);
 
 #if !defined(TARGET_IOS)
     CheckboxWidget cbVsync;
@@ -127,13 +175,13 @@ auto MainApp::Init() -> bool {
         // Take a screenshot with a button.
         ButtonWidget button;
         UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Capture Frame", &button, WIDGET_TYPE_BUTTON);
-        uiSetWidgetOnEditedCallback(pScreenshot, [] { MainApp::pApp->bIsCapturing = true; });
+        uiSetWidgetOnEditedCallback(pScreenshot, [] { bIsCapturing = true; });
     }
 
     // Take a screenshot with a button.
     ButtonWidget screenshot;
     UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Screenshot", &screenshot, WIDGET_TYPE_BUTTON);
-    uiSetWidgetOnEditedCallback(pScreenshot, [] { MainApp::pApp->bIsTakingScreenshot = true; });
+    uiSetWidgetOnEditedCallback(pScreenshot, [] { bIsTakingScreenshot = true; });
 
     InputSystemDesc inputDesc{};
     inputDesc.pRenderer = pRenderer;
@@ -143,22 +191,18 @@ auto MainApp::Init() -> bool {
     }
 
     {
-        InputActionDesc actionDesc{InputBindings::BUTTON_DUMP,
-                                   [](InputActionContext *ctx) {
-                                       dumpProfileData(((Renderer *)ctx->pUserData)->pName);
+        InputActionDesc actionDesc{InputBindings::BUTTON_DUMP, [](InputActionContext *ctx) {
+                                       dumpProfileData(pRenderer->pName);
                                        return true;
-                                   },
-                                   pRenderer};
+                                   }};
         addInputAction(&actionDesc);
     }
     {
 
-        InputActionDesc actionDesc{InputBindings::BUTTON_FULLSCREEN,
-                                   [](InputActionContext *ctx) {
-                                       toggleFullscreen(((IApp *)ctx->pUserData)->pWindow);
+        InputActionDesc actionDesc{InputBindings::BUTTON_FULLSCREEN, [](InputActionContext *ctx) {
+                                       toggleFullscreen(pAppInstance->pWindow);
                                        return true;
-                                   },
-                                   this};
+                                   }};
         addInputAction(&actionDesc);
     }
     {
@@ -170,13 +214,11 @@ auto MainApp::Init() -> bool {
         addInputAction(&actionDesc);
     }
     {
-        InputActionDesc actionDesc{InputBindings::BUTTON_ANY,
-                                   [](InputActionContext *ctx) {
+        InputActionDesc actionDesc{InputBindings::BUTTON_ANY, [](InputActionContext *ctx) {
                                        bool capture = uiOnButton(ctx->mBinding, ctx->mBool, ctx->pPosition);
                                        setEnableCaptureInput(capture && INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
                                        return true;
-                                   },
-                                   this};
+                                   }};
         addInputAction(&actionDesc);
     }
 
@@ -189,7 +231,8 @@ auto MainApp::Init() -> bool {
 
     return true;
 }
-void MainApp::Exit() {
+
+void Exit() {
     currentScene.Exit(pRenderer);
     exitInputSystem();
 
@@ -218,7 +261,7 @@ void MainApp::Exit() {
     pRenderer = nullptr;
 }
 
-auto MainApp::Load() -> bool {
+auto Load() -> bool {
 
     if (!AddSwapChain()) {
         return false;
@@ -244,7 +287,7 @@ auto MainApp::Load() -> bool {
 
     return true;
 }
-void MainApp::Unload() {
+void Unload() {
 
     waitQueueIdle(pGraphicsQueue);
 
@@ -272,7 +315,8 @@ void MainApp::Unload() {
     removeSemaphore(pRenderer, pImageAcquiredSemaphore);
 }
 
-void MainApp::Update(float deltaTime) {
+void Update(float deltaTime) {
+    auto &&mSettings = pAppInstance->mSettings;
 
 #if !defined(TARGET_IOS)
     if (pSwapChain->mEnableVsync != static_cast<int>(bToggleVSync)) {
@@ -293,7 +337,7 @@ void MainApp::Update(float deltaTime) {
     currentScene.Update(deltaTime);
 }
 
-void MainApp::Draw() {
+void Draw() {
     if (bIsCapturing) {
         rdoc_api->StartFrameCapture(nullptr, nullptr);
     }

@@ -1,6 +1,9 @@
 #include "TestScene.h"
+#include <array>
 
 #include <Common_3/OS/Interfaces/ICameraController.h>
+#include <Common_3/OS/Interfaces/IInput.h>
+#include <Common_3/OS/Interfaces/IUI.h>
 #include <Common_3/Renderer/IResourceLoader.h>
 
 namespace {
@@ -17,7 +20,7 @@ Sampler *pSampler = nullptr;
 RootSignature *pRootSignature = nullptr;
 Pipeline *pPipeline = nullptr;
 
-std::array<Buffer *, MainApp::ImageCount> pUniformBuffers = {nullptr};
+std::array<Buffer *, ImageCount> pUniformBuffers = {nullptr};
 DescriptorSet *pDescriptorSetTexture = {nullptr};
 DescriptorSet *pDescriptorSetUniforms = {nullptr};
 
@@ -95,7 +98,7 @@ void TestScene::Init(Renderer *pRenderer) {
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetTexture);
 
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, MainApp::ImageCount};
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, ImageCount};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
     }
 
@@ -111,8 +114,7 @@ void TestScene::Update(float deltaTime) { pCameraController->update(deltaTime); 
 
 void TestScene::Draw(Cmd *cmd, int imageIndex) {
     mat4 viewMat = pCameraController->getViewMatrix();
-    const float aspectInverse =
-        (float)MainApp::Instance()->mSettings.mHeight / (float)MainApp::Instance()->mSettings.mWidth;
+    const float aspectInverse = (float)AppInstance()->mSettings.mHeight / (float)AppInstance()->mSettings.mWidth;
     const float horizontal_fov = PI / 2.0f;
     mat4 projMat = mat4::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
 
@@ -181,7 +183,7 @@ bool TestScene::Load(Renderer *pRenderer, SwapChain *pSwapChain) {
 
     waitForAllResourceLoads();
 
-    for (uint32_t i = 0; i < MainApp::ImageCount; ++i) {
+    for (uint32_t i = 0; i < ImageCount; ++i) {
         DescriptorData params{};
         auto size = sizeof(UniformBlock);
         params.pName = "uniformBlock";

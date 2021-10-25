@@ -24,6 +24,9 @@
     <ClCompile Include="NopScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AppInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
@@ -40,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NopScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AppInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
