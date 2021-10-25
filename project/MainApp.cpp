@@ -289,10 +289,10 @@ void Unload() {
 
     waitQueueIdle(pGraphicsQueue);
 
+    currentScene.Unload(pRenderer);
+
     removeUserInterfacePipelines();
     removeFontSystemPipelines();
-
-    currentScene.Unload(pRenderer);
 
     removeSwapChain(pRenderer, pSwapChain);
     removeRenderTarget(pRenderer, pDepthBuffer);
