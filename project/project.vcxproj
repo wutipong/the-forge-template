@@ -70,7 +70,7 @@
     <Link>
     </Link>
     <PostBuildEvent>
-      <Command>$(ProjectDir)scripts\postbuild.bat $(ProjectDir) $(OutputPath)</Command>
+      <Command>$(ProjectDir)scripts\postbuild.bat $(SolutionDir) $(OutputPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -86,7 +86,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>$(ProjectDir)scripts\postbuild.bat $(ProjectDir) $(OutputPath)</Command>
+      <Command>$(ProjectDir)scripts\postbuild.bat $(SolutionDir) $(OutputPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

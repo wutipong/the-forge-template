@@ -142,8 +142,8 @@ auto MainApp::Init() -> bool {
     UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Screenshot", &screenshot, WIDGET_TYPE_BUTTON);
     uiSetWidgetOnEditedCallback(pScreenshot, takeScreenshot);
     doTakeScreenshot = [this] {
-        if (!gTakeScreenshot)
-            gTakeScreenshot = true;
+        if (!bIsTakingScreenshot)
+            bIsTakingScreenshot = true;
     };
 
     InputSystemDesc inputDesc{};
@@ -305,7 +305,7 @@ void MainApp::Update(float deltaTime) {
 }
 
 void MainApp::Draw() {
-    if (isCapturing) {
+    if (bIsCapturing) {
         rdoc_api->StartFrameCapture(nullptr, nullptr);
     }
     uint32_t swapchainImageIndex;
@@ -394,11 +394,11 @@ void MainApp::Draw() {
     presentDesc.mSubmitDone = true;
 
     // captureScreenshot() must be used before presentation.
-    if (isTakingScreenshot) {
+    if (bIsTakingScreenshot) {
         // Metal platforms need one renderpass to prepare the swapchain textures for copy.
         if (prepareScreenshot(pSwapChain)) {
             captureScreenshot(pSwapChain, swapchainImageIndex, RESOURCE_STATE_PRESENT, "Screenshot.png");
-            isTakingScreenshot = false;
+            bIsTakingScreenshot = false;
         }
     }
 
@@ -406,8 +406,8 @@ void MainApp::Draw() {
     flipProfiler();
 
     gFrameIndex = (gFrameIndex + 1) % ImageCount;
-    if (isCapturing) {
+    if (bIsCapturing) {
         rdoc_api->EndFrameCapture(nullptr, nullptr);
-        isCapturing = false;
+        bIsCapturing = false;
     }
 }

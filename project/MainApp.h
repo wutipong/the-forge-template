@@ -31,17 +31,7 @@ class MainApp : public IApp {
     auto GetName() -> const char * override { return "Template Application"; };
 
     auto CanCapture() -> bool { return rdoc_api != nullptr; };
-    void Capture() { isCapturing = true; }
-    void TakeScreenshot() { isTakingScreenshot = true; }
-
-    template <class SceneClass> void ChangeScene() {
-        if (currentScene != nullptr) {
-            currentScene->Unload();
-        }
-
-        currentScene = std::make_unique<SceneClass>();
-        currentScene->Load();
-    }
+    void Capture() { bIsCapturing = true; }
 
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
 
@@ -73,11 +63,10 @@ class MainApp : public IApp {
 
     Scene currentScene;
     bool bToggleVSync = false;
-    bool isTakingScreenshot = false;
-    bool isCapturing = false;
+    bool bIsCapturing = false;
+    bool bIsTakingScreenshot = false;
 
     uint32_t gFontID;
-    bool gTakeScreenshot{false};
 
     static MainApp *pApp;
 };
