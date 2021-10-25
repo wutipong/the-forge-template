@@ -17,6 +17,7 @@
 
 namespace {
 IApp *pAppInstance;
+
 ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
 
 Renderer *pRenderer = nullptr;
@@ -32,26 +33,25 @@ std::array<Semaphore *, ImageCount> pRenderCompleteSemaphores = {nullptr};
 
 uint32_t gFrameIndex = 0;
 
-/// UI
 UIComponent *pGuiWindow{nullptr};
 FontDrawDesc gFrameTimeDraw;
+uint32_t gFontID;
 
 RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 
-Scene currentScene;
 bool bToggleVSync = false;
 bool bIsCapturing = false;
 bool bIsTakingScreenshot = false;
 
-uint32_t gFontID;
+Scene currentScene;
 
 } // namespace
 
 auto AppInstance() -> IApp * { return pAppInstance; }
 
 static auto AddSwapChain() -> bool {
-    auto &&mSettings = pAppInstance->mSettings;
-    auto &&pWindow = pAppInstance->pWindow;
+    auto &&mSettings = AppInstance()->mSettings;
+    auto &&pWindow = AppInstance()->pWindow;
 
     SwapChainDesc swapChainDesc = {};
     swapChainDesc.mWindowHandle = pWindow->handle;
@@ -68,7 +68,7 @@ static auto AddSwapChain() -> bool {
 }
 
 static auto AddDepthBuffer() -> bool {
-    auto &&mSettings = pAppInstance->mSettings;
+    auto &&mSettings = AppInstance()->mSettings;
     // Add depth buffer
     RenderTargetDesc depthRT = {};
     depthRT.mArraySize = 1;
@@ -89,8 +89,8 @@ static auto AddDepthBuffer() -> bool {
 
 auto Init(IApp *app) -> bool {
     ::pAppInstance = app;
-    auto &&mSettings = pAppInstance->mSettings;
-    auto &&pWindow = pAppInstance->pWindow;
+    auto &&mSettings = AppInstance()->mSettings;
+    auto &&pWindow = AppInstance()->pWindow;
 
     currentScene = NopScene::Create();
 
@@ -200,7 +200,7 @@ auto Init(IApp *app) -> bool {
     {
 
         InputActionDesc actionDesc{InputBindings::BUTTON_FULLSCREEN, [](InputActionContext *ctx) {
-                                       toggleFullscreen(pAppInstance->pWindow);
+                                       toggleFullscreen(AppInstance()->pWindow);
                                        return true;
                                    }};
         addInputAction(&actionDesc);
@@ -233,14 +233,12 @@ auto Init(IApp *app) -> bool {
 }
 
 void Exit() {
-    currentScene.Exit(pRenderer);
     exitInputSystem();
-
     exitUserInterface();
     exitFontSystem();
-
-    // Exit profile
     exitProfiler();
+
+    currentScene.Exit(pRenderer);
 
     for (uint32_t i = 0; i < ImageCount; ++i) {
         removeFence(pRenderer, pRenderCompleteFences[i]);
@@ -291,32 +289,17 @@ void Unload() {
 
     waitQueueIdle(pGraphicsQueue);
 
-    currentScene.Unload(pRenderer);
-
     removeUserInterfacePipelines();
     removeFontSystemPipelines();
 
-#if defined(USE_BREADCRUMB)
-    removePipeline(pRenderer, pCrashPipeline);
-#endif
+    currentScene.Unload(pRenderer);
+
     removeSwapChain(pRenderer, pSwapChain);
     removeRenderTarget(pRenderer, pDepthBuffer);
-
-    // Exit profile
-    exitProfiler();
-
-    for (uint32_t i = 0; i < ImageCount; ++i) {
-        removeFence(pRenderer, pRenderCompleteFences[i]);
-        removeSemaphore(pRenderer, pRenderCompleteSemaphores[i]);
-
-        removeCmd(pRenderer, pCmds[i]);
-        removeCmdPool(pRenderer, pCmdPools[i]);
-    }
-    removeSemaphore(pRenderer, pImageAcquiredSemaphore);
 }
 
 void Update(float deltaTime) {
-    auto &&mSettings = pAppInstance->mSettings;
+    auto &&mSettings = AppInstance()->mSettings;
 
 #if !defined(TARGET_IOS)
     if (pSwapChain->mEnableVsync != static_cast<int>(bToggleVSync)) {
@@ -327,12 +310,6 @@ void Update(float deltaTime) {
 #endif
 
     updateInputSystem(mSettings.mWidth, mSettings.mHeight);
-
-    /************************************************************************/
-    // Scene Update
-    /************************************************************************/
-    static float currentTime = 0.0F;
-    currentTime += deltaTime * 1000.0F;
 
     currentScene.Update(deltaTime);
 }
