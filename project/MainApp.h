@@ -30,9 +30,6 @@ class MainApp : public IApp {
 
     auto GetName() -> const char * override { return "Template Application"; };
 
-    auto CanCapture() -> bool { return rdoc_api != nullptr; };
-    void Capture() { bIsCapturing = true; }
-
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
 
     static auto Instance() -> MainApp * { return pApp; }

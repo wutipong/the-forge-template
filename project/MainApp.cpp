@@ -8,12 +8,6 @@ DEFINE_APPLICATION_MAIN(MainApp)
 
 MainApp *MainApp::pApp;
 
-static std::function<void()> doTakeScreenshot;
-static void takeScreenshot() { doTakeScreenshot(); }
-
-static std::function<void()> doCapture;
-static void capture() { doCapture(); }
-
 auto MainApp::AddSwapChain() -> bool {
     SwapChainDesc swapChainDesc = {};
     swapChainDesc.mWindowHandle = pWindow->handle;
@@ -133,18 +127,13 @@ auto MainApp::Init() -> bool {
         // Take a screenshot with a button.
         ButtonWidget button;
         UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Capture Frame", &button, WIDGET_TYPE_BUTTON);
-        uiSetWidgetOnEditedCallback(pScreenshot, capture);
-        doCapture = [this] { Capture(); };
+        uiSetWidgetOnEditedCallback(pScreenshot, [] { MainApp::pApp->bIsCapturing = true; });
     }
 
     // Take a screenshot with a button.
     ButtonWidget screenshot;
     UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Screenshot", &screenshot, WIDGET_TYPE_BUTTON);
-    uiSetWidgetOnEditedCallback(pScreenshot, takeScreenshot);
-    doTakeScreenshot = [this] {
-        if (!bIsTakingScreenshot)
-            bIsTakingScreenshot = true;
-    };
+    uiSetWidgetOnEditedCallback(pScreenshot, [] { MainApp::pApp->bIsTakingScreenshot = true; });
 
     InputSystemDesc inputDesc{};
     inputDesc.pRenderer = pRenderer;
