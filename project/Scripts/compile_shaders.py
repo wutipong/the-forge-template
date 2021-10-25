@@ -1,7 +1,6 @@
-import os
 import argparse
 import sys
-import string
+from pathlib import Path
 import subprocess
 
 
@@ -13,7 +12,7 @@ def initArgs():
                         help='output directory', required=True)
     parser.add_argument('-s', '--solutionDir',
                         help='solution directory', required=True)
-    parser.add_argument('fsl_input', help='fsl file to generate from')
+    parser.add_argument('input', help='input directory')
     args = parser.parse_args()
 
     return args
@@ -21,20 +20,15 @@ def initArgs():
 
 languages = "DIRECT3D11 DIRECT3D12 VULKAN"
 args = initArgs()
-fslPath = os.path.normpath(
-    os.path.join(
-        args.solutionDir,
-        'the-forge/Common_3/Tools/ForgeShadingLanguage/fsl.py'
-    )
-)
+fslPath = Path(args.solutionDir,
+               'the-forge/Common_3/Tools/ForgeShadingLanguage/fsl.py')
 
-files = os.listdir(args.fsl_input)
-python = ''.join(['"', sys.executable, '"'])
-print(python)
+files = Path(args.input).glob('**/*.fsl')
+python = sys.executable
+
 for file in files:
-    filePath = os.path.normpath(
-        os.path.join(args.fsl_input, file)
-    )
+    relatedPath = file.relative_to(args.input)
+    destination = Path(args.destination, relatedPath).parent
 
-    subprocess.run([sys.executable, fslPath, '-d', args.destination, '-b', args.binaryDestination, '--compile',
-                    '-l', languages, filePath])
+    subprocess.run([python, fslPath, '-d', destination, '-b', args.binaryDestination, '--compile',
+                    '-l', languages, file])
