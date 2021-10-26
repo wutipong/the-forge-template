@@ -92,7 +92,6 @@
   <ItemGroup>
     <ClCompile Include="AppInterface.cpp" />
     <ClCompile Include="MainApp.cpp" />
-    <ClCompile Include="NopScene.cpp" />
     <ClCompile Include="TestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -101,7 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppInterface.h" />
-    <ClInclude Include="NopScene.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="TestScene.h" />

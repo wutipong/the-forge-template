@@ -1,6 +1,6 @@
 #include "MainApp.h"
 
-#include "NopScene.h"
+#include "TestScene.h"
 #include "Scene.h"
 #include <Common_3/OS/Interfaces/IFileSystem.h>
 #include <Common_3/OS/Interfaces/IFont.h>
@@ -92,7 +92,8 @@ auto Init(IApp *app) -> bool {
     auto &&mSettings = AppInstance()->mSettings;
     auto &&pWindow = AppInstance()->pWindow;
 
-    currentScene = NopScene::Create();
+    // currentScene = NopScene::Create();
+    currentScene = TestScene::Create();
 
     // FILE PATHS
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");

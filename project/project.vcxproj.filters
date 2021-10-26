@@ -18,13 +18,10 @@
     <ClCompile Include="MainApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TestScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NopScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AppInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,16 +33,13 @@
     <ClInclude Include="MainApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NopScene.h">
+    <ClInclude Include="AppInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AppInterface.h">
+    <ClInclude Include="TestScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

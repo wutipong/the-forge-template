@@ -1,0 +1,31 @@
+RES(Tex2D(float4), uTex, UPDATE_FREQ_PER_BATCH, t1, binding = 1);
+RES(SamplerState, uSampler, UPDATE_FREQ_NONE, s2, binding = 2);
+
+STRUCT(VsIn)
+{
+	DATA(float4, position, Position);
+	DATA(float2, texcoord, TEXCOORD0);
+};
+
+STRUCT(VsOut)
+{
+	DATA(float4, position, SV_Position);
+	DATA(float2, texcoord, TEXCOORD0);
+};
+
+CBUFFER(uniformBlock, UPDATE_FREQ_PER_FRAME, b0, binding = 0)
+{
+	DATA(float4x4, world, None);
+	DATA(float4x4, projectView, None);
+};
+
+VsOut VS_MAIN( VsIn In )
+{
+	INIT_MAIN;
+	VsOut Out;
+
+	float4x4 tempMat = mul(projectView, world);
+	Out.position = mul(tempMat, In.position);
+	Out.texcoord = In.texcoord;
+	RETURN(Out);
+}
