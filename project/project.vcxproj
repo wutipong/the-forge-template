@@ -70,7 +70,7 @@
     <Link>
     </Link>
     <PostBuildEvent>
-      <Command>$(ProjectDir)scripts\postbuild.bat $(SolutionDir) $(OutputPath)</Command>
+      <Command>$(ProjectDir)scripts\postbuild.bat $(SolutionDir) $(OutputPath) "$(WindowsSDK_ExecutablePath_x86)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

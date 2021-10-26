@@ -2,6 +2,7 @@ REM @ECHO OFF
 
 SET SolutionDir=%1%
 SET OutputDir=%2%
+SET WindowsSdkVerBinPath=%3%
 
 SET ProjectDir=%SolutionDir%project\
 
@@ -9,9 +10,11 @@ SET ScriptDir=%ProjectDir%Scripts\
 SET CompileShaders=%ScriptDir%\compile_shaders.py
 SET PythonExec=python
 
+SET FSL_COMPILER_FXC=%WindowsSdkVerBinPath%x64
+
 ECHO compile shader files.
-%PythonExec% %CompileShaders% -d %OutputDir%Shaders -b %OutputDir%CompiledShaders -s %SolutionDir% %SolutionDir%the-forge\Common_3\OS\UI\Shaders\FSL
-%PythonExec% %CompileShaders% -d %OutputDir%Shaders -b %OutputDir%CompiledShaders -s %SolutionDir% %SolutionDir%the-forge\Common_3\OS\Fonts\Shaders\FSL
+%PythonExec% %CompileShaders% -d %OutputDir%Shaders -b %OutputDir%CompiledShaders -s %SolutionDir% -w %WindowsSdkVerBinPath% %SolutionDir%the-forge\Common_3\OS\UI\Shaders\FSL
+%PythonExec% %CompileShaders% -d %OutputDir%Shaders -b %OutputDir%CompiledShaders -s %SolutionDir% -w %WindowsSdkVerBinPath% %SolutionDir%the-forge\Common_3\OS\Fonts\Shaders\FSL
 
 XCOPY %ProjectDir%Shaders\ %OutputDir%Shaders\ /Y /S
 
