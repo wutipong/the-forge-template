@@ -1,0 +1,7 @@
+#frag basic.frag
+#include "basic.frag.fsl"
+#end
+
+#vert VR_MULTIVIEW basic.vert
+#include "basic.vert.fsl"
+#end
