@@ -8,6 +8,7 @@
 
 class Scene
 {
+public:
     virtual void Init(uint32_t imageCount) = 0;
     virtual void Exit() = 0;
     virtual void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget,
