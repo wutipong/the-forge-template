@@ -7,6 +7,7 @@ project(the-forge-template)
 add_executable(the-forge-template 
         "main.cpp"
         "demo_scene.cpp"
+        "scene_manager.cpp"
         "The-Forge/Common_3/Application/CameraController.cpp"
         "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
         "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
@@ -133,7 +134,7 @@ add_executable(the-forge-template
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_msl.cpp"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_parser.cpp"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_reflect.cpp"
-        scene_manager.cpp scene_manager.h)
+        )
 
 find_package(Vulkan REQUIRED)
 
