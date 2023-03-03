@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
 
+set(TARGET_NAME the-forge-template)
+
 # set the project name
-project(the-forge-template)
+project(${TARGET_NAME})
 
 # add the executable
-add_executable(the-forge-template 
+add_executable(${TARGET_NAME}
         "main.cpp"
         "demo_scene.cpp"
         "scene_manager.cpp"
@@ -138,16 +140,16 @@ add_executable(the-forge-template
 
 find_package(Vulkan REQUIRED)
 
-target_compile_features(the-forge-template PRIVATE cxx_std_20)
-set_property(TARGET the-forge-template PROPERTY CXX_STANDARD 20)
-set_property(TARGET the-forge-template PROPERTY CXX_STANDARD_REQUIRED ON)
+target_compile_features(${TARGET_NAME} PRIVATE cxx_std_20)
+set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 20)
+set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
     # set_property(TARGET the-forge-template PROPERTY WIN32_EXECUTABLE ON)
-    target_compile_options(the-forge-template PRIVATE /Zc:__cplusplus)
+    target_compile_options(${TARGET_NAME} PRIVATE /Zc:__cplusplus)
 endif ()
 
-target_include_directories(the-forge-template PRIVATE
+target_include_directories(${TARGET_NAME} PRIVATE
         "The-Forge/Common_3/Application/Interfaces"
         "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
         "The-Forge/Common_3/Graphics/Interfaces"
@@ -159,13 +161,13 @@ target_include_directories(the-forge-template PRIVATE
         ${VULKAN_HEADERS_INCLUDE_DIRS}
         )
 
-target_link_directories(the-forge-template PRIVATE
+target_link_directories(${TARGET_NAME} PRIVATE
         "The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/nvapi/amd64"
         )
 
-target_link_libraries(the-forge-template PRIVATE XInput Vulkan::Vulkan WinPixEventRuntime amd_ags_x64 nvapi64)
+target_link_libraries(${TARGET_NAME} PRIVATE XInput Vulkan::Vulkan WinPixEventRuntime amd_ags_x64 nvapi64)
 
 file(COPY
         "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll"
@@ -183,18 +185,18 @@ file(COPY
         "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf"
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Fonts/TitilliumText")
 
-function(compile_shaders arg)
-    add_custom_command(TARGET the-forge-template
-            POST_BUILD
+function(compile_shaders name arg)
+    add_custom_target(${name}
             COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64/python.exe"
-            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Tools/ForgeShadingLanguage/fsl.py"
+            "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Tools/ForgeShadingLanguage/fsl.py"
             "-dShaders" "-bCompiledShaders" "-l DIRECT3D12 VULKAN" --compile --verbose
             "${arg}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
             )
+    add_dependencies(${TARGET_NAME} ${name})
 endfunction()
 
-compile_shaders("${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/UI/Shaders/FSL/UI_ShaderList.fsl")
-compile_shaders("${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/Fonts/Shaders/FSL/Fonts_ShaderList.fsl")
-compile_shaders("${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/ShaderList.fsl")
-compile_shaders("${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/demo2/ShaderList.fsl")
+compile_shaders(UiShader "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/UI/Shaders/FSL/UI_ShaderList.fsl")
+compile_shaders(FontShader "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/Fonts/Shaders/FSL/Fonts_ShaderList.fsl")
+compile_shaders(Demo1Shader "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/ShaderList.fsl")
+compile_shaders(Demo2Shader "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/demo2/ShaderList.fsl")
