@@ -2,10 +2,14 @@ cmake_minimum_required(VERSION 3.17)
 
 set(TARGET_NAME the-forge-template)
 
-# set the project name
 project(${TARGET_NAME})
 
-# add the executable
+if(WIN32)
+    set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
+endif()
+
+FIND_PACKAGE(Python3 3.6 EXACT COMPONENTS Interpreter)
+
 add_executable(${TARGET_NAME}
         "main.cpp"
         "demo_scene.cpp"
@@ -185,18 +189,38 @@ file(COPY
         "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf"
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Fonts/TitilliumText")
 
-function(compile_shaders name arg)
-    add_custom_target(${name}
-            COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64/python.exe"
+function(compile_shaders)
+    set(oneValueArgs TARGET SHADER_LIST)
+    cmake_parse_arguments(COMPILE_SHADERS "${options}" "${oneValueArgs}"
+            "${multiValueArgs}" ${ARGN}
+            )
+
+    add_custom_target(${COMPILE_SHADERS_TARGET}
+            COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Tools/ForgeShadingLanguage/fsl.py"
             "-dShaders" "-bCompiledShaders" "-l DIRECT3D12 VULKAN" --compile --verbose
-            "${arg}"
+            ${COMPILE_SHADERS_SHADER_LIST}
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
             )
-    add_dependencies(${TARGET_NAME} ${name})
+    add_dependencies(${TARGET_NAME} ${COMPILE_SHADERS_TARGET})
 endfunction()
 
-compile_shaders(UiShader "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/UI/Shaders/FSL/UI_ShaderList.fsl")
-compile_shaders(FontShader "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/Fonts/Shaders/FSL/Fonts_ShaderList.fsl")
-compile_shaders(Demo1Shader "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/ShaderList.fsl")
-compile_shaders(Demo2Shader "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/demo2/ShaderList.fsl")
+compile_shaders(
+        TARGET UiShader
+        SHADER_LIST "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/UI/Shaders/FSL/UI_ShaderList.fsl"
+)
+
+compile_shaders(
+        TARGET FontShader
+        SHADER_LIST "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Application/Fonts/Shaders/FSL/Fonts_ShaderList.fsl"
+)
+
+compile_shaders(
+        TARGET Demo1Shader
+        SHADER_LIST "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/ShaderList.fsl"
+)
+
+compile_shaders(
+        TARGET Demo2Shader
+        SHADER_LIST "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/demo2/ShaderList.fsl"
+)
