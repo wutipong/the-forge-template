@@ -1,15 +1,15 @@
-#include "scene_manager.h"
-#include "main.h"
+#include "SceneManagement.h"
+#include "MainApp.h"
 
 extern Renderer *pRenderer;
 extern SwapChain *pSwapChain;
 extern RenderTarget *pDepthBuffer;
 
-static std::unique_ptr<Scene> currentScene{nullptr};
-static std::unique_ptr<Scene> nextScene{nullptr};
+static std::unique_ptr<IScene> currentScene{nullptr};
+static std::unique_ptr<IScene> nextScene{nullptr};
 
-void SetCurrentSceneInternal(Scene *pScene) { currentScene.reset(pScene); };
-void SetNextSceneInternal(Scene *pScene) { nextScene.reset(pScene);}
+void SetCurrentSceneInternal(IScene *pScene) { currentScene.reset(pScene); };
+void SetNextSceneInternal(IScene *pScene) { nextScene.reset(pScene);}
 
 void UpdateCurrentScene(float deltaTime, uint32_t width, uint32_t height) {
     if (nextScene != nullptr){

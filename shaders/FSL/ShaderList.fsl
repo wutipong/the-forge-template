@@ -6,10 +6,10 @@
 #include "basic.vert.fsl"
 #end
 
-#frag basic.frag
+#frag demo2_object.frag
 #include "demo2_object.frag.fsl"
 #end
 
-#vert VR_MULTIVIEW basic.vert
+#vert VR_MULTIVIEW demo2_object.vert
 #include "demo2_object.vert.fsl"
 #end

@@ -1,4 +1,4 @@
-#include "demo_scene.h"
+#include "DemoScene.h"
 #include <IResourceLoader.h>
 #include <stb_ds.h>
 

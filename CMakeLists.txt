@@ -11,9 +11,9 @@ endif()
 FIND_PACKAGE(Python3 3.6 EXACT COMPONENTS Interpreter)
 
 add_executable(${TARGET_NAME}
-        "main.cpp"
-        "demo_scene.cpp"
-        "scene_manager.cpp"
+        "MainApp.cpp"
+        "DemoScene.cpp"
+        "SceneManagement.cpp"
         "The-Forge/Common_3/Application/CameraController.cpp"
         "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
         "The-Forge/Common_3/Application/Fonts/stbtt.cpp"

@@ -1,9 +1,9 @@
-#include "main.h"
+#include "MainApp.h"
 
-#include <cstdlib>
 #include <IGraphics.h>
-#include "scene_manager.h"
-#include "demo_scene.h"
+#include <cstdlib>
+#include "DemoScene.h"
+#include "SceneManagement.h"
 
 extern RendererApi gSelectedRendererApi;
 

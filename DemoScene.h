@@ -1,14 +1,14 @@
 #ifndef DEMO_SCENE_H
 #define DEMO_SCENE_H
 
-#include "scene.h"
+#include "IScene.h"
 
 #include <ICameraController.h>
 #include <IGraphics.h>
 #include <IOperatingSystem.h>
 #include <Math/MathTypes.h>
 
-class DemoScene : public Scene
+class DemoScene : public IScene
 {
 public:
     void Init(uint32_t imageCount) override;

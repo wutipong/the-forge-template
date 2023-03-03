@@ -1,12 +1,12 @@
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef ISCENE_H
+#define ISCENE_H
 
 #include <ICameraController.h>
 #include <IGraphics.h>
 #include <IOperatingSystem.h>
 #include <Math/MathTypes.h>
 
-class Scene
+class IScene
 {
 public:
     virtual void Init(uint32_t imageCount) = 0;
@@ -19,4 +19,4 @@ public:
     virtual void Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex) = 0;
 };
 
-#endif
+#endif // ISCENE_H
