@@ -216,11 +216,6 @@ compile_shaders(
 )
 
 compile_shaders(
-        TARGET Demo1Shader
+        TARGET ProjectShader
         SHADER_LIST "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/ShaderList.fsl"
-)
-
-compile_shaders(
-        TARGET Demo2Shader
-        SHADER_LIST "${CMAKE_CURRENT_SOURCE_DIR}/shaders/FSL/demo2/ShaderList.fsl"
 )

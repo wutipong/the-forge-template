@@ -5,3 +5,11 @@
 #vert VR_MULTIVIEW basic.vert
 #include "basic.vert.fsl"
 #end
+
+#frag basic.frag
+#include "demo2_object.frag.fsl"
+#end
+
+#vert VR_MULTIVIEW basic.vert
+#include "demo2_object.vert.fsl"
+#end

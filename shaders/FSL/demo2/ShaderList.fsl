@@ -1,7 +1,0 @@
-#frag object.frag
-#include "object.frag.fsl"
-#end
-
-#vert VR_MULTIVIEW object.vert
-#include "object.vert.fsl"
-#end
