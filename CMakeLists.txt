@@ -140,7 +140,7 @@ add_executable(${TARGET_NAME}
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_msl.cpp"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_parser.cpp"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_reflect.cpp"
-        )
+        Demo2Scene.cpp Demo2Scene.h)
 
 find_package(Vulkan REQUIRED)
 

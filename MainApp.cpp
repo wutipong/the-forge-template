@@ -2,7 +2,7 @@
 
 #include <IGraphics.h>
 #include <cstdlib>
-#include "DemoScene.h"
+#include "Demo2Scene.h"
 #include "SceneManagement.h"
 
 extern RendererApi gSelectedRendererApi;
@@ -110,7 +110,7 @@ bool MainApp::Init()
     GlobalInputActionDesc globalInputActionDesc = {GlobalInputActionDesc::ANY_BUTTON_ACTION, onAnyInput, this};
     setGlobalInputAction(&globalInputActionDesc);
 
-    SetStartScene<DemoScene>();
+    SetStartScene<Demo2Scene>();
     InitCurrentScene(gImageCount);
 
     return true;
