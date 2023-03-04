@@ -15,6 +15,8 @@ bool MainApp::Init()
 {
     srand(time(NULL));
 
+    gSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
+
     // FILE PATHS
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_BINARIES, "CompiledShaders");

@@ -104,8 +104,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
         ShaderLoadDesc basicShader = {};
-        basicShader.mStages[0] = {"basic.vert", nullptr, 0, nullptr, SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
-        basicShader.mStages[1] = {"basic.frag", nullptr, 0};
+        basicShader.mStages[0] = {"demo2_object.vert", nullptr, 0, nullptr, SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
+        basicShader.mStages[1] = {"demo2_object.frag", nullptr, 0};
 
         addShader(pRenderer, &basicShader, &pShader);
 
@@ -119,7 +119,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetCamera);
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetScene);
 
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * CUBE_COUNT)};
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, static_cast<uint32_t>(imageCount * CUBE_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetCube);
     }
 
@@ -166,16 +166,27 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addPipeline(pRenderer, &desc, &pPipeline);
     }
 
-    for (uint32_t i = 0; i < imageCount; ++i)
-    {
-        DescriptorData params = {};
-        params.pName = "uniformCameraBlock";
-        params.ppBuffers = &pCameraUniformBuffer[i];
+    DescriptorData params = {};
+    params.pName = "uniformCameraBlock";
+    params.ppBuffers = pCameraUniformBuffer;
 
-        updateDescriptorSet(pRenderer, i, pDescriptorSetCamera, 1, &params);
-    }
+    updateDescriptorSet(pRenderer, 1, pDescriptorSetCamera, imageCount, &params);
+
+    params = {};
+    params.pName = "uniformSceneBlock";
+    params.ppBuffers = pSceneUniformBuffer;
+
+    updateDescriptorSet(pRenderer, 2, pDescriptorSetScene, imageCount, &params);
+
+    params = {};
+    params.pName = "uniformObjectBlock";
+    params.ppBuffers = pCubeUniformBuffers;
+    updateDescriptorSet(pRenderer, 0, pDescriptorSetCube, imageCount * CUBE_COUNT, &params);
+
+
 }
-void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) {
+void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
+{
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
         removePipeline(pRenderer, pPipeline);
@@ -192,7 +203,8 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) {
     }
 }
 void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height) { pCameraController->update(deltaTime); }
-void Demo2Scene::PreDraw(uint32_t frameIndex) {
+void Demo2Scene::PreDraw(uint32_t frameIndex)
+{
     BufferUpdateDesc updateDesc = {pCameraUniformBuffer[frameIndex]};
     beginUpdateResource(&updateDesc);
     *(CameraUniformBlock *)updateDesc.pMappedData = camera;
@@ -202,8 +214,19 @@ void Demo2Scene::PreDraw(uint32_t frameIndex) {
     beginUpdateResource(&updateDesc);
     *(SceneUniformBlock *)updateDesc.pMappedData = scene;
     endUpdateResource(&updateDesc, nullptr);
+
+    updateDesc = {pCubeUniformBuffers[frameIndex * CUBE_COUNT]};
+    beginUpdateResource(&updateDesc);
+    *(CubeUniformBlock *)updateDesc.pMappedData = cubes[0];
+    endUpdateResource(&updateDesc, nullptr);
+
+    updateDesc = {pCubeUniformBuffers[(frameIndex * CUBE_COUNT) + 1]};
+    beginUpdateResource(&updateDesc);
+    *(CubeUniformBlock *)updateDesc.pMappedData = cubes[1];
+    endUpdateResource(&updateDesc, nullptr);
 }
-void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex) {
+void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
+{
     constexpr uint32_t sphereVbStride = sizeof(float) * 6;
 
     LoadActionsDesc loadActions = {};
@@ -212,17 +235,13 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
     loadActions.mClearDepth.depth = 0.0f;
     cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
 
-    cmdBindPipeline(pCmd, pPipeline);
-    cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetCamera);
-    cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetScene);
-    cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + 0, pDescriptorSetCube);
-    cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &sphereVbStride, nullptr);
-    cmdDraw(pCmd, cubeVertexCount / 6, 0);
-
-    cmdBindPipeline(pCmd, pPipeline);
-    cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetCamera);
-    cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetScene);
-    cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + 1, pDescriptorSetCube);
-    cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &sphereVbStride, nullptr);
-    cmdDraw(pCmd, cubeVertexCount / 6, 0);
+    for (int i = 0; i < CUBE_COUNT; i++)
+    {
+        cmdBindPipeline(pCmd, pPipeline);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetCamera);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetScene);
+        cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + i, pDescriptorSetCube);
+        cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &sphereVbStride, nullptr);
+        cmdDraw(pCmd, cubeVertexCount / 6, 0);
+    }
 }
