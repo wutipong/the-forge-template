@@ -38,12 +38,6 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    cubes[0].Color = {1.0f, 1.0f, 1.0f};
-    cubes[0].Transform = mat4().identity().scale({10.0f, 10.0f, 10.0f}).translation({0.0f, 5.0f, 0.0f});
-
-    cubes[1].Color = {1.0f, 0.0f, 0.0f};
-    cubes[1].Transform = mat4().identity().translation({0.0f, 10.0f, 0.0f});
-
     ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
@@ -71,7 +65,16 @@ void Demo2Scene::Init(uint32_t imageCount)
         ubDesc.ppBuffer = &pSceneUniformBuffer[i];
         addResource(&ubDesc, nullptr);
     }
+
+    scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.2f};
+
+    cubes[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
+    cubes[0].Transform = mat4().identity().scale({10.0f, 10.0f, 10.0f}).translation({0.0f, 5.0f, 0.0f});
+
+    cubes[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
+    cubes[1].Transform = mat4().identity().translation({0.0f, 10.0f, 0.0f});
 }
+
 void Demo2Scene::Exit()
 {
     removeResource(pCubeVertexBuffer);
@@ -117,6 +120,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetCamera);
+
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetScene);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, static_cast<uint32_t>(imageCount * CUBE_COUNT)};
@@ -166,24 +171,32 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addPipeline(pRenderer, &desc, &pPipeline);
     }
 
-    DescriptorData params = {};
-    params.pName = "uniformCameraBlock";
-    params.ppBuffers = pCameraUniformBuffer;
+    for (int i = 0; i < imageCount * CUBE_COUNT; i++)
+    {
+        DescriptorData params = {};
+        params.pName = "uniformObjectBlock";
+        params.ppBuffers = pCubeUniformBuffers;
+        updateDescriptorSet(pRenderer, i, pDescriptorSetCube, 1, &params);
+    }
 
-    updateDescriptorSet(pRenderer, 1, pDescriptorSetCamera, imageCount, &params);
+    for (int i = 0; i < imageCount; i++)
+    {
+        {
+            DescriptorData params = {};
+            params.pName = "uniformCameraBlock";
+            params.ppBuffers = pCameraUniformBuffer;
 
-    params = {};
-    params.pName = "uniformSceneBlock";
-    params.ppBuffers = pSceneUniformBuffer;
+            updateDescriptorSet(pRenderer, i, pDescriptorSetCamera, 1, &params);
+        }
 
-    updateDescriptorSet(pRenderer, 2, pDescriptorSetScene, imageCount, &params);
+        {
+            DescriptorData params = {};
+            params.pName = "uniformSceneBlock";
+            params.ppBuffers = pSceneUniformBuffer;
 
-    params = {};
-    params.pName = "uniformObjectBlock";
-    params.ppBuffers = pCubeUniformBuffers;
-    updateDescriptorSet(pRenderer, 0, pDescriptorSetCube, imageCount * CUBE_COUNT, &params);
-
-
+            updateDescriptorSet(pRenderer, i, pDescriptorSetScene, 1, &params);
+        }
+    }
 }
 void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 {
@@ -202,7 +215,20 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeShader(pRenderer, pShader);
     }
 }
-void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height) { pCameraController->update(deltaTime); }
+
+void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
+{
+    pCameraController->update(deltaTime);
+
+    const float aspectInverse = (float)height / (float)width;
+    const float horizontal_fov = PI / 2.0f;
+    CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
+
+    CameraMatrix mProjectView = projection * pCameraController->getViewMatrix();
+
+    camera.mProjectView = mProjectView;
+}
+
 void Demo2Scene::PreDraw(uint32_t frameIndex)
 {
     BufferUpdateDesc updateDesc = {pCameraUniformBuffer[frameIndex]};
@@ -238,9 +264,11 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
     for (int i = 0; i < CUBE_COUNT; i++)
     {
         cmdBindPipeline(pCmd, pPipeline);
+
+        cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + i, pDescriptorSetCube);
         cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetCamera);
         cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetScene);
-        cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + i, pDescriptorSetCube);
+
         cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &sphereVbStride, nullptr);
         cmdDraw(pCmd, cubeVertexCount / 6, 0);
     }

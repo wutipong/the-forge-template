@@ -47,7 +47,7 @@ private:
     struct CubeUniformBlock
     {
         mat4 Transform;
-        vec3 Color;
+        vec4 Color;
     } cubes[CUBE_COUNT];
 
     static constexpr size_t POINT_LIGHT_COUNT = 2;
@@ -56,10 +56,9 @@ private:
         // Ambient Light
         vec4 AmbientLight;
         // Point Light
-        vec3 PointLightPosition[POINT_LIGHT_COUNT];
-        vec3 PointLightColor[POINT_LIGHT_COUNT];
+        vec4 PointLightPosition[POINT_LIGHT_COUNT];
+        vec4 PointLightColor[POINT_LIGHT_COUNT];
     } scene;
 };
-
 
 #endif // DEMO2SCENE_H

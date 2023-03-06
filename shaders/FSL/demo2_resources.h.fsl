@@ -2,8 +2,8 @@
 #define RESOURCES_DEMO2_H
 
 // UPDATE_FREQ_PER_FRAME
-#ifndef MAX_PLANETS
-    #define MAX_LIGHT 8
+#ifndef POINT_LIGHT_COUNT
+    #define POINT_LIGHT_COUNT 2
 #endif
 
 CBUFFER(uniformObjectBlock, UPDATE_FREQ_PER_FRAME, b0, binding = 0)
@@ -25,8 +25,8 @@ CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b2, binding = 2)
 {
     DATA(float4, ambientLight, None);
     // Point Light Information
-    DATA(float3, lightPosition[MAX_LIGHT], None);
-    DATA(float3, lightColor[MAX_LIGHT], None);
+    DATA(float4, pointLightPosition[POINT_LIGHT_COUNT], None);
+    DATA(float4, pointLightColor[POINT_LIGHT_COUNT], None);
 };
 
 #endif
