@@ -53,10 +53,10 @@ void Demo2Scene::Init(uint32_t imageCount)
     scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.2f};
 
     cubes[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
-    cubes[0].Transform = mat4().identity().scale({10.0f, 10.0f, 10.0f}).translation({0.0f, 5.0f, 0.0f});
+    cubes[0].Transform = mat4::scale({10.0f, 10.0f, 10.0f}) * mat4::translation({0.0f, 0.0f, 5.0f});
 
     cubes[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
-    cubes[1].Transform = mat4().identity().translation({0.0f, 10.0f, 0.0f});
+    cubes[1].Transform = mat4::translation({0.0f, 0.0f,10.0f});
 
     pCameraController = initFpsCameraController({0, -100.0, 0}, {0, 0, 0});
 }
@@ -152,19 +152,17 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
-        params.ppBuffers = pCubeUniformBuffers;
+        params.ppBuffers = &pCubeUniformBuffers[i];
         updateDescriptorSet(pRenderer, i, pDescriptorSetCube, 1, &params);
     }
 
     for (int i = 0; i < imageCount; i++)
     {
-        {
-            DescriptorData params = {};
-            params.pName = "uniformSceneBlock";
-            params.ppBuffers = pSceneUniformBuffer;
+        DescriptorData params = {};
+        params.pName = "uniformSceneBlock";
+        params.ppBuffers = &pSceneUniformBuffer[i];
 
-            updateDescriptorSet(pRenderer, i, pDescriptorSetScene, 1, &params);
-        }
+        updateDescriptorSet(pRenderer, i, pDescriptorSetScene, 1, &params);
     }
 }
 void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
@@ -203,19 +201,17 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     *(SceneUniformBlock *)updateDesc.pMappedData = scene;
     endUpdateResource(&updateDesc, nullptr);
 
-    updateDesc = {pCubeUniformBuffers[frameIndex * CUBE_COUNT]};
-    beginUpdateResource(&updateDesc);
-    *(CubeUniformBlock *)updateDesc.pMappedData = cubes[0];
-    endUpdateResource(&updateDesc, nullptr);
-
-    updateDesc = {pCubeUniformBuffers[(frameIndex * CUBE_COUNT) + 1]};
-    beginUpdateResource(&updateDesc);
-    *(CubeUniformBlock *)updateDesc.pMappedData = cubes[1];
-    endUpdateResource(&updateDesc, nullptr);
+    for (int i = 0; i < CUBE_COUNT; i++)
+    {
+        BufferUpdateDesc updateDesc = {pCubeUniformBuffers[frameIndex * CUBE_COUNT + i]};
+        beginUpdateResource(&updateDesc);
+        *(CubeUniformBlock *)updateDesc.pMappedData = cubes[i];
+        endUpdateResource(&updateDesc, nullptr);
+    }
 }
 void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
 {
-    constexpr uint32_t sphereVbStride = sizeof(float) * 6;
+    constexpr uint32_t stride = sizeof(float) * 6;
 
     LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
@@ -223,14 +219,14 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
     loadActions.mClearDepth.depth = 0.0f;
     cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
 
-    for (int i = 1; i < CUBE_COUNT; i++)
-    {
-        cmdBindPipeline(pCmd, pPipeline);
+    cmdBindPipeline(pCmd, pPipeline);
+    cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
 
+    for (int i = 0; i < CUBE_COUNT; i++)
+    {
         cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + i, pDescriptorSetCube);
         cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetScene);
 
-        cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &sphereVbStride, nullptr);
         cmdDraw(pCmd, cubeVertexCount / 6, 0);
     }
 }
