@@ -25,7 +25,6 @@ private:
     int cubeVertexCount;
     Buffer *pCubeVertexBuffer;
 
-    Buffer **pCameraUniformBuffer;
     Buffer **pCubeUniformBuffers;
     Buffer **pSceneUniformBuffer;
 
@@ -33,16 +32,10 @@ private:
 
     Shader *pShader;
     RootSignature *pRootSignature;
-    DescriptorSet *pDescriptorSetCamera;
     DescriptorSet *pDescriptorSetScene;
     DescriptorSet *pDescriptorSetCube;
 
     Pipeline *pPipeline;
-
-    struct CameraUniformBlock
-    {
-        CameraMatrix mProjectView;
-    } camera;
 
     struct CubeUniformBlock
     {
@@ -53,6 +46,8 @@ private:
     static constexpr size_t POINT_LIGHT_COUNT = 2;
     struct SceneUniformBlock
     {
+        //Camera
+        CameraMatrix mProjectView;
         // Ambient Light
         vec4 AmbientLight;
         // Point Light
