@@ -6,6 +6,7 @@
 #define DEMO2SCENE_H
 
 #include "IScene.h"
+#include "IInput.h"
 
 class Demo2Scene : public IScene
 {
@@ -18,6 +19,8 @@ public:
     virtual void Update(float deltaTime, uint32_t width, uint32_t height);
     virtual void PreDraw(uint32_t frameIndex);
     virtual void Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex);
+
+    bool OnInputAction(InputActionContext* ctx);
 
 private:
     static constexpr size_t CUBE_COUNT = 2;

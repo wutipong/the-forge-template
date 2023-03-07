@@ -3,7 +3,9 @@
 //
 
 #include "Demo2Scene.h"
+#include "IInput.h"
 #include "IResourceLoader.h"
+#include "IUI.h"
 #include "stb_ds.h"
 
 void Demo2Scene::Init(uint32_t imageCount)
@@ -53,12 +55,26 @@ void Demo2Scene::Init(uint32_t imageCount)
     scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.2f};
 
     cubes[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
-    cubes[0].Transform = mat4::scale({10.0f, 10.0f, 10.0f}) * mat4::translation({0.0f, 0.0f, 5.0f});
+    cubes[0].Transform = mat4::translation({0.0f, 0.0f, 5.0f}) * mat4::scale(vec3{10.0f});
 
     cubes[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
-    cubes[1].Transform = mat4::translation({0.0f, 0.0f,10.0f});
+    cubes[1].Transform = mat4::translation({0.0f, 0.0f, -1.0f}) * mat4::scale(vec3{2.0f}) ;
 
     pCameraController = initFpsCameraController({0, -100.0, 0}, {0, 0, 0});
+
+    InputActionDesc desc{DefaultInputActions::ROTATE_CAMERA,
+                         [](InputActionContext *ctx) -> bool
+                         { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
+                         this};
+
+    addInputAction(&desc);
+
+    desc = {DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
+            [](InputActionContext *ctx) -> bool
+            { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
+            this};
+
+    addInputAction(&desc);
 }
 
 void Demo2Scene::Exit()
@@ -229,4 +245,21 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
 
         cmdDraw(pCmd, cubeVertexCount / 6, 0);
     }
+}
+bool Demo2Scene::OnInputAction(InputActionContext *ctx)
+{
+    if (uiIsFocused())
+        return false;
+
+    switch (ctx->mActionId)
+    {
+    case DefaultInputActions::ROTATE_CAMERA:
+        pCameraController->onRotate(ctx->mFloat2);
+        break;
+
+    case DefaultInputActions ::TRANSLATE_CAMERA:
+        pCameraController->onMove(ctx->mFloat2);
+        break;
+    }
+    return true;
 }
