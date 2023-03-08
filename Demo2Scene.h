@@ -5,8 +5,8 @@
 #ifndef DEMO2SCENE_H
 #define DEMO2SCENE_H
 
-#include "IScene.h"
 #include "IInput.h"
+#include "IScene.h"
 
 class Demo2Scene : public IScene
 {
@@ -20,37 +20,46 @@ public:
     virtual void PreDraw(uint32_t frameIndex);
     virtual void Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex);
 
-    bool OnInputAction(InputActionContext* ctx);
+    bool OnInputAction(InputActionContext *ctx);
 
 private:
-    static constexpr size_t CUBE_COUNT = 2;
+    static constexpr size_t OBJECT_COUNT = 2;
 
     int cubeVertexCount;
     Buffer *pCubeVertexBuffer;
 
-    Buffer **pCubeUniformBuffers;
+    int sphereVertexCount;
+    Buffer *pSphereVertexBuffer;
+
+    Buffer **pObjectUniformBuffers;
     Buffer **pSceneUniformBuffer;
 
     ICameraController *pCameraController;
 
     Shader *pShader;
     RootSignature *pRootSignature;
-    DescriptorSet *pDescriptorSetScene;
-    DescriptorSet *pDescriptorSetCube;
+    DescriptorSet *pDescriptorSetSceneUniform;
+    DescriptorSet *pDescriptorSetObjectUniform;
 
     Pipeline *pPipeline;
 
-    struct CubeUniformBlock
+    struct ObjectUniformBlock
     {
         mat4 Transform;
         vec4 Color;
-    } cubes[CUBE_COUNT];
+    } objects[OBJECT_COUNT];
+
+    enum class ObjectType
+    {
+        Cube,
+        Sphere
+    } objectTypes[OBJECT_COUNT];
 
     static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 1;
     static constexpr size_t POINT_LIGHT_COUNT = 2;
     struct SceneUniformBlock
     {
-        //Camera
+        // Camera
         CameraMatrix mProjectView;
         // Ambient Light
         vec4 AmbientLight;

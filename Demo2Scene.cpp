@@ -13,13 +13,23 @@ void Demo2Scene::Init(uint32_t imageCount)
     float *vertices{};
 
     generateCuboidPoints(&vertices, &cubeVertexCount);
-    uint64_t sphereDataSize = cubeVertexCount * sizeof(float);
     BufferLoadDesc bufferLoadDesc = {};
     bufferLoadDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
     bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
-    bufferLoadDesc.mDesc.mSize = sphereDataSize;
+    bufferLoadDesc.mDesc.mSize = cubeVertexCount * sizeof(float);
     bufferLoadDesc.pData = vertices;
     bufferLoadDesc.ppBuffer = &pCubeVertexBuffer;
+    addResource(&bufferLoadDesc, nullptr);
+
+    tf_free(vertices);
+
+    generateSpherePoints(&vertices, &sphereVertexCount, 64);
+    bufferLoadDesc = {};
+    bufferLoadDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
+    bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
+    bufferLoadDesc.mDesc.mSize = sphereVertexCount * sizeof(float);
+    bufferLoadDesc.pData = vertices;
+    bufferLoadDesc.ppBuffer = &pSphereVertexBuffer;
     addResource(&bufferLoadDesc, nullptr);
 
     tf_free(vertices);
@@ -27,14 +37,14 @@ void Demo2Scene::Init(uint32_t imageCount)
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
-    ubDesc.mDesc.mSize = sizeof(CubeUniformBlock);
+    ubDesc.mDesc.mSize = sizeof(ObjectUniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    arrsetlen(pCubeUniformBuffers, imageCount * CUBE_COUNT);
-    for (uint32_t i = 0; i < imageCount * CUBE_COUNT; ++i)
+    arrsetlen(pObjectUniformBuffers, imageCount * OBJECT_COUNT);
+    for (uint32_t i = 0; i < imageCount * OBJECT_COUNT; ++i)
     {
-        ubDesc.ppBuffer = &pCubeUniformBuffers[i];
+        ubDesc.ppBuffer = &pObjectUniformBuffers[i];
         addResource(&ubDesc, nullptr);
     }
 
@@ -56,11 +66,13 @@ void Demo2Scene::Init(uint32_t imageCount)
     scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, -0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.2f};
 
-    cubes[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
-    cubes[0].Transform = mat4::translation({0.0f, 0.0f, 5.0f}) * mat4::scale(vec3{10.0f});
+    objectTypes[0] = ObjectType::Cube;
+    objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
+    objects[0].Transform = mat4::translation({0.0f, 0.0f, 5.0f}) * mat4::scale(vec3{10.0f});
 
-    cubes[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
-    cubes[1].Transform = mat4::translation({0.0f, 0.0f, -1.0f})*mat4::rotationX(0.15f * PI ) * mat4::scale(vec3{2.0f}) ;
+    objectTypes[1] = ObjectType::Sphere;
+    objects[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
+    objects[1].Transform = mat4::translation({0.0f, 0.0f, -1.0f});
 
     pCameraController = initFpsCameraController({0, -100.0, 0}, {0, 0, 0});
 
@@ -82,20 +94,19 @@ void Demo2Scene::Init(uint32_t imageCount)
 void Demo2Scene::Exit()
 {
     removeResource(pCubeVertexBuffer);
+    removeResource(pSphereVertexBuffer);
 
-    for (int i = 0; i < arrlen(pCubeUniformBuffers); i++)
+    for (int i = 0; i < arrlen(pObjectUniformBuffers); i++)
     {
-        removeResource(pCubeUniformBuffers[i]);
+        removeResource(pObjectUniformBuffers[i]);
     }
-    tf_free(pCubeUniformBuffers);
+    tf_free(pObjectUniformBuffers);
 
     for (int i = 0; i < arrlen(pSceneUniformBuffer); i++)
     {
         removeResource(pSceneUniformBuffer[i]);
     }
     tf_free(pSceneUniformBuffer);
-
-    removeResource(pCubeVertexBuffer);
 
     exitCameraController(pCameraController);
 }
@@ -117,10 +128,10 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
 
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetScene);
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetSceneUniform);
 
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * CUBE_COUNT)};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetCube);
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetObjectUniform);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -166,12 +177,12 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addPipeline(pRenderer, &desc, &pPipeline);
     }
 
-    for (int i = 0; i < imageCount * CUBE_COUNT; i++)
+    for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
-        params.ppBuffers = &pCubeUniformBuffers[i];
-        updateDescriptorSet(pRenderer, i, pDescriptorSetCube, 1, &params);
+        params.ppBuffers = &pObjectUniformBuffers[i];
+        updateDescriptorSet(pRenderer, i, pDescriptorSetObjectUniform, 1, &params);
     }
 
     for (int i = 0; i < imageCount; i++)
@@ -180,7 +191,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         params.pName = "uniformSceneBlock";
         params.ppBuffers = &pSceneUniformBuffer[i];
 
-        updateDescriptorSet(pRenderer, i, pDescriptorSetScene, 1, &params);
+        updateDescriptorSet(pRenderer, i, pDescriptorSetSceneUniform, 1, &params);
     }
 }
 void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
@@ -192,8 +203,8 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
-        removeDescriptorSet(pRenderer, pDescriptorSetScene);
-        removeDescriptorSet(pRenderer, pDescriptorSetCube);
+        removeDescriptorSet(pRenderer, pDescriptorSetSceneUniform);
+        removeDescriptorSet(pRenderer, pDescriptorSetObjectUniform);
 
         removeRootSignature(pRenderer, pRootSignature);
         removeShader(pRenderer, pShader);
@@ -219,11 +230,11 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     *(SceneUniformBlock *)updateDesc.pMappedData = scene;
     endUpdateResource(&updateDesc, nullptr);
 
-    for (int i = 0; i < CUBE_COUNT; i++)
+    for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        BufferUpdateDesc updateDesc = {pCubeUniformBuffers[frameIndex * CUBE_COUNT + i]};
+        BufferUpdateDesc updateDesc = {pObjectUniformBuffers[frameIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
-        *(CubeUniformBlock *)updateDesc.pMappedData = cubes[i];
+        *(ObjectUniformBlock *)updateDesc.pMappedData = objects[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 }
@@ -238,14 +249,31 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
     cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
 
     cmdBindPipeline(pCmd, pPipeline);
-    cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
 
-    for (int i = 0; i < CUBE_COUNT; i++)
+    for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * CUBE_COUNT) + i, pDescriptorSetCube);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetScene);
+        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDescriptorSetObjectUniform);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetSceneUniform);
 
-        cmdDraw(pCmd, cubeVertexCount / 6, 0);
+        int vertexCount = 0;
+
+        switch (objectTypes[i])
+        {
+        case ObjectType::Cube:
+            cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
+            vertexCount = cubeVertexCount;
+            break;
+
+        case ObjectType::Sphere:
+            cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &stride, nullptr);
+            vertexCount = sphereVertexCount;
+            break;
+
+        default:
+            continue;
+        }
+
+        cmdDraw(pCmd, vertexCount / 6, 0);
     }
 }
 bool Demo2Scene::OnInputAction(InputActionContext *ctx)
