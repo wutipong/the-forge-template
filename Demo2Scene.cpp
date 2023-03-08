@@ -63,8 +63,12 @@ void Demo2Scene::Init(uint32_t imageCount)
     }
 
     scene.AmbientLight = {1.0f, 0.05f, 1.0f, 0.05f};
+
     scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, -0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.2f};
+
+    scene.DirectionalLightDirection[1] = vec4{-10.0f, -0.65f, -0.5f, 1.0f};
+    scene.DirectionalLightColor[1] = {0.0f, 0.5f, 0.75f, 0.1f};
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};

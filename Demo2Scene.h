@@ -55,7 +55,7 @@ private:
         Sphere
     } objectTypes[OBJECT_COUNT];
 
-    static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 1;
+    static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
     static constexpr size_t POINT_LIGHT_COUNT = 2;
     struct SceneUniformBlock
     {
