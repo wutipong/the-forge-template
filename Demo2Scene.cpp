@@ -52,13 +52,15 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.2f};
+    scene.AmbientLight = {1.0f, 0.05f, 1.0f, 0.05f};
+    scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, -0.5f, 1.0f};
+    scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.2f};
 
     cubes[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
     cubes[0].Transform = mat4::translation({0.0f, 0.0f, 5.0f}) * mat4::scale(vec3{10.0f});
 
     cubes[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
-    cubes[1].Transform = mat4::translation({0.0f, 0.0f, -1.0f}) * mat4::scale(vec3{2.0f}) ;
+    cubes[1].Transform = mat4::translation({0.0f, 0.0f, -1.0f})*mat4::rotationX(0.15f * PI ) * mat4::scale(vec3{2.0f}) ;
 
     pCameraController = initFpsCameraController({0, -100.0, 0}, {0, 0, 0});
 

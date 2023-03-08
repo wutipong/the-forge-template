@@ -1,11 +1,30 @@
+#include "demo2_resources.h.fsl"
+
 STRUCT(VSOutput)
 {
     DATA(float4, Position, SV_Position);
-    DATA(float4, Color, COLOR);
+    DATA(float4, Color,    COLOR);
+    DATA(float4, Normal,   NORMAL);
 };
 
 float4 PS_MAIN( VSOutput In )
 {
     INIT_MAIN;
-    RETURN(In.Color);
+    float4 Out = {0.0, 0.0, 0.0, 0.0};
+
+    float4 aLight = Get(ambientLight);
+
+    Out.rgb = (In.Color.rgb * aLight.rgb) * aLight.a;
+
+    for(int i = 0; i< DIRECTIONAL_LIGHT_COUNT; i++)
+    {
+        float factor = dot(normalize(In.Normal.xyz), -directionalLightDirection[i].xyz);
+        if(factor < 0) continue;
+
+        Out.rgb += (In.Color.rgb * directionalLightColor[i].rgb) * (directionalLightColor[i].a * factor);
+    }
+
+    Out.a = 1.0;
+
+    RETURN(Out);
 }

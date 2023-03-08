@@ -46,6 +46,7 @@ private:
         vec4 Color;
     } cubes[CUBE_COUNT];
 
+    static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 1;
     static constexpr size_t POINT_LIGHT_COUNT = 2;
     struct SceneUniformBlock
     {
@@ -53,6 +54,9 @@ private:
         CameraMatrix mProjectView;
         // Ambient Light
         vec4 AmbientLight;
+        // Directional Light;
+        vec4 DirectionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
+        vec4 DirectionalLightColor[DIRECTIONAL_LIGHT_COUNT];
         // Point Light
         vec4 PointLightPosition[POINT_LIGHT_COUNT];
         vec4 PointLightColor[POINT_LIGHT_COUNT];

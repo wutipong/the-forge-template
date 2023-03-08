@@ -1,16 +1,19 @@
 #ifndef RESOURCES_DEMO2_H
 #define RESOURCES_DEMO2_H
 
-// UPDATE_FREQ_PER_FRAME
-#ifndef POINT_LIGHT_COUNT
-    #define POINT_LIGHT_COUNT 2
-#endif
-
 CBUFFER(uniformObjectBlock, UPDATE_FREQ_PER_DRAW, b0, binding = 0)
 {
     DATA(float4x4, toWorld, None);
     DATA(float4, color, None);
 };
+
+#ifndef DIRECTIONAL_LIGHT_COUNT
+#define DIRECTIONAL_LIGHT_COUNT 1
+#endif
+
+#ifndef POINT_LIGHT_COUNT
+#define POINT_LIGHT_COUNT 2
+#endif
 
 CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b5, binding = 1)
 {
@@ -20,7 +23,10 @@ CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b5, binding = 1)
     DATA(float4x4, mvp, None);
 #endif
     DATA(float4, ambientLight, None);
-    // Point Light Information
+    // Directional Light
+    DATA(float4, directionalLightDirection[DIRECTIONAL_LIGHT_COUNT], None);
+    DATA(float4, directionalLightColor[DIRECTIONAL_LIGHT_COUNT], None);
+    // Point Light
     DATA(float4, pointLightPosition[POINT_LIGHT_COUNT], None);
     DATA(float4, pointLightColor[POINT_LIGHT_COUNT], None);
 };
