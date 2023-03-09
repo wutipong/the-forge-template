@@ -16,8 +16,6 @@ float3 doAmbientLight(float4 inColor, float4 aLight)
 
 float3 doDirectionalLight(float4 inColor, float4 inNormal, float4 lightDirection, float4 lightColor)
 {
-    return lightColor.rgb;
-
     float factor = dot(normalize(inNormal.xyz), -normalize(lightDirection.xyz));
     if(factor < 0) return float3(0,0,0);
 

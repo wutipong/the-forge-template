@@ -8,7 +8,7 @@ CBUFFER(uniformObjectBlock, UPDATE_FREQ_PER_DRAW, b0, binding = 0)
 };
 
 #ifndef DIRECTIONAL_LIGHT_COUNT
-#define DIRECTIONAL_LIGHT_COUNT 1
+#define DIRECTIONAL_LIGHT_COUNT 2
 #endif
 
 #ifndef POINT_LIGHT_COUNT
