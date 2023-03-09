@@ -7,21 +7,36 @@ STRUCT(VSOutput)
     DATA(float4, Normal,   NORMAL);
 };
 
+float3 doAmbientLight(float4 inColor, float4 aLight)
+{
+    float3 lightFactor = aLight.rgb * aLight.a;
+
+    return inColor.rgb * lightFactor;
+}
+
+float3 doDirectionalLight(float4 inColor, float4 inNormal, float4 lightDirection, float4 lightColor)
+{
+    return lightColor.rgb;
+
+    float factor = dot(normalize(inNormal.xyz), -normalize(lightDirection.xyz));
+    if(factor < 0) return float3(0,0,0);
+
+    return inColor.rgb * lightColor.rgb * (lightColor.a * factor);
+}
+
 float4 PS_MAIN( VSOutput In )
 {
     INIT_MAIN;
     float4 Out = {0.0, 0.0, 0.0, 0.0};
 
-    float4 aLight = Get(ambientLight);
+    Out.rgb = doAmbientLight(In.Color, Get(ambientLight));
 
-    Out.rgb = (In.Color.rgb * aLight.rgb) * aLight.a;
-
-    for(int i = 0; i< DIRECTIONAL_LIGHT_COUNT; i++)
+    for(int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
-        float factor = dot(normalize(In.Normal.xyz), -directionalLightDirection[i].xyz);
-        if(factor < 0) continue;
-
-        Out.rgb += (In.Color.rgb * directionalLightColor[i].rgb) * (directionalLightColor[i].a * factor);
+        Out.rgb += doDirectionalLight(
+            In.Color, In.Normal,
+            Get(directionalLightDirection[i]), Get(directionalLightColor[i])
+            );
     }
 
     Out.a = 1.0;

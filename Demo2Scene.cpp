@@ -62,7 +62,7 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.AmbientLight = {1.0f, 0.05f, 1.0f, 0.05f};
+    scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.02f};
 
     scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, -0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.2f};
