@@ -23,7 +23,7 @@ public:
     bool OnInputAction(InputActionContext *ctx);
 
 private:
-    static constexpr size_t OBJECT_COUNT = 2;
+    static constexpr size_t OBJECT_COUNT = 3;
 
     int cubeVertexCount;
     Buffer *pCubeVertexBuffer;

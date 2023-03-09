@@ -72,13 +72,18 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
-    objects[0].Transform = mat4::translation({0.0f, 0.0f, 5.0f}) * mat4::scale(vec3{10.0f});
+    objects[0].Transform = mat4::translation({0.0f, 0.0f, 2.0f}) * mat4::scale(vec3{100.0f, 100.0f, 1.0f});
 
     objectTypes[1] = ObjectType::Sphere;
     objects[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
-    objects[1].Transform = mat4::translation({0.0f, 0.0f, -1.0f});
+    objects[1].Transform = mat4::translation({0.0f, 0.0f, 0.0f});
 
-    pCameraController = initFpsCameraController({0, -100.0, 0}, {0, 0, 0});
+    objectTypes[2] = ObjectType::Cube;
+    objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
+    objects[2].Transform =
+        mat4::translation({3.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) * mat4::scale(vec3{3.0f});
+
+    pCameraController = initFpsCameraController({0, -5.0f, -2}, {0, 0, 0});
 
     InputActionDesc desc{DefaultInputActions::ROTATE_CAMERA,
                          [](InputActionContext *ctx) -> bool
