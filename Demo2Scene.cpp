@@ -71,10 +71,10 @@ void Demo2Scene::Init(uint32_t imageCount)
     scene.DirectionalLightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
 
     scene.PointLightPosition[0] = {2.0f, -1.0f, -1.0f, 1.0f};
-    scene.PointLightColor[0] = {0.25f, 0.5f, 0.0f, 0.01f};
+    scene.PointLightColor[0] = {0.25f, 0.5f, 0.0f, 0.1f};
 
-    scene.PointLightPosition[1] = {2.0f, -1.0f, -1.0f, 1.0f};
-    scene.PointLightColor[1] = {0.25f, 0.0f, 0.5f, 0.01f};
+    scene.PointLightPosition[1] = {-2.0f, -1.0f, -1.0f, 1.0f};
+    scene.PointLightColor[1] = {0.25f, 0.0f, 0.5f, 0.1f};
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};

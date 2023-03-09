@@ -9,6 +9,7 @@ STRUCT(VSInput)
 STRUCT(VSOutput)
 {
 	DATA(float4, Position, SV_Position);
+    DATA(float4, WorldPos, Position);
 	DATA(float4, Color,    COLOR);
     DATA(float4, Normal,   NORMAL);
 };
@@ -25,10 +26,9 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
 #endif
     Out.Position = mul(tempMat, float4(In.Position.xyz, 1.0f));
 
-    float4 normal = normalize(mul(Get(toWorld), float4(In.Normal.xyz, 0.0f))); // Assume uniform scaling
-    float4 pos = mul(Get(toWorld), float4(In.Position.xyz, 1.0f));
-
+    Out.Normal = normalize(mul(Get(toWorld), float4(In.Normal.xyz, 0.0f))); // Assume uniform scaling
+    Out.WorldPos = mul(Get(toWorld), float4(In.Position.xyz, 1.0f));
     Out.Color = Get(color);
-    Out.Normal = normal;
+
     RETURN(Out);
 }
