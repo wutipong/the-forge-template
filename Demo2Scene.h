@@ -7,6 +7,7 @@
 
 #include "IInput.h"
 #include "IScene.h"
+#include "IUI.h"
 
 class Demo2Scene : public IScene
 {
@@ -46,7 +47,7 @@ private:
     struct ObjectUniformBlock
     {
         mat4 Transform;
-        vec4 Color;
+        float4 Color;
     } objects[OBJECT_COUNT];
 
     enum class ObjectType
@@ -70,6 +71,8 @@ private:
         vec4 PointLightPosition[POINT_LIGHT_COUNT];
         vec4 PointLightColor[POINT_LIGHT_COUNT];
     } scene;
+
+    UIComponent *pObjectWindow;
 };
 
 #endif // DEMO2SCENE_H

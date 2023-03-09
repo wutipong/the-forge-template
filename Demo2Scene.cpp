@@ -64,10 +64,10 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.02f};
 
-    scene.DirectionalLightDirection[0] = vec4{0.5f, 0.25f, 0.5f, 1.0f};
+    scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, 0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
 
-    scene.DirectionalLightDirection[1] = vec4{-1.0f, 0.0f, 0.0f, 1.0f};
+    scene.DirectionalLightDirection[1] = vec4{-1.0f, -0.5f, 0.0f, 1.0f};
     scene.DirectionalLightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
 
     scene.PointLightPosition[0] = {2.0f, -1.0f, -1.0f, 1.0f};
@@ -78,7 +78,7 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
-    objects[0].Transform = mat4::translation({0.0f, 0.0f, 2.0f}) * mat4::scale(vec3{100.0f, 100.0f, 1.0f});
+    objects[0].Transform = mat4::translation({0.0f, -2.0f, 0.0f}) * mat4::scale(vec3{100.0f, 1.0f, 10.0f});
 
     objectTypes[1] = ObjectType::Sphere;
     objects[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -87,9 +87,9 @@ void Demo2Scene::Init(uint32_t imageCount)
     objectTypes[2] = ObjectType::Cube;
     objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
     objects[2].Transform =
-        mat4::translation({3.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) * mat4::scale(vec3{3.0f});
+        mat4::translation({3.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) * mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
 
-    pCameraController = initFpsCameraController({0, -5.0f, -2}, {0, 0, 0});
+    pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
     InputActionDesc desc{DefaultInputActions::ROTATE_CAMERA,
                          [](InputActionContext *ctx) -> bool
@@ -104,10 +104,25 @@ void Demo2Scene::Init(uint32_t imageCount)
             this};
 
     addInputAction(&desc);
+
+    UIComponentDesc guiDesc = {};
+    uiCreateComponent("Objects", &guiDesc, &pObjectWindow);
+
+    ColorPickerWidget colorPickerWidget;
+    colorPickerWidget.pData = &objects[0].Color;
+    uiCreateComponentWidget(pObjectWindow, "Object 0 Color", &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
+
+    colorPickerWidget.pData = &objects[1].Color;
+    uiCreateComponentWidget(pObjectWindow, "Object 1 Color", &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
+
+    colorPickerWidget.pData = &objects[2].Color;
+    uiCreateComponentWidget(pObjectWindow, "Object 2 Color", &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
 }
 
 void Demo2Scene::Exit()
 {
+    uiDestroyComponent(pObjectWindow);
+
     removeResource(pCubeVertexBuffer);
     removeResource(pSphereVertexBuffer);
 
@@ -293,18 +308,24 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
 }
 bool Demo2Scene::OnInputAction(InputActionContext *ctx)
 {
-    if (uiIsFocused())
-        return false;
-
-    switch (ctx->mActionId)
+    if ((*ctx->pCaptured))
     {
-    case DefaultInputActions::ROTATE_CAMERA:
-        pCameraController->onRotate(ctx->mFloat2);
-        break;
+        if (uiIsFocused())
+        {
+            return true;
+        }
 
-    case DefaultInputActions ::TRANSLATE_CAMERA:
-        pCameraController->onMove(ctx->mFloat2);
-        break;
+        switch (ctx->mActionId)
+        {
+        case DefaultInputActions::ROTATE_CAMERA:
+            pCameraController->onRotate(ctx->mFloat2);
+            break;
+
+        case DefaultInputActions ::TRANSLATE_CAMERA:
+            pCameraController->onMove(ctx->mFloat2);
+            break;
+        }
     }
+
     return true;
 }
