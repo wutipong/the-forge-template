@@ -73,12 +73,12 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, -0.5f, 1.0f};
+    scene.DirectionalLightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
     scene.DirectionalLightAmbient[0].x = 0.1f;
     scene.DirectionalLightIntensity[0].x = 0.4f;
 
-    scene.DirectionalLightDirection[1] = vec4{-1.0f, -0.5f, 0.0f, 1.0f};
+    scene.DirectionalLightDirection[1] = {-1.0f, -0.5f, 0.0f, 1.0f};
     scene.DirectionalLightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
     scene.DirectionalLightAmbient[1].x = 0.1f;
     scene.DirectionalLightIntensity[1].x = 0.4f;
@@ -99,8 +99,8 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     objectTypes[2] = ObjectType::Cube;
     objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
-    objects[2].Transform =
-        mat4::translation({4.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) * mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
+    objects[2].Transform = mat4::translation({4.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) *
+        mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
@@ -121,15 +121,80 @@ void Demo2Scene::Init(uint32_t imageCount)
     UIComponentDesc guiDesc = {};
     uiCreateComponent("Objects", &guiDesc, &pObjectWindow);
 
-    ColorPickerWidget colorPickerWidget;
-    colorPickerWidget.pData = &objects[0].Color;
-    uiCreateComponentWidget(pObjectWindow, "Object 0 Color", &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
+    for (int i = 0; i < OBJECT_COUNT; i++)
+    {
+        char str[] = "Object 0 Color";
+        sprintf(str, "Object %d Color", i);
 
-    colorPickerWidget.pData = &objects[1].Color;
-    uiCreateComponentWidget(pObjectWindow, "Object 1 Color", &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
+        ColorPickerWidget colorPickerWidget;
+        colorPickerWidget.pData = &objects[i].Color;
+        uiCreateComponentWidget(pObjectWindow, str, &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
+    }
 
-    colorPickerWidget.pData = &objects[2].Color;
-    uiCreateComponentWidget(pObjectWindow, "Object 2 Color", &colorPickerWidget, WIDGET_TYPE_COLOR_PICKER);
+    guiDesc = {};
+    uiCreateComponent("Lighting", &guiDesc, &pObjectWindow);
+    for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
+    {
+        {
+            char label[] = "Light 0 Color";
+            sprintf(label, "Light %d Color", i);
+
+            ColorPickerWidget widget;
+            widget.pData = &scene.DirectionalLightColor[i];
+            uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_COLOR_PICKER);
+        }
+
+        {
+            char label[] = "Light 0 Direction";
+            sprintf(label, "Light %d Direction", i);
+
+            SliderFloat4Widget widget;
+            widget.pData = &scene.DirectionalLightDirection[i];
+            widget.mMax = float4{
+                1.0f,
+                1.0f,
+                1.0f,
+                1.0f,
+            };
+            widget.mMin = float4{
+                -1.0f,
+                -1.0f,
+                -1.0f,
+                -1.0f,
+            };
+            widget.mStep = float4{
+                0.01f,
+                0.01f,
+                0.01f,
+                0.01f,
+            };
+            uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_SLIDER_FLOAT4);
+        }
+
+        {
+            char label[] = "Light 0 Ambient";
+            sprintf(label, "Light %d Ambient", i);
+
+            SliderFloatWidget widget;
+            widget.pData = &scene.DirectionalLightAmbient[i].x;
+            widget.mMax = 1.0f;
+            widget.mMin = 0.0f;
+            widget.mStep = 0.1f;
+            uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_SLIDER_FLOAT);
+        }
+
+        {
+            char label[] = "Light 0 Diffuse";
+            sprintf(label, "Light %d Diffuse", i);
+
+            SliderFloatWidget widget;
+            widget.pData = &scene.DirectionalLightIntensity[i].x;
+            widget.mMax = 1.0f;
+            widget.mMin = 0.0f;
+            widget.mStep = 0.1f;
+            uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_SLIDER_FLOAT);
+        }
+    }
 }
 
 void Demo2Scene::Exit()
@@ -266,7 +331,6 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
     scene.ProjectView = mProjectView;
-
 }
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)
