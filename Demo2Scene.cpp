@@ -264,7 +264,9 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
     CameraMatrix mProjectView = projection * pCameraController->getViewMatrix();
 
-    scene.mProjectView = mProjectView;
+    scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
+    scene.ProjectView = mProjectView;
+
 }
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)

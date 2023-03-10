@@ -65,7 +65,8 @@ private:
     struct SceneUniformBlock
     {
         // Camera
-        CameraMatrix mProjectView;
+        vec4 CameraPosition;
+        CameraMatrix ProjectView;
         // Directional Light;
         vec4 DirectionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
         vec4 DirectionalLightColor[DIRECTIONAL_LIGHT_COUNT];

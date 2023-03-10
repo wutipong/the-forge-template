@@ -9,13 +9,14 @@ STRUCT(VSOutput)
 };
 
 float3 doDirectionalLight(
-    float4 inColor, float4 inNormal, float4 lightDirection, float4 lightColor, float intensity, float ambient)
+    float4 inColor, float4 inNormal, float4 lightDirection, float4 lightColor, float intensity, float ambientFactor)
 {
-    float factor = dot(normalize(inNormal.xyz), -normalize(lightDirection.xyz));
-    if(factor < 0) factor = 0;
-    float3 ambientFactor = lightColor.rgb * ambient;
+    float3 litColor = lightColor.rgb * inColor.rgb;
 
-    return inColor.rgb * lightColor.rgb * (intensity * factor) + (inColor.rgb * ambientFactor);
+    float diffuseFactor = dot(normalize(inNormal.xyz), -normalize(lightDirection.xyz)) * intensity;
+    if(diffuseFactor < 0) diffuseFactor = 0;
+
+    return litColor * (diffuseFactor + ambientFactor);
 }
 
 float3 doPointLight(float4 inColor, float4 position, float4 inNormal, float4 lightPosition, float4 lightColor)
