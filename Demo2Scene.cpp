@@ -34,6 +34,17 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     tf_free(vertices);
 
+    generateBonePoints(&vertices, &boneVertexCount, 0.25f);
+    bufferLoadDesc = {};
+    bufferLoadDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
+    bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
+    bufferLoadDesc.mDesc.mSize = boneVertexCount * sizeof(float);
+    bufferLoadDesc.pData = vertices;
+    bufferLoadDesc.ppBuffer = &pBoneVertexBuffer;
+    addResource(&bufferLoadDesc, nullptr);
+
+    tf_free(vertices);
+
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
@@ -80,7 +91,7 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
-    objects[0].Transform = mat4::translation({0.0f, -2.0f, 0.0f}) * mat4::scale(vec3{100.0f, 1.0f, 10.0f});
+    objects[0].Transform = mat4::translation({0.0f, -2.0f, 0.0f}) * mat4::scale(vec3{1000.0f, 1.0f, 1000.0f});
 
     objectTypes[1] = ObjectType::Sphere;
     objects[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -127,6 +138,7 @@ void Demo2Scene::Exit()
 
     removeResource(pCubeVertexBuffer);
     removeResource(pSphereVertexBuffer);
+    removeResource(pBoneVertexBuffer);
 
     for (int i = 0; i < arrlen(pObjectUniformBuffers); i++)
     {
@@ -299,6 +311,11 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
         case ObjectType::Sphere:
             cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &stride, nullptr);
             vertexCount = sphereVertexCount;
+            break;
+
+        case ObjectType::Bone:
+            cmdBindVertexBuffer(pCmd, 1, &pBoneVertexBuffer, &stride, nullptr);
+            vertexCount = boneVertexCount;
             break;
 
         default:

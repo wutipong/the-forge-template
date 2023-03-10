@@ -32,6 +32,9 @@ private:
     int sphereVertexCount;
     Buffer *pSphereVertexBuffer;
 
+    int boneVertexCount;
+    Buffer *pBoneVertexBuffer;
+
     Buffer **pObjectUniformBuffers;
     Buffer **pSceneUniformBuffer;
 
@@ -53,7 +56,8 @@ private:
     enum class ObjectType
     {
         Cube,
-        Sphere
+        Sphere,
+        Bone,
     } objectTypes[OBJECT_COUNT];
 
     static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
