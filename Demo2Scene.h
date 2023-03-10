@@ -62,11 +62,11 @@ private:
     {
         // Camera
         CameraMatrix mProjectView;
-        // Ambient Light
-        vec4 AmbientLight;
         // Directional Light;
         vec4 DirectionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
         vec4 DirectionalLightColor[DIRECTIONAL_LIGHT_COUNT];
+        float4 DirectionalLightAmbient[DIRECTIONAL_LIGHT_COUNT];
+        float4 DirectionalLightIntensity[DIRECTIONAL_LIGHT_COUNT];
         // Point Light
         vec4 PointLightPosition[POINT_LIGHT_COUNT];
         vec4 PointLightColor[POINT_LIGHT_COUNT];

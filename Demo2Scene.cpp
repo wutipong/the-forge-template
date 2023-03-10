@@ -62,13 +62,15 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.AmbientLight = {1.0f, 1.0f, 1.0f, 0.02f};
-
     scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, 0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
+    scene.DirectionalLightAmbient[0] = float4{0.1f};
+    scene.DirectionalLightIntensity[0] = float4{0.4f};
 
     scene.DirectionalLightDirection[1] = vec4{-1.0f, -0.5f, 0.0f, 1.0f};
     scene.DirectionalLightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
+    scene.DirectionalLightAmbient[1] = float4{0.1f};
+    scene.DirectionalLightIntensity[1] = float4{0.4f};
 
     scene.PointLightPosition[0] = {2.0f, -1.0f, -1.0f, 1.0f};
     scene.PointLightColor[0] = {0.25f, 0.5f, 0.0f, 0.1f};

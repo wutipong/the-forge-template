@@ -22,10 +22,11 @@ CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b5, binding = 1)
 #else
     DATA(float4x4, mvp, None);
 #endif
-    DATA(float4, ambientLight, None);
     // Directional Light
     DATA(float4, directionalLightDirection[DIRECTIONAL_LIGHT_COUNT], None);
     DATA(float4, directionalLightColor[DIRECTIONAL_LIGHT_COUNT], None);
+    DATA(float, directionalAmbient[DIRECTIONAL_LIGHT_COUNT], None);
+    DATA(float, directionalIntensity[DIRECTIONAL_LIGHT_COUNT], None);
     // Point Light
     DATA(float4, pointLightPosition[POINT_LIGHT_COUNT], None);
     DATA(float4, pointLightColor[POINT_LIGHT_COUNT], None);
