@@ -73,7 +73,7 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, 0.5f, 1.0f};
+    scene.DirectionalLightDirection[0] = vec4{0.5f, -0.25f, -0.5f, 1.0f};
     scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
     scene.DirectionalLightAmbient[0].x = 0.1f;
     scene.DirectionalLightIntensity[0].x = 0.4f;
@@ -100,7 +100,7 @@ void Demo2Scene::Init(uint32_t imageCount)
     objectTypes[2] = ObjectType::Cube;
     objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
     objects[2].Transform =
-        mat4::translation({3.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) * mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
+        mat4::translation({4.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) * mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
