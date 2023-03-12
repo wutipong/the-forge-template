@@ -73,21 +73,15 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.DirectionalLightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
-    scene.DirectionalLightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
-    scene.DirectionalLightAmbient[0].x = 0.1f;
-    scene.DirectionalLightIntensity[0].x = 0.4f;
+    scene.LightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
+    scene.LightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
+    scene.LightAmbient[0].x = 0.1f;
+    scene.LightIntensity[0].x = 0.4f;
 
-    scene.DirectionalLightDirection[1] = {-1.0f, -0.5f, 0.0f, 1.0f};
-    scene.DirectionalLightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
-    scene.DirectionalLightAmbient[1].x = 0.1f;
-    scene.DirectionalLightIntensity[1].x = 0.4f;
-
-    scene.PointLightPosition[0] = {2.0f, -1.0f, -1.0f, 1.0f};
-    scene.PointLightColor[0] = {0.25f, 0.5f, 0.0f, 0.1f};
-
-    scene.PointLightPosition[1] = {-2.0f, -1.0f, -1.0f, 1.0f};
-    scene.PointLightColor[1] = {0.25f, 0.0f, 0.5f, 0.1f};
+    scene.LightDirection[1] = {-1.0f, -0.5f, 0.0f, 1.0f};
+    scene.LightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
+    scene.LightAmbient[1].x = 0.1f;
+    scene.LightIntensity[1].x = 0.4f;
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -140,7 +134,7 @@ void Demo2Scene::Init(uint32_t imageCount)
             sprintf(label, "Light %d Color", i);
 
             ColorPickerWidget widget;
-            widget.pData = &scene.DirectionalLightColor[i];
+            widget.pData = &scene.LightColor[i];
             uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_COLOR_PICKER);
         }
 
@@ -149,7 +143,7 @@ void Demo2Scene::Init(uint32_t imageCount)
             sprintf(label, "Light %d Direction", i);
 
             SliderFloat4Widget widget;
-            widget.pData = &scene.DirectionalLightDirection[i];
+            widget.pData = &scene.LightDirection[i];
             widget.mMax = float4{
                 1.0f,
                 1.0f,
@@ -176,7 +170,7 @@ void Demo2Scene::Init(uint32_t imageCount)
             sprintf(label, "Light %d Ambient", i);
 
             SliderFloatWidget widget;
-            widget.pData = &scene.DirectionalLightAmbient[i].x;
+            widget.pData = &scene.LightAmbient[i].x;
             widget.mMax = 1.0f;
             widget.mMin = 0.0f;
             widget.mStep = 0.1f;
@@ -188,7 +182,7 @@ void Demo2Scene::Init(uint32_t imageCount)
             sprintf(label, "Light %d Diffuse", i);
 
             SliderFloatWidget widget;
-            widget.pData = &scene.DirectionalLightIntensity[i].x;
+            widget.pData = &scene.LightIntensity[i].x;
             widget.mMax = 1.0f;
             widget.mMin = 0.0f;
             widget.mStep = 0.1f;
@@ -331,6 +325,11 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
     scene.ProjectView = mProjectView;
+
+    for (auto &dir : scene.LightDirection)
+    {
+        dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
+    }
 }
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)

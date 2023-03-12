@@ -20,19 +20,11 @@ float3 doDirectionalLight(
     if(diffuseFactor < 0) diffuseFactor = 0;
 
     float3 viewDir = normalize(cameraPosition.xyz - worldPosition.xyz);
-    float3 reflectDir = reflect(normalize(lightDirection.xyz), inNormal.xyz);
+    float3 reflectDir = reflect(lightDirection.xyz, inNormal.xyz);
 
     float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), 32) * specularStrength * diffuseFactor;
 
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
-}
-
-float3 doPointLight(float4 inColor, float4 position, float4 inNormal, float4 lightPosition, float4 lightColor)
-{
-    float factor = dot(normalize(inNormal.xyz), normalize(position.xyz - lightPosition.xyz));
-    float distant = length(lightPosition - position);
-
-    return inColor.rgb * lightColor.rgb * (lightColor.a * factor * distant);
 }
 
 float4 PS_MAIN( VSOutput In )
@@ -49,14 +41,6 @@ float4 PS_MAIN( VSOutput In )
             Get(directionalIntensity[i]), Get(directionalAmbient[i]),
             Get(color).a);
     }
-
-    /* for(i = 0; i < POINT_LIGHT_COUNT; i++)
-    {
-        Out.rgb += doPointLight(
-            In.Color, In.WorldPos, In.Normal,
-            Get(pointLightPosition[i]), Get(pointLightColor[i])
-        );
-    } */
 
     Out.a = 1.0;
 

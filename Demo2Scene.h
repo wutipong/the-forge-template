@@ -61,20 +61,16 @@ private:
     } objectTypes[OBJECT_COUNT];
 
     static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
-    static constexpr size_t POINT_LIGHT_COUNT = 2;
     struct SceneUniformBlock
     {
         // Camera
         vec4 CameraPosition;
         CameraMatrix ProjectView;
         // Directional Light;
-        float4 DirectionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
-        float4 DirectionalLightColor[DIRECTIONAL_LIGHT_COUNT];
-        float4 DirectionalLightAmbient[DIRECTIONAL_LIGHT_COUNT];
-        float4 DirectionalLightIntensity[DIRECTIONAL_LIGHT_COUNT];
-        // Point Light
-        vec4 PointLightPosition[POINT_LIGHT_COUNT];
-        vec4 PointLightColor[POINT_LIGHT_COUNT];
+        float4 LightDirection[DIRECTIONAL_LIGHT_COUNT];
+        float4 LightColor[DIRECTIONAL_LIGHT_COUNT];
+        float4 LightAmbient[DIRECTIONAL_LIGHT_COUNT];
+        float4 LightIntensity[DIRECTIONAL_LIGHT_COUNT];
     } scene;
 
     UIComponent *pObjectWindow;
