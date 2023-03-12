@@ -9,20 +9,20 @@ STRUCT(VSOutput)
 };
 
 float3 doDirectionalLight(
-    float4 inColor, float4 inNormal, float4 worldPosition,
+    VSOutput In,
     float4 cameraPosition,
     float4 lightDirection, float4 lightColor,
-    float diffuseIntensity, float ambientFactor, float specularStrength)
+    float lightIntensity, float ambientFactor, float smoothness)
 {
-    float3 litColor = lightColor.rgb * inColor.rgb;
+    float3 litColor = lightColor.rgb * In.Color.rgb;
 
-    float diffuseFactor = dot(normalize(inNormal.xyz), -normalize(lightDirection.xyz)) * diffuseIntensity;
+    float diffuseFactor = dot(normalize(In.Normal.xyz), -normalize(lightDirection.xyz)) * lightIntensity;
     if(diffuseFactor < 0) diffuseFactor = 0;
 
-    float3 viewDir = normalize(cameraPosition.xyz - worldPosition.xyz);
-    float3 reflectDir = reflect(lightDirection.xyz, inNormal.xyz);
+    float3 viewDir = normalize(cameraPosition.xyz - In.WorldPos.xyz);
+    float3 reflectDir = reflect(lightDirection.xyz, In.Normal.xyz);
 
-    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), 32) * specularStrength * diffuseFactor;
+    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), 32) * smoothness * diffuseFactor;
 
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
 }
@@ -33,12 +33,12 @@ float4 PS_MAIN( VSOutput In )
     float4 Out = {0.0, 0.0, 0.0, 0.0};
 
     int i = 0;
-    for(i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
+    for(i = 0; i < LIGHT_COUNT; i++)
     {
         Out.rgb += doDirectionalLight(
-            In.Color, In.Normal, In.WorldPos, Get(cameraPosition),
-            Get(directionalLightDirection[i]), Get(directionalLightColor[i]),
-            Get(directionalIntensity[i]), Get(directionalAmbient[i]),
+            In, Get(cameraPosition),
+            Get(lightDirection[i]), Get(lightColor[i]),
+            Get(lightIntensity[i]), Get(lightAmbient[i]),
             Get(color).a);
     }
 
