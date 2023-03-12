@@ -20,9 +20,9 @@ float3 doDirectionalLight(
     if(diffuseFactor < 0) diffuseFactor = 0;
 
     float3 viewDir = normalize(cameraPosition.xyz - worldPosition.xyz);
-    float3 reflectDir = reflect(-lightDirection.xyz, inNormal.xyz);
+    float3 reflectDir = reflect(normalize(lightDirection.xyz), inNormal.xyz);
 
-    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), 32) * specularStrength;
+    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), 32) * specularStrength * diffuseFactor;
 
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
 }
