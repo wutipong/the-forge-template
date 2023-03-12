@@ -73,15 +73,7 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    scene.LightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
-    scene.LightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
-    scene.LightAmbient[0].x = 0.1f;
-    scene.LightIntensity[0].x = 0.4f;
-
-    scene.LightDirection[1] = {-1.0f, -0.5f, 0.0f, 1.0f};
-    scene.LightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
-    scene.LightAmbient[1].x = 0.1f;
-    scene.LightIntensity[1].x = 0.4f;
+    resetLightSettings();
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -127,6 +119,16 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     guiDesc = {};
     uiCreateComponent("Lighting", &guiDesc, &pObjectWindow);
+
+    ButtonWidget resetBtnWidget = {};
+    UIWidget *resetBtn = uiCreateComponentWidget(pObjectWindow, "Reset", &resetBtnWidget, WIDGET_TYPE_BUTTON);
+    uiSetWidgetOnEditedCallback(resetBtn, this,
+                                [](void *pUserData)
+                                {
+                                    auto *instance = reinterpret_cast<Demo2Scene *>(pUserData);
+                                    instance->resetLightSettings();
+                                });
+
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
         {
@@ -189,6 +191,18 @@ void Demo2Scene::Init(uint32_t imageCount)
             uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_SLIDER_FLOAT);
         }
     }
+}
+void Demo2Scene::resetLightSettings()
+{
+    scene.LightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
+    scene.LightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
+    scene.LightAmbient[0].x = 0.1f;
+    scene.LightIntensity[0].x = 0.4f;
+
+    scene.LightDirection[1] = {-1.0f, -0.5f, 0.0f, 1.0f};
+    scene.LightColor[1] = {0.0f, 0.5f, 0.75f, 0.4f};
+    scene.LightAmbient[1].x = 0.1f;
+    scene.LightIntensity[1].x = 0.4f;
 }
 
 void Demo2Scene::Exit()

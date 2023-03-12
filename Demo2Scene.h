@@ -74,6 +74,7 @@ private:
     } scene;
 
     UIComponent *pObjectWindow;
+    void resetLightSettings();
 };
 
 #endif // DEMO2SCENE_H
