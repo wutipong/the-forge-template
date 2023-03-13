@@ -72,9 +72,15 @@ private:
         float4 LightColor[DIRECTIONAL_LIGHT_COUNT];
         float4 LightAmbient[DIRECTIONAL_LIGHT_COUNT];
         float4 LightIntensity[DIRECTIONAL_LIGHT_COUNT];
+
+        // Shadow
+        mat4 ShadowTransform;
     } scene{};
 
     UIComponent *pObjectWindow{};
+
+    static constexpr uint32_t SHADOW_MAP_DIMENSION = 1024;
+    RenderTarget *pShadowRenderTarget;
 
     void resetLightSettings();
 };

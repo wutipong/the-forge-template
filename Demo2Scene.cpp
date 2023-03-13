@@ -292,6 +292,22 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         pipelineSettings.pRasterizerState = &sphereRasterizerStateDesc;
         pipelineSettings.mVRFoveatedRendering = true;
         addPipeline(pRenderer, &desc, &pPipeline);
+
+        {
+            RenderTargetDesc renderTargetDesc = {};
+            renderTargetDesc.mArraySize = 1;
+            renderTargetDesc.mClearValue.depth = 0.0f;
+            renderTargetDesc.mClearValue.stencil = 0;
+            renderTargetDesc.mDepth = 1;
+            renderTargetDesc.mFormat = TinyImageFormat_D32_SFLOAT;
+            renderTargetDesc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
+            renderTargetDesc.mHeight = SHADOW_MAP_DIMENSION;
+            renderTargetDesc.mSampleCount = SAMPLE_COUNT_1;
+            renderTargetDesc.mSampleQuality = 0;
+            renderTargetDesc.mWidth = SHADOW_MAP_DIMENSION;
+            renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
+            addRenderTarget(pRenderer, &renderTargetDesc, &pShadowRenderTarget);
+        }
     }
 
     for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
@@ -316,6 +332,9 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
         removePipeline(pRenderer, pPipeline);
+        {
+            removeRenderTarget(pRenderer, pShadowRenderTarget);
+        }
     }
 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
@@ -344,6 +363,12 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     {
         dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
     }
+
+    Point3 lightPos = toPoint3(-f4Tov4(scene.LightDirection[0]) * SHADOW_MAP_DIMENSION);
+
+    scene.ShadowTransform =
+        mat4::orthographic(0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION) *
+        mat4::lookAt(lightPos, {0, 0, 0}, {0, 1, 0});
 }
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)

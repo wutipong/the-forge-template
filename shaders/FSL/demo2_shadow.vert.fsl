@@ -1,0 +1,23 @@
+#include "demo2_resources.h.fsl"
+
+STRUCT(VSInput)
+{
+    DATA(float4, Position, POSITION);
+    DATA(float4, Normal,   NORMAL);
+};
+
+STRUCT(VSOutput)
+{
+    DATA(float4, Position, POSITION);
+};
+
+
+VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
+{
+    INIT_MAIN;
+    VSOutput Out;
+
+    Out.Position = mul(Get(mvp), float4(In.Position.xyz, 1.0f));
+
+    RETURN(Out);
+}

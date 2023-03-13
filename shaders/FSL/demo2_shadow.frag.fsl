@@ -1,0 +1,13 @@
+#include "demo2_resources.h.fsl"
+
+STRUCT(VSOutput)
+{
+    DATA(float4, Position, POSITION);
+};
+
+float PS_MAIN( VSOutput In )
+{
+    INIT_MAIN;
+
+    RETURN(In.Position.z);
+}
