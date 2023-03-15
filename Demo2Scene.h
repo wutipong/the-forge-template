@@ -40,12 +40,14 @@ private:
 
     ICameraController *pCameraController{};
 
-    Shader *pShader{};
+    Shader *pObjectShader{};
+    Shader *pShadowShader{};
     RootSignature *pRootSignature{};
     DescriptorSet *pDescriptorSetSceneUniform{};
     DescriptorSet *pDescriptorSetObjectUniform{};
 
-    Pipeline *pPipeline{};
+    Pipeline *pObjectPipeline{};
+    Pipeline *pShadowPipeline{};
 
     struct ObjectUniformBlock
     {
