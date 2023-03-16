@@ -9,5 +9,5 @@ float PS_MAIN( VSOutput In )
 {
     INIT_MAIN;
 
-    RETURN(In.Position.z * 10000);
+    RETURN(In.Position.z);
 }

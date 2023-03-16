@@ -330,7 +330,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mSampleQuality = pShadowRenderTarget->mSampleQuality;
             pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
-            pipelineSettings.pShaderProgram = pObjectShader;
+            pipelineSettings.pShaderProgram = pShadowShader;
             pipelineSettings.pVertexLayout = &vertexLayout;
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.mVRFoveatedRendering = true;
