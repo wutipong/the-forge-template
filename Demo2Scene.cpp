@@ -98,17 +98,15 @@ void Demo2Scene::Init(uint32_t imageCount)
     addInputAction(&desc);
 
     desc = {DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
-            [](InputActionContext *ctx) -> bool {
-                return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx);
-            },
+            [](InputActionContext *ctx) -> bool
+            { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
             this};
 
     addInputAction(&desc);
 
     desc = {DefaultInputActions::DefaultInputActions::RESET_CAMERA,
-            [](InputActionContext *ctx) -> bool {
-                return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx);
-            },
+            [](InputActionContext *ctx) -> bool
+            { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
             this};
 
     addInputAction(&desc);
@@ -201,6 +199,7 @@ void Demo2Scene::Init(uint32_t imageCount)
         }
     }
 }
+
 void Demo2Scene::resetLightSettings()
 {
     scene.LightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
@@ -236,6 +235,7 @@ void Demo2Scene::Exit()
 
     exitCameraController(pCameraController);
 }
+
 void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget,
                       RenderTarget *pDepthBuffer, uint32_t imageCount)
 {
@@ -365,6 +365,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDescriptorSetSceneUniform, 1, &params);
     }
 }
+
 void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 {
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -424,6 +425,7 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
         endUpdateResource(&updateDesc, nullptr);
     }
 }
+
 void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
 {
     constexpr uint32_t stride = sizeof(float) * 6;
@@ -502,6 +504,7 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
         cmdDraw(pCmd, vertexCount / 6, 0);
     }
 }
+
 bool Demo2Scene::OnInputAction(InputActionContext *ctx)
 {
     if ((*ctx->pCaptured))
@@ -517,14 +520,14 @@ bool Demo2Scene::OnInputAction(InputActionContext *ctx)
             pCameraController->onRotate(ctx->mFloat2);
             break;
 
-            case DefaultInputActions::TRANSLATE_CAMERA:
-                pCameraController->onMove(ctx->mFloat2);
-                break;
+        case DefaultInputActions::TRANSLATE_CAMERA:
+            pCameraController->onMove(ctx->mFloat2);
+            break;
 
-            case DefaultInputActions::RESET_CAMERA:
-                pCameraController->resetView();
-                resetLightSettings();
-                break;
+        case DefaultInputActions::RESET_CAMERA:
+            pCameraController->resetView();
+            resetLightSettings();
+            break;
         }
     }
 
