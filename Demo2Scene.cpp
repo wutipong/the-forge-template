@@ -8,8 +8,7 @@
 #include "IUI.h"
 #include "stb_ds.h"
 
-void Demo2Scene::Init(uint32_t imageCount)
-{
+void Demo2Scene::Init(uint32_t imageCount) {
     float *vertices{};
 
     generateCuboidPoints(&vertices, &cubeVertexCount);
@@ -52,9 +51,8 @@ void Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    arrsetlen(pObjectUniformBuffers, imageCount * OBJECT_COUNT);
-    for (uint32_t i = 0; i < imageCount * OBJECT_COUNT; ++i)
-    {
+            arrsetlen(pObjectUniformBuffers, imageCount * OBJECT_COUNT);
+    for (uint32_t i = 0; i < imageCount * OBJECT_COUNT; ++i) {
         ubDesc.ppBuffer = &pObjectUniformBuffers[i];
         addResource(&ubDesc, nullptr);
     }
@@ -65,10 +63,9 @@ void Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mSize = sizeof(SceneUniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
-    arrsetlen(pSceneUniformBuffer, imageCount);
+            arrsetlen(pSceneUniformBuffer, imageCount);
 
-    for (uint32_t i = 0; i < imageCount; ++i)
-    {
+    for (uint32_t i = 0; i < imageCount; ++i) {
         ubDesc.ppBuffer = &pSceneUniformBuffer[i];
         addResource(&ubDesc, nullptr);
     }
@@ -86,20 +83,30 @@ void Demo2Scene::Init(uint32_t imageCount)
     objectTypes[2] = ObjectType::Cube;
     objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
     objects[2].Transform = mat4::translation({4.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) *
-        mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
+                           mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
     InputActionDesc desc{DefaultInputActions::ROTATE_CAMERA,
-                         [](InputActionContext *ctx) -> bool
-                         { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
+                         [](InputActionContext *ctx) -> bool {
+                             return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx);
+                         },
                          this};
 
     addInputAction(&desc);
 
     desc = {DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
-            [](InputActionContext *ctx) -> bool
-            { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
+            [](InputActionContext *ctx) -> bool {
+                return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx);
+            },
+            this};
+
+    addInputAction(&desc);
+
+    desc = {DefaultInputActions::DefaultInputActions::RESET_CAMERA,
+            [](InputActionContext *ctx) -> bool {
+                return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx);
+            },
             this};
 
     addInputAction(&desc);
@@ -107,8 +114,7 @@ void Demo2Scene::Init(uint32_t imageCount)
     UIComponentDesc guiDesc = {};
     uiCreateComponent("Objects", &guiDesc, &pObjectWindow);
 
-    for (int i = 0; i < OBJECT_COUNT; i++)
-    {
+    for (int i = 0; i < OBJECT_COUNT; i++) {
         char str[] = "Object 0 Color";
         sprintf(str, "Object %d Color", i);
 
@@ -123,14 +129,12 @@ void Demo2Scene::Init(uint32_t imageCount)
     ButtonWidget resetBtnWidget = {};
     UIWidget *resetBtn = uiCreateComponentWidget(pObjectWindow, "Reset", &resetBtnWidget, WIDGET_TYPE_BUTTON);
     uiSetWidgetOnEditedCallback(resetBtn, this,
-                                [](void *pUserData)
-                                {
+                                [](void *pUserData) {
                                     auto *instance = reinterpret_cast<Demo2Scene *>(pUserData);
                                     instance->resetLightSettings();
                                 });
 
-    for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
-    {
+    for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++) {
         {
             char label[] = "Light 0 Color";
             sprintf(label, "Light %d Color", i);
@@ -147,22 +151,22 @@ void Demo2Scene::Init(uint32_t imageCount)
             SliderFloat4Widget widget;
             widget.pData = &scene.LightDirection[i];
             widget.mMax = float4{
-                1.0f,
-                1.0f,
-                1.0f,
-                1.0f,
+                    1.0f,
+                    1.0f,
+                    1.0f,
+                    1.0f,
             };
             widget.mMin = float4{
-                -1.0f,
-                -1.0f,
-                -1.0f,
-                -1.0f,
+                    -1.0f,
+                    -1.0f,
+                    -1.0f,
+                    -1.0f,
             };
             widget.mStep = float4{
-                0.01f,
-                0.01f,
-                0.01f,
-                0.01f,
+                    0.01f,
+                    0.01f,
+                    0.01f,
+                    0.01f,
             };
             uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_SLIDER_FLOAT4);
         }
@@ -192,8 +196,8 @@ void Demo2Scene::Init(uint32_t imageCount)
         }
     }
 }
-void Demo2Scene::resetLightSettings()
-{
+
+void Demo2Scene::resetLightSettings() {
     scene.LightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
     scene.LightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
     scene.LightAmbient[0].x = 0.1f;
@@ -205,33 +209,29 @@ void Demo2Scene::resetLightSettings()
     scene.LightIntensity[1].x = 0.4f;
 }
 
-void Demo2Scene::Exit()
-{
+void Demo2Scene::Exit() {
     uiDestroyComponent(pObjectWindow);
 
     removeResource(pCubeVertexBuffer);
     removeResource(pSphereVertexBuffer);
     removeResource(pBoneVertexBuffer);
 
-    for (int i = 0; i < arrlen(pObjectUniformBuffers); i++)
-    {
+    for (int i = 0; i < arrlen(pObjectUniformBuffers); i++) {
         removeResource(pObjectUniformBuffers[i]);
     }
     tf_free(pObjectUniformBuffers);
 
-    for (int i = 0; i < arrlen(pSceneUniformBuffer); i++)
-    {
+    for (int i = 0; i < arrlen(pSceneUniformBuffer); i++) {
         removeResource(pSceneUniformBuffer[i]);
     }
     tf_free(pSceneUniformBuffer);
 
     exitCameraController(pCameraController);
 }
+
 void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget,
-                      RenderTarget *pDepthBuffer, uint32_t imageCount)
-{
-    if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
-    {
+                      RenderTarget *pDepthBuffer, uint32_t imageCount) {
+    if (pReloadDesc->mType & RELOAD_TYPE_SHADER) {
         ShaderLoadDesc basicShader = {};
         basicShader.mStages[0] = {"demo2_object.vert", nullptr, 0, nullptr, SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
         basicShader.mStages[1] = {"demo2_object.frag", nullptr, 0};
@@ -251,8 +251,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetObjectUniform);
     }
 
-    if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
-    {
+    if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET)) {
         // layout and pipeline for sphere draw
         VertexLayout vertexLayout = {};
         vertexLayout.mAttribCount = 2;
@@ -310,16 +309,14 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
     }
 
-    for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
-    {
+    for (int i = 0; i < imageCount * OBJECT_COUNT; i++) {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
         params.ppBuffers = &pObjectUniformBuffers[i];
         updateDescriptorSet(pRenderer, i, pDescriptorSetObjectUniform, 1, &params);
     }
 
-    for (int i = 0; i < imageCount; i++)
-    {
+    for (int i = 0; i < imageCount; i++) {
         DescriptorData params = {};
         params.pName = "uniformSceneBlock";
         params.ppBuffers = &pSceneUniformBuffer[i];
@@ -327,18 +324,16 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDescriptorSetSceneUniform, 1, &params);
     }
 }
-void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
-{
-    if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
-    {
+
+void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) {
+    if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET)) {
         removePipeline(pRenderer, pPipeline);
         {
             removeRenderTarget(pRenderer, pShadowRenderTarget);
         }
     }
 
-    if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
-    {
+    if (pReloadDesc->mType & RELOAD_TYPE_SHADER) {
         removeDescriptorSet(pRenderer, pDescriptorSetSceneUniform);
         removeDescriptorSet(pRenderer, pDescriptorSetObjectUniform);
 
@@ -347,11 +342,10 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     }
 }
 
-void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
-{
+void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height) {
     pCameraController->update(deltaTime);
 
-    const float aspectInverse = (float)height / (float)width;
+    const float aspectInverse = (float) height / (float) width;
     const float horizontal_fov = PI / 2.0f;
     CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
     CameraMatrix mProjectView = projection * pCameraController->getViewMatrix();
@@ -359,35 +353,32 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
     scene.ProjectView = mProjectView;
 
-    for (auto &dir : scene.LightDirection)
-    {
+    for (auto &dir: scene.LightDirection) {
         dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
     }
 
     Point3 lightPos = toPoint3(-f4Tov4(scene.LightDirection[0]) * SHADOW_MAP_DIMENSION);
 
     scene.ShadowTransform =
-        mat4::orthographic(0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION) *
-        mat4::lookAt(lightPos, {0, 0, 0}, {0, 1, 0});
+            mat4::orthographic(0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION) *
+            mat4::lookAt(lightPos, {0, 0, 0}, {0, 1, 0});
 }
 
-void Demo2Scene::PreDraw(uint32_t frameIndex)
-{
+void Demo2Scene::PreDraw(uint32_t frameIndex) {
     BufferUpdateDesc updateDesc = {pSceneUniformBuffer[frameIndex]};
     beginUpdateResource(&updateDesc);
-    *(SceneUniformBlock *)updateDesc.pMappedData = scene;
+    *(SceneUniformBlock *) updateDesc.pMappedData = scene;
     endUpdateResource(&updateDesc, nullptr);
 
-    for (int i = 0; i < OBJECT_COUNT; i++)
-    {
+    for (int i = 0; i < OBJECT_COUNT; i++) {
         BufferUpdateDesc updateDesc = {pObjectUniformBuffers[frameIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
-        *(ObjectUniformBlock *)updateDesc.pMappedData = objects[i];
+        *(ObjectUniformBlock *) updateDesc.pMappedData = objects[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 }
-void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
-{
+
+void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex) {
     constexpr uint32_t stride = sizeof(float) * 6;
 
     LoadActionsDesc loadActions = {};
@@ -398,55 +389,55 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
 
     cmdBindPipeline(pCmd, pPipeline);
 
-    for (int i = 0; i < OBJECT_COUNT; i++)
-    {
+    for (int i = 0; i < OBJECT_COUNT; i++) {
         cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDescriptorSetObjectUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetSceneUniform);
 
         int vertexCount = 0;
 
-        switch (objectTypes[i])
-        {
-        case ObjectType::Cube:
-            cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
-            vertexCount = cubeVertexCount;
-            break;
+        switch (objectTypes[i]) {
+            case ObjectType::Cube:
+                cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
+                vertexCount = cubeVertexCount;
+                break;
 
-        case ObjectType::Sphere:
-            cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &stride, nullptr);
-            vertexCount = sphereVertexCount;
-            break;
+            case ObjectType::Sphere:
+                cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &stride, nullptr);
+                vertexCount = sphereVertexCount;
+                break;
 
-        case ObjectType::Bone:
-            cmdBindVertexBuffer(pCmd, 1, &pBoneVertexBuffer, &stride, nullptr);
-            vertexCount = boneVertexCount;
-            break;
+            case ObjectType::Bone:
+                cmdBindVertexBuffer(pCmd, 1, &pBoneVertexBuffer, &stride, nullptr);
+                vertexCount = boneVertexCount;
+                break;
 
-        default:
-            continue;
+            default:
+                continue;
         }
 
         cmdDraw(pCmd, vertexCount / 6, 0);
     }
 }
-bool Demo2Scene::OnInputAction(InputActionContext *ctx)
-{
-    if ((*ctx->pCaptured))
-    {
-        if (uiIsFocused())
-        {
+
+bool Demo2Scene::OnInputAction(InputActionContext *ctx) {
+    if ((*ctx->pCaptured)) {
+        if (uiIsFocused()) {
             return true;
         }
 
-        switch (ctx->mActionId)
-        {
-        case DefaultInputActions::ROTATE_CAMERA:
-            pCameraController->onRotate(ctx->mFloat2);
-            break;
+        switch (ctx->mActionId) {
+            case DefaultInputActions::ROTATE_CAMERA:
+                pCameraController->onRotate(ctx->mFloat2);
+                break;
 
-        case DefaultInputActions ::TRANSLATE_CAMERA:
-            pCameraController->onMove(ctx->mFloat2);
-            break;
+            case DefaultInputActions::TRANSLATE_CAMERA:
+                pCameraController->onMove(ctx->mFloat2);
+                break;
+
+            case DefaultInputActions::RESET_CAMERA:
+                pCameraController->resetView();
+                resetLightSettings();
+                break;
         }
     }
 
