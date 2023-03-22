@@ -316,16 +316,18 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
         RenderTargetDesc renderTargetDesc = {};
         renderTargetDesc.mArraySize = 1;
-        renderTargetDesc.mClearValue.depth = 0.0f;
+        renderTargetDesc.mClearValue.depth = 1.0f;
         renderTargetDesc.mClearValue.stencil = 0;
         renderTargetDesc.mDepth = 1;
+        renderTargetDesc.mDescriptors = DESCRIPTOR_TYPE_TEXTURE;
         renderTargetDesc.mFormat = TinyImageFormat_D32_SFLOAT;
-        renderTargetDesc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
+        renderTargetDesc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
         renderTargetDesc.mHeight = SHADOW_MAP_DIMENSION;
+        renderTargetDesc.mWidth = SHADOW_MAP_DIMENSION;
         renderTargetDesc.mSampleCount = SAMPLE_COUNT_1;
         renderTargetDesc.mSampleQuality = 0;
-        renderTargetDesc.mWidth = SHADOW_MAP_DIMENSION;
-        renderTargetDesc.mDescriptors = DESCRIPTOR_TYPE_TEXTURE;
+        renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
+        renderTargetDesc.pName = "Shadow Map Render Target";
         addRenderTarget(pRenderer, &renderTargetDesc, &pShadowRenderTarget);
 
         {
@@ -430,12 +432,21 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
 {
     constexpr uint32_t stride = sizeof(float) * 6;
 
-    LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
-    loadActions.mLoadActionDepth = LOAD_ACTION_LOAD;
-    loadActions.mClearDepth.depth = 0.0f;
+    cmdBindRenderTargets(pCmd, 0, NULL, NULL, NULL, NULL, NULL, -1, -1);
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, pShadowRenderTarget, &loadActions, nullptr, nullptr, -1, -1);
+    RenderTargetBarrier barriers[] = { { pShadowRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE } };
+    cmdResourceBarrier(pCmd, 0, NULL, 0, NULL, 2, barriers);
+
+    LoadActionsDesc loadActions = {};
+    loadActions.mLoadActionsColor[0] = LOAD_ACTION_DONTCARE;
+    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
+    loadActions.mClearDepth.depth = 1.0f;
+    loadActions.mClearDepth.stencil = 0;
+
+    cmdBindRenderTargets(pCmd, 0, NULL, pShadowRenderTarget, &loadActions, NULL, NULL, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pShadowRenderTarget->mWidth, (float)pShadowRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, pShadowRenderTarget->mWidth, pShadowRenderTarget->mHeight);cmdBindPipeline(pCmd, pShadowPipeline);
+
     cmdBindPipeline(pCmd, pShadowPipeline);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
@@ -469,8 +480,11 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
         cmdDraw(pCmd, vertexCount / 6, 0);
     }
 
-    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, 0, NULL, NULL, NULL, NULL, NULL, -1, -1);
+    barriers[0] = { pShadowRenderTarget, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE };
+    cmdResourceBarrier(pCmd, 0, NULL, 0, NULL, 1, barriers);
 
+    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
     cmdBindPipeline(pCmd, pObjectPipeline);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
