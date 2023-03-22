@@ -73,7 +73,7 @@ void Demo2Scene::Init(uint32_t imageCount)
         addResource(&ubDesc, nullptr);
     }
 
-    resetLightSettings();
+    ResetLightSettings();
 
     objectTypes[0] = ObjectType::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -133,7 +133,7 @@ void Demo2Scene::Init(uint32_t imageCount)
                                 [](void *pUserData)
                                 {
                                     auto *instance = reinterpret_cast<Demo2Scene *>(pUserData);
-                                    instance->resetLightSettings();
+                                    instance->ResetLightSettings();
                                 });
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
@@ -200,7 +200,7 @@ void Demo2Scene::Init(uint32_t imageCount)
     }
 }
 
-void Demo2Scene::resetLightSettings()
+void Demo2Scene::ResetLightSettings()
 {
     scene.LightDirection[0] = {0.5f, -0.25f, -0.5f, 1.0f};
     scene.LightColor[0] = {1.0f, 0.5f, 0.25f, 0.4f};
@@ -432,10 +432,11 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
 {
     constexpr uint32_t stride = sizeof(float) * 6;
 
-    cmdBindRenderTargets(pCmd, 0, NULL, NULL, NULL, NULL, NULL, -1, -1);
+    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
-    RenderTargetBarrier barriers[] = { { pShadowRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE } };
-    cmdResourceBarrier(pCmd, 0, NULL, 0, NULL, 2, barriers);
+    RenderTargetBarrier barriers[] = {
+        {pShadowRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
+    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_DONTCARE;
@@ -443,9 +444,11 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
     loadActions.mClearDepth.depth = 1.0f;
     loadActions.mClearDepth.stencil = 0;
 
-    cmdBindRenderTargets(pCmd, 0, NULL, pShadowRenderTarget, &loadActions, NULL, NULL, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pShadowRenderTarget->mWidth, (float)pShadowRenderTarget->mHeight, 0.0f, 1.0f);
-    cmdSetScissor(pCmd, 0, 0, pShadowRenderTarget->mWidth, pShadowRenderTarget->mHeight);cmdBindPipeline(pCmd, pShadowPipeline);
+    cmdBindRenderTargets(pCmd, 0, nullptr, pShadowRenderTarget, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pShadowRenderTarget->mWidth, (float)pShadowRenderTarget->mHeight, 0.0f,
+                   1.0f);
+    cmdSetScissor(pCmd, 0, 0, pShadowRenderTarget->mWidth, pShadowRenderTarget->mHeight);
+    cmdBindPipeline(pCmd, pShadowPipeline);
 
     cmdBindPipeline(pCmd, pShadowPipeline);
 
@@ -480,11 +483,19 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
         cmdDraw(pCmd, vertexCount / 6, 0);
     }
 
-    cmdBindRenderTargets(pCmd, 0, NULL, NULL, NULL, NULL, NULL, -1, -1);
-    barriers[0] = { pShadowRenderTarget, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE };
-    cmdResourceBarrier(pCmd, 0, NULL, 0, NULL, 1, barriers);
+    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    barriers[0] = {pShadowRenderTarget, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
+    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+
+    loadActions = {};
+    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
+    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
+    loadActions.mClearDepth.depth = 0.0f;
 
     cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
     cmdBindPipeline(pCmd, pObjectPipeline);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
@@ -540,7 +551,7 @@ bool Demo2Scene::OnInputAction(InputActionContext *ctx)
 
         case DefaultInputActions::RESET_CAMERA:
             pCameraController->resetView();
-            resetLightSettings();
+            ResetLightSettings();
             break;
         }
     }

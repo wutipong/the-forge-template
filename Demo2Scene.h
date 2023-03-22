@@ -84,7 +84,7 @@ private:
     static constexpr uint32_t SHADOW_MAP_DIMENSION = 1024;
     RenderTarget *pShadowRenderTarget;
 
-    void resetLightSettings();
+    void ResetLightSettings();
 };
 
 #endif // DEMO2SCENE_H
