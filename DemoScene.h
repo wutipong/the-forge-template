@@ -18,7 +18,7 @@ public:
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) override;
     void Update(float deltaTime, uint32_t width, uint32_t height) override;
     void PreDraw(uint32_t frameIndex) override;
-    void Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex) override;
+    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex) override;
 
 private:
     int vertexCount{};

@@ -5,9 +5,9 @@ STRUCT(VSOutput)
     DATA(float4, Position, POSITION);
 };
 
-float PS_MAIN( VSOutput In )
+void PS_MAIN( VSOutput In )
 {
     INIT_MAIN;
 
-    RETURN(In.Position.z);
+    RETURN();
 }

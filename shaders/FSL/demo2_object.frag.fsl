@@ -42,7 +42,9 @@ float4 PS_MAIN( VSOutput In )
             Get(color).a);
     }
 
-    Out.a = 1.0;
+    float closestDepthInLSpace = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), In.Position.xy, 0).x;	// TODO point sampler
+
+    Out.a = 1.0 + closestDepthInLSpace;
 
     RETURN(Out);
 }

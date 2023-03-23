@@ -44,8 +44,8 @@ void UnloadCurrentScene(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 }
 
 void PreDrawCurrentScene(uint32_t frameIndex) { currentScene->PreDraw(frameIndex); }
-void DrawCurrentScene(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
+void DrawCurrentScene(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
 {
-    currentScene->Draw(pCmd, pRenderTarget, pDepthBuffer, frameIndex);
+    currentScene->Draw(pCmd, pRenderer, pRenderTarget, pDepthBuffer, frameIndex);
 }
 void InitCurrentScene(uint32_t imageCount) { currentScene->Init(imageCount); }

@@ -173,7 +173,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     uniform.mLightPosition = lightPosition;
 }
 
-void DemoScene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
+void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
 {
     constexpr uint32_t sphereVbStride = sizeof(float) * 6;
 
