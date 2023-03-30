@@ -8,7 +8,7 @@ STRUCT(VSInput)
 
 STRUCT(VSOutput)
 {
-    DATA(float4, Position, POSITION);
+    DATA(float4, Position, SV_POSITION);
 };
 
 
@@ -17,7 +17,9 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
     INIT_MAIN;
     VSOutput Out;
 
-    Out.Position = mul(Get(shadowMVP), float4(In.Position.xyz, 1.0f));
+    float4x4 tempMat = mul(Get(shadowMVP), Get(toWorld));
+
+    Out.Position = mul(tempMat, float4(In.Position.xyz, 1.0f));
 
     RETURN(Out);
 }
