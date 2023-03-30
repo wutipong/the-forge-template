@@ -83,10 +83,11 @@ private:
 
     UIComponent *pObjectWindow{};
 
-    static constexpr uint32_t SHADOW_MAP_DIMENSION = 1024;
+    static constexpr float SHADOW_MAP_DIMENSION = 1024;
     RenderTarget *pRtShadow;
 
     void ResetLightSettings();
+    void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
 };
 
 #endif // DEMO2SCENE_H

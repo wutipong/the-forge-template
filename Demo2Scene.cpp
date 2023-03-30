@@ -292,6 +292,9 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         RasterizerStateDesc rasterizerStateDesc = {};
         rasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
 
+        RasterizerStateDesc rasterizerStateCullNoneDesc = {};
+        rasterizerStateCullNoneDesc.mCullMode = CULL_MODE_NONE;
+
         DepthStateDesc depthStateDesc = {};
         depthStateDesc.mDepthTest = true;
         depthStateDesc.mDepthWrite = true;
@@ -316,21 +319,23 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             addPipeline(pRenderer, &pipelineDesc, &pPlObjects);
         }
 
-        RenderTargetDesc renderTargetDesc = {};
-        renderTargetDesc.mArraySize = 1;
-        renderTargetDesc.mClearValue.depth = 1.0f;
-        renderTargetDesc.mClearValue.stencil = 0;
-        renderTargetDesc.mDepth = 1;
-        renderTargetDesc.mDescriptors = DESCRIPTOR_TYPE_TEXTURE;
-        renderTargetDesc.mFormat = TinyImageFormat_D32_SFLOAT;
-        renderTargetDesc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
-        renderTargetDesc.mHeight = SHADOW_MAP_DIMENSION;
-        renderTargetDesc.mWidth = SHADOW_MAP_DIMENSION;
-        renderTargetDesc.mSampleCount = SAMPLE_COUNT_1;
-        renderTargetDesc.mSampleQuality = 0;
-        renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
-        renderTargetDesc.pName = "Shadow Map Render Target";
-        addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadow);
+        {
+            RenderTargetDesc renderTargetDesc = {};
+            renderTargetDesc.mArraySize = 1;
+            renderTargetDesc.mClearValue.depth = 1.0f;
+            renderTargetDesc.mClearValue.stencil = 0;
+            renderTargetDesc.mDepth = 1;
+            renderTargetDesc.mDescriptors = DESCRIPTOR_TYPE_TEXTURE;
+            renderTargetDesc.mFormat = TinyImageFormat_D32_SFLOAT;
+            renderTargetDesc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
+            renderTargetDesc.mHeight = SHADOW_MAP_DIMENSION;
+            renderTargetDesc.mWidth = SHADOW_MAP_DIMENSION;
+            renderTargetDesc.mSampleCount = SAMPLE_COUNT_1;
+            renderTargetDesc.mSampleQuality = 0;
+            renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
+            renderTargetDesc.pName = "Shadow Map Render Target";
+            addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadow);
+        }
 
         {
             PipelineDesc pipelineDesc = {};
@@ -345,7 +350,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShShadow;
             pipelineSettings.pVertexLayout = &vertexLayout;
-            pipelineSettings.pRasterizerState = &rasterizerStateDesc;
+            pipelineSettings.pRasterizerState = &rasterizerStateCullNoneDesc;
             pipelineSettings.mVRFoveatedRendering = true;
 
             addPipeline(pRenderer, &pipelineDesc, &pPlShadow);
@@ -413,11 +418,12 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
         dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
     }
 
-    Point3 lightPos = toPoint3(-f4Tov4(scene.LightDirection[0]) * SHADOW_MAP_DIMENSION);
+    Point3 lightPos = toPoint3(-f4Tov4(scene.LightDirection[0]));
+    Point3 cameraPos{pCameraController->getViewPosition()};
 
     scene.ShadowTransform =
-        mat4::orthographic(0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION, 0, SHADOW_MAP_DIMENSION) *
-        mat4::lookAt(lightPos, {0, 0, 0}, {0, 1, 0});
+        mat4::orthographic(-10, 10, -10, 10, 1000, 0.1f) *
+        mat4::lookAt(lightPos, cameraPos, {0, 1, 0});
 }
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)
@@ -439,23 +445,73 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
 void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
                       uint32_t frameIndex)
 {
-    constexpr uint32_t stride = sizeof(float) * 6;
-
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
-    RenderTargetBarrier barriers[] = {
-        {pRtShadow, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
-    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    DrawShadowRT(pCmd, frameIndex);
+
+    LoadActionsDesc loadActions = {};
+    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
+    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
+    loadActions.mClearDepth.depth = 0.0f;
+
+    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
+    cmdBindPipeline(pCmd, pPlObjects);
+
+    constexpr uint32_t stride = sizeof(float) * 6;
+
+    for (int i = 0; i < OBJECT_COUNT; i++)
+    {
+        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, 0, pDsTexture);
+
+        int vertexCount = 0;
+
+        switch (objectTypes[i])
+        {
+        case ObjectType::Cube:
+            cmdBindVertexBuffer(pCmd, 1, &pVbCube, &stride, nullptr);
+            vertexCount = cubeVertexCount;
+            break;
+
+        case ObjectType::Sphere:
+            cmdBindVertexBuffer(pCmd, 1, &pVbSphere, &stride, nullptr);
+            vertexCount = sphereVertexCount;
+            break;
+
+        case ObjectType::Bone:
+            cmdBindVertexBuffer(pCmd, 1, &pVbBone, &stride, nullptr);
+            vertexCount = boneVertexCount;
+            break;
+
+        default:
+            continue;
+        }
+
+        cmdDraw(pCmd, vertexCount / 6, 0);
+    }
+}
+
+void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
+{
+    constexpr uint32_t stride = sizeof(float) * 6;
+
+    {
+        RenderTargetBarrier barriers[] = {{pRtShadow, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    }
 
     LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_DONTCARE;
     loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 1.0f;
-    loadActions.mClearDepth.stencil = 0;
+    loadActions.mClearDepth.depth = 0.0f;
+    // loadActions.mClearDepth.stencil = 0;
 
     cmdBindRenderTargets(pCmd, 0, nullptr, pRtShadow, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRtShadow->mWidth, (float)pRtShadow->mHeight, 0.0f,
-                   1.0f);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRtShadow->mWidth, (float)pRtShadow->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRtShadow->mWidth, pRtShadow->mHeight);
     cmdBindPipeline(pCmd, pPlShadow);
 
@@ -491,50 +547,12 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
     }
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
-    barriers[0] = {pRtShadow, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
-    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
 
-    loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
-    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
-
-    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
-    cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
-
-    cmdBindPipeline(pCmd, pPlObjects);
-
-    for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
-        cmdBindDescriptorSet(pCmd, 0, pDsTexture);
-
-        int vertexCount = 0;
-
-        switch (objectTypes[i])
-        {
-        case ObjectType::Cube:
-            cmdBindVertexBuffer(pCmd, 1, &pVbCube, &stride, nullptr);
-            vertexCount = cubeVertexCount;
-            break;
-
-        case ObjectType::Sphere:
-            cmdBindVertexBuffer(pCmd, 1, &pVbSphere, &stride, nullptr);
-            vertexCount = sphereVertexCount;
-            break;
-
-        case ObjectType::Bone:
-            cmdBindVertexBuffer(pCmd, 1, &pVbBone, &stride, nullptr);
-            vertexCount = boneVertexCount;
-            break;
-
-        default:
-            continue;
-        }
-
-        cmdDraw(pCmd, vertexCount / 6, 0);
+        RenderTargetBarrier barriers[] = {
+            {pRtShadow, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
+        };
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
 }
 
