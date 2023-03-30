@@ -249,9 +249,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addShader(pRenderer, &shaderLoadDesc, &pObjectShader);
 
         shaderLoadDesc = {};
-        shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr, 0, nullptr,
-                                     SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
-        shaderLoadDesc.mStages[1] = {"demo2_shadow.frag", nullptr, 0};
+        shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr};
+        shaderLoadDesc.mStages[1] = {"demo2_shadow.frag", nullptr};
 
         addShader(pRenderer, &shaderLoadDesc, &pShadowShader);
 
@@ -268,6 +267,9 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetObjectUniform);
+
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
+        addDescriptorSet(pRenderer, &desc, &pDescriptorSetShadowTexture);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -381,6 +383,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
         removeDescriptorSet(pRenderer, pDescriptorSetSceneUniform);
         removeDescriptorSet(pRenderer, pDescriptorSetObjectUniform);
+        removeDescriptorSet(pRenderer, pDescriptorSetShadowTexture);
 
         removeRootSignature(pRenderer, pRootSignature);
         removeShader(pRenderer, pObjectShader);
@@ -428,7 +431,8 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     }
 }
 
-void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
+void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
+                      uint32_t frameIndex)
 {
     constexpr uint32_t stride = sizeof(float) * 6;
 
@@ -448,8 +452,6 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pShadowRenderTarget->mWidth, (float)pShadowRenderTarget->mHeight, 0.0f,
                    1.0f);
     cmdSetScissor(pCmd, 0, 0, pShadowRenderTarget->mWidth, pShadowRenderTarget->mHeight);
-    cmdBindPipeline(pCmd, pShadowPipeline);
-
     cmdBindPipeline(pCmd, pShadowPipeline);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
@@ -498,10 +500,16 @@ void Demo2Scene::Draw(Cmd *pCmd, RenderTarget *pRenderTarget, RenderTarget *pDep
 
     cmdBindPipeline(pCmd, pObjectPipeline);
 
+    DescriptorData params[2] = {};
+    params[0].pName = "shadowMap";
+    params[0].ppTextures = &pShadowRenderTarget->pTexture;
+    updateDescriptorSet(pRenderer, 0, pDescriptorSetShadowTexture, 1, params);
+
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
         cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDescriptorSetObjectUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetSceneUniform);
+        cmdBindDescriptorSet(pCmd, 0, pDescriptorSetShadowTexture);
 
         int vertexCount = 0;
 

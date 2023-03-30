@@ -258,7 +258,7 @@ void MainApp::Draw()
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    DrawCurrentScene(cmd, pRenderTarget, pDepthBuffer, gFrameIndex);
+    DrawCurrentScene(cmd, pRenderer, pRenderTarget, pDepthBuffer, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     loadActions = {};
