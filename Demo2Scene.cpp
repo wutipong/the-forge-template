@@ -18,7 +18,7 @@ void Demo2Scene::Init(uint32_t imageCount)
     bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
     bufferLoadDesc.mDesc.mSize = cubeVertexCount * sizeof(float);
     bufferLoadDesc.pData = vertices;
-    bufferLoadDesc.ppBuffer = &pCubeVertexBuffer;
+    bufferLoadDesc.ppBuffer = &pVbCube;
     addResource(&bufferLoadDesc, nullptr);
 
     tf_free(vertices);
@@ -29,7 +29,7 @@ void Demo2Scene::Init(uint32_t imageCount)
     bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
     bufferLoadDesc.mDesc.mSize = sphereVertexCount * sizeof(float);
     bufferLoadDesc.pData = vertices;
-    bufferLoadDesc.ppBuffer = &pSphereVertexBuffer;
+    bufferLoadDesc.ppBuffer = &pVbSphere;
     addResource(&bufferLoadDesc, nullptr);
 
     tf_free(vertices);
@@ -40,7 +40,7 @@ void Demo2Scene::Init(uint32_t imageCount)
     bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
     bufferLoadDesc.mDesc.mSize = boneVertexCount * sizeof(float);
     bufferLoadDesc.pData = vertices;
-    bufferLoadDesc.ppBuffer = &pBoneVertexBuffer;
+    bufferLoadDesc.ppBuffer = &pVbBone;
     addResource(&bufferLoadDesc, nullptr);
 
     tf_free(vertices);
@@ -52,10 +52,10 @@ void Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    arrsetlen(pObjectUniformBuffers, imageCount * OBJECT_COUNT);
+    arrsetlen(pUbObjects, imageCount * OBJECT_COUNT);
     for (uint32_t i = 0; i < imageCount * OBJECT_COUNT; ++i)
     {
-        ubDesc.ppBuffer = &pObjectUniformBuffers[i];
+        ubDesc.ppBuffer = &pUbObjects[i];
         addResource(&ubDesc, nullptr);
     }
 
@@ -65,11 +65,11 @@ void Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mSize = sizeof(SceneUniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
-    arrsetlen(pSceneUniformBuffer, imageCount);
+    arrsetlen(pUbScene, imageCount);
 
     for (uint32_t i = 0; i < imageCount; ++i)
     {
-        ubDesc.ppBuffer = &pSceneUniformBuffer[i];
+        ubDesc.ppBuffer = &pUbScene[i];
         addResource(&ubDesc, nullptr);
     }
 
@@ -217,21 +217,21 @@ void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
 
-    removeResource(pCubeVertexBuffer);
-    removeResource(pSphereVertexBuffer);
-    removeResource(pBoneVertexBuffer);
+    removeResource(pVbCube);
+    removeResource(pVbSphere);
+    removeResource(pVbBone);
 
-    for (int i = 0; i < arrlen(pObjectUniformBuffers); i++)
+    for (int i = 0; i < arrlen(pUbObjects); i++)
     {
-        removeResource(pObjectUniformBuffers[i]);
+        removeResource(pUbObjects[i]);
     }
-    tf_free(pObjectUniformBuffers);
+    tf_free(pUbObjects);
 
-    for (int i = 0; i < arrlen(pSceneUniformBuffer); i++)
+    for (int i = 0; i < arrlen(pUbScene); i++)
     {
-        removeResource(pSceneUniformBuffer[i]);
+        removeResource(pUbScene[i]);
     }
-    tf_free(pSceneUniformBuffer);
+    tf_free(pUbScene);
 
     exitCameraController(pCameraController);
 }
@@ -246,15 +246,15 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
                                      SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
         shaderLoadDesc.mStages[1] = {"demo2_object.frag", nullptr, 0};
 
-        addShader(pRenderer, &shaderLoadDesc, &pObjectShader);
+        addShader(pRenderer, &shaderLoadDesc, &pShObjects);
 
         shaderLoadDesc = {};
         shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr};
         shaderLoadDesc.mStages[1] = {"demo2_shadow.frag", nullptr};
 
-        addShader(pRenderer, &shaderLoadDesc, &pShadowShader);
+        addShader(pRenderer, &shaderLoadDesc, &pShShadow);
 
-        Shader *pShaders[]{pObjectShader, pShadowShader};
+        Shader *pShaders[]{pShObjects, pShShadow};
 
         RootSignatureDesc rootDesc = {};
         rootDesc.mShaderCount = 2;
@@ -263,13 +263,13 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
 
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetSceneUniform);
+        addDescriptorSet(pRenderer, &desc, &pDsSceneUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetObjectUniform);
+        addDescriptorSet(pRenderer, &desc, &pDsObjectUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetShadowTexture);
+        addDescriptorSet(pRenderer, &desc, &pDsTexture);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -309,11 +309,11 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
             pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
-            pipelineSettings.pShaderProgram = pObjectShader;
+            pipelineSettings.pShaderProgram = pShObjects;
             pipelineSettings.pVertexLayout = &vertexLayout;
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.mVRFoveatedRendering = true;
-            addPipeline(pRenderer, &pipelineDesc, &pObjectPipeline);
+            addPipeline(pRenderer, &pipelineDesc, &pPlObjects);
         }
 
         RenderTargetDesc renderTargetDesc = {};
@@ -330,7 +330,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         renderTargetDesc.mSampleQuality = 0;
         renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
         renderTargetDesc.pName = "Shadow Map Render Target";
-        addRenderTarget(pRenderer, &renderTargetDesc, &pShadowRenderTarget);
+        addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadow);
 
         {
             PipelineDesc pipelineDesc = {};
@@ -339,16 +339,16 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
             pipelineSettings.mRenderTargetCount = 0;
             pipelineSettings.pDepthState = &depthStateDesc;
-            pipelineSettings.mSampleCount = pShadowRenderTarget->mSampleCount;
-            pipelineSettings.mSampleQuality = pShadowRenderTarget->mSampleQuality;
+            pipelineSettings.mSampleCount = pRtShadow->mSampleCount;
+            pipelineSettings.mSampleQuality = pRtShadow->mSampleQuality;
             pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
-            pipelineSettings.pShaderProgram = pShadowShader;
+            pipelineSettings.pShaderProgram = pShShadow;
             pipelineSettings.pVertexLayout = &vertexLayout;
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.mVRFoveatedRendering = true;
 
-            addPipeline(pRenderer, &pipelineDesc, &pShadowPipeline);
+            addPipeline(pRenderer, &pipelineDesc, &pPlShadow);
         }
     }
 
@@ -356,38 +356,43 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
-        params.ppBuffers = &pObjectUniformBuffers[i];
-        updateDescriptorSet(pRenderer, i, pDescriptorSetObjectUniform, 1, &params);
+        params.ppBuffers = &pUbObjects[i];
+        updateDescriptorSet(pRenderer, i, pDsObjectUniform, 1, &params);
     }
 
     for (int i = 0; i < imageCount; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformSceneBlock";
-        params.ppBuffers = &pSceneUniformBuffer[i];
+        params.ppBuffers = &pUbScene[i];
 
-        updateDescriptorSet(pRenderer, i, pDescriptorSetSceneUniform, 1, &params);
+        updateDescriptorSet(pRenderer, i, pDsSceneUniform, 1, &params);
     }
+
+    DescriptorData params = {};
+    params.pName = "shadowMap";
+    params.ppTextures = &pRtShadow->pTexture;
+    updateDescriptorSet(pRenderer, 0, pDsTexture, 1, &params);
 }
 
 void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 {
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
-        removePipeline(pRenderer, pObjectPipeline);
-        removePipeline(pRenderer, pShadowPipeline);
-        removeRenderTarget(pRenderer, pShadowRenderTarget);
+        removePipeline(pRenderer, pPlObjects);
+        removePipeline(pRenderer, pPlShadow);
+        removeRenderTarget(pRenderer, pRtShadow);
     }
 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
-        removeDescriptorSet(pRenderer, pDescriptorSetSceneUniform);
-        removeDescriptorSet(pRenderer, pDescriptorSetObjectUniform);
-        removeDescriptorSet(pRenderer, pDescriptorSetShadowTexture);
+        removeDescriptorSet(pRenderer, pDsSceneUniform);
+        removeDescriptorSet(pRenderer, pDsObjectUniform);
+        removeDescriptorSet(pRenderer, pDsTexture);
 
         removeRootSignature(pRenderer, pRootSignature);
-        removeShader(pRenderer, pObjectShader);
-        removeShader(pRenderer, pShadowShader);
+        removeShader(pRenderer, pShObjects);
+        removeShader(pRenderer, pShShadow);
     }
 }
 
@@ -417,14 +422,14 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)
 {
-    BufferUpdateDesc updateDesc = {pSceneUniformBuffer[frameIndex]};
+    BufferUpdateDesc updateDesc = {pUbScene[frameIndex]};
     beginUpdateResource(&updateDesc);
     *(SceneUniformBlock *)updateDesc.pMappedData = scene;
     endUpdateResource(&updateDesc, nullptr);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        BufferUpdateDesc updateDesc = {pObjectUniformBuffers[frameIndex * OBJECT_COUNT + i]};
+        BufferUpdateDesc updateDesc = {pUbObjects[frameIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *(ObjectUniformBlock *)updateDesc.pMappedData = objects[i];
         endUpdateResource(&updateDesc, nullptr);
@@ -439,7 +444,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
     RenderTargetBarrier barriers[] = {
-        {pShadowRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
+        {pRtShadow, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
     cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     LoadActionsDesc loadActions = {};
@@ -448,33 +453,33 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
     loadActions.mClearDepth.depth = 1.0f;
     loadActions.mClearDepth.stencil = 0;
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, pShadowRenderTarget, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pShadowRenderTarget->mWidth, (float)pShadowRenderTarget->mHeight, 0.0f,
+    cmdBindRenderTargets(pCmd, 0, nullptr, pRtShadow, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRtShadow->mWidth, (float)pRtShadow->mHeight, 0.0f,
                    1.0f);
-    cmdSetScissor(pCmd, 0, 0, pShadowRenderTarget->mWidth, pShadowRenderTarget->mHeight);
-    cmdBindPipeline(pCmd, pShadowPipeline);
+    cmdSetScissor(pCmd, 0, 0, pRtShadow->mWidth, pRtShadow->mHeight);
+    cmdBindPipeline(pCmd, pPlShadow);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDescriptorSetObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetSceneUniform);
+        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
 
         int vertexCount = 0;
 
         switch (objectTypes[i])
         {
         case ObjectType::Cube:
-            cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
+            cmdBindVertexBuffer(pCmd, 1, &pVbCube, &stride, nullptr);
             vertexCount = cubeVertexCount;
             break;
 
         case ObjectType::Sphere:
-            cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &stride, nullptr);
+            cmdBindVertexBuffer(pCmd, 1, &pVbSphere, &stride, nullptr);
             vertexCount = sphereVertexCount;
             break;
 
         case ObjectType::Bone:
-            cmdBindVertexBuffer(pCmd, 1, &pBoneVertexBuffer, &stride, nullptr);
+            cmdBindVertexBuffer(pCmd, 1, &pVbBone, &stride, nullptr);
             vertexCount = boneVertexCount;
             break;
 
@@ -486,7 +491,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
     }
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
-    barriers[0] = {pShadowRenderTarget, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
+    barriers[0] = {pRtShadow, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
     cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     loadActions = {};
@@ -498,35 +503,30 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    cmdBindPipeline(pCmd, pObjectPipeline);
-
-    DescriptorData params[2] = {};
-    params[0].pName = "shadowMap";
-    params[0].ppTextures = &pShadowRenderTarget->pTexture;
-    updateDescriptorSet(pRenderer, 0, pDescriptorSetShadowTexture, 1, params);
+    cmdBindPipeline(pCmd, pPlObjects);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDescriptorSetObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetSceneUniform);
-        cmdBindDescriptorSet(pCmd, 0, pDescriptorSetShadowTexture);
+        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, 0, pDsTexture);
 
         int vertexCount = 0;
 
         switch (objectTypes[i])
         {
         case ObjectType::Cube:
-            cmdBindVertexBuffer(pCmd, 1, &pCubeVertexBuffer, &stride, nullptr);
+            cmdBindVertexBuffer(pCmd, 1, &pVbCube, &stride, nullptr);
             vertexCount = cubeVertexCount;
             break;
 
         case ObjectType::Sphere:
-            cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &stride, nullptr);
+            cmdBindVertexBuffer(pCmd, 1, &pVbSphere, &stride, nullptr);
             vertexCount = sphereVertexCount;
             break;
 
         case ObjectType::Bone:
-            cmdBindVertexBuffer(pCmd, 1, &pBoneVertexBuffer, &stride, nullptr);
+            cmdBindVertexBuffer(pCmd, 1, &pVbBone, &stride, nullptr);
             vertexCount = boneVertexCount;
             break;
 

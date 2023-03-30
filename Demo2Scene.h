@@ -27,28 +27,29 @@ private:
     static constexpr size_t OBJECT_COUNT = 3;
 
     int cubeVertexCount{};
-    Buffer *pCubeVertexBuffer{};
+    Buffer *pVbCube{};
 
     int sphereVertexCount{};
-    Buffer *pSphereVertexBuffer{};
+    Buffer *pVbSphere{};
 
     int boneVertexCount{};
-    Buffer *pBoneVertexBuffer{};
+    Buffer *pVbBone{};
 
-    Buffer **pObjectUniformBuffers{};
-    Buffer **pSceneUniformBuffer{};
+    Buffer **pUbObjects{};
+    Buffer **pUbScene{};
 
     ICameraController *pCameraController{};
 
-    Shader *pObjectShader{};
-    Shader *pShadowShader{};
+    Shader *pShObjects{};
+    Shader *pShShadow{};
     RootSignature *pRootSignature{};
-    DescriptorSet *pDescriptorSetSceneUniform{};
-    DescriptorSet *pDescriptorSetObjectUniform{};
-    DescriptorSet *pDescriptorSetShadowTexture{};
 
-    Pipeline *pObjectPipeline{};
-    Pipeline *pShadowPipeline{};
+    DescriptorSet *pDsSceneUniform{};
+    DescriptorSet *pDsObjectUniform{};
+    DescriptorSet *pDsTexture{};
+
+    Pipeline *pPlObjects{};
+    Pipeline *pPlShadow{};
 
     struct ObjectUniformBlock
     {
@@ -83,7 +84,7 @@ private:
     UIComponent *pObjectWindow{};
 
     static constexpr uint32_t SHADOW_MAP_DIMENSION = 1024;
-    RenderTarget *pShadowRenderTarget;
+    RenderTarget *pRtShadow;
 
     void ResetLightSettings();
 };
