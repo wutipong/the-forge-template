@@ -10,40 +10,7 @@
 
 void Demo2Scene::Init(uint32_t imageCount)
 {
-    float *vertices{};
-
-    generateCuboidPoints(&vertices, &cubeVertexCount);
-    BufferLoadDesc bufferLoadDesc = {};
-    bufferLoadDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
-    bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
-    bufferLoadDesc.mDesc.mSize = cubeVertexCount * sizeof(float);
-    bufferLoadDesc.pData = vertices;
-    bufferLoadDesc.ppBuffer = &pVbCube;
-    addResource(&bufferLoadDesc, nullptr);
-
-    tf_free(vertices);
-
-    generateSpherePoints(&vertices, &sphereVertexCount, 64);
-    bufferLoadDesc = {};
-    bufferLoadDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
-    bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
-    bufferLoadDesc.mDesc.mSize = sphereVertexCount * sizeof(float);
-    bufferLoadDesc.pData = vertices;
-    bufferLoadDesc.ppBuffer = &pVbSphere;
-    addResource(&bufferLoadDesc, nullptr);
-
-    tf_free(vertices);
-
-    generateBonePoints(&vertices, &boneVertexCount, 0.25f);
-    bufferLoadDesc = {};
-    bufferLoadDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
-    bufferLoadDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
-    bufferLoadDesc.mDesc.mSize = boneVertexCount * sizeof(float);
-    bufferLoadDesc.pData = vertices;
-    bufferLoadDesc.ppBuffer = &pVbBone;
-    addResource(&bufferLoadDesc, nullptr);
-
-    tf_free(vertices);
+    shapeDrawer.Init();
 
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -75,15 +42,15 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     ResetLightSettings();
 
-    objectTypes[0] = ObjectType::Cube;
+    objectTypes[0] = ShapeDrawer::Shape::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
     objects[0].Transform = mat4::translation({0.0f, -2.0f, 0.0f}) * mat4::scale(vec3{1000.0f, 1.0f, 1000.0f});
 
-    objectTypes[1] = ObjectType::Sphere;
+    objectTypes[1] = ShapeDrawer::Shape::Sphere;
     objects[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
     objects[1].Transform = mat4::translation({0.0f, 0.0f, 0.0f});
 
-    objectTypes[2] = ObjectType::Cube;
+    objectTypes[2] = ShapeDrawer::Shape::Cube;
     objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
     objects[2].Transform = mat4::translation({4.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) *
         mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
@@ -217,9 +184,7 @@ void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
 
-    removeResource(pVbCube);
-    removeResource(pVbSphere);
-    removeResource(pVbBone);
+    shapeDrawer.Exit();
 
     for (int i = 0; i < arrlen(pUbObjects); i++)
     {
@@ -274,20 +239,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
-        // layout and pipeline for sphere draw
-        VertexLayout vertexLayout = {};
-        vertexLayout.mAttribCount = 2;
-        vertexLayout.mAttribs[0].mSemantic = SEMANTIC_POSITION;
-        vertexLayout.mAttribs[0].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
-        vertexLayout.mAttribs[0].mBinding = 0;
-        vertexLayout.mAttribs[0].mLocation = 0;
-        vertexLayout.mAttribs[0].mOffset = 0;
-
-        vertexLayout.mAttribs[1].mSemantic = SEMANTIC_NORMAL;
-        vertexLayout.mAttribs[1].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
-        vertexLayout.mAttribs[1].mBinding = 0;
-        vertexLayout.mAttribs[1].mLocation = 1;
-        vertexLayout.mAttribs[1].mOffset = 3 * sizeof(float);
+        VertexLayout vertexLayout = shapeDrawer.GetVertexLayout();
 
         RasterizerStateDesc rasterizerStateDesc = {};
         rasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
@@ -460,38 +412,13 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     cmdBindPipeline(pCmd, pPlObjects);
 
-    constexpr uint32_t stride = sizeof(float) * 6;
-
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
         cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
         cmdBindDescriptorSet(pCmd, 0, pDsTexture);
 
-        int vertexCount = 0;
-
-        switch (objectTypes[i])
-        {
-        case ObjectType::Cube:
-            cmdBindVertexBuffer(pCmd, 1, &pVbCube, &stride, nullptr);
-            vertexCount = cubeVertexCount;
-            break;
-
-        case ObjectType::Sphere:
-            cmdBindVertexBuffer(pCmd, 1, &pVbSphere, &stride, nullptr);
-            vertexCount = sphereVertexCount;
-            break;
-
-        case ObjectType::Bone:
-            cmdBindVertexBuffer(pCmd, 1, &pVbBone, &stride, nullptr);
-            vertexCount = boneVertexCount;
-            break;
-
-        default:
-            continue;
-        }
-
-        cmdDraw(pCmd, vertexCount / 6, 0);
+        shapeDrawer.Draw(pCmd, objectTypes[i]);
     }
 }
 
@@ -522,26 +449,7 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 
         int vertexCount = 0;
 
-        switch (objectTypes[i])
-        {
-        case ObjectType::Cube:
-            cmdBindVertexBuffer(pCmd, 1, &pVbCube, &stride, nullptr);
-            vertexCount = cubeVertexCount;
-            break;
-
-        case ObjectType::Sphere:
-            cmdBindVertexBuffer(pCmd, 1, &pVbSphere, &stride, nullptr);
-            vertexCount = sphereVertexCount;
-            break;
-
-        case ObjectType::Bone:
-            cmdBindVertexBuffer(pCmd, 1, &pVbBone, &stride, nullptr);
-            vertexCount = boneVertexCount;
-            break;
-
-        default:
-            continue;
-        }
+        shapeDrawer.Draw(pCmd, objectTypes[i]);
 
         cmdDraw(pCmd, vertexCount / 6, 0);
     }

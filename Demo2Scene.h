@@ -8,6 +8,7 @@
 #include "IInput.h"
 #include "IScene.h"
 #include "IUI.h"
+#include "ShapeDrawer.h"
 
 class Demo2Scene : public IScene
 {
@@ -26,14 +27,7 @@ public:
 private:
     static constexpr size_t OBJECT_COUNT = 3;
 
-    int cubeVertexCount{};
-    Buffer *pVbCube{};
-
-    int sphereVertexCount{};
-    Buffer *pVbSphere{};
-
-    int boneVertexCount{};
-    Buffer *pVbBone{};
+    ShapeDrawer shapeDrawer;
 
     Buffer **pUbObjects{};
     Buffer **pUbScene{};
@@ -57,12 +51,7 @@ private:
         float4 Color;
     } objects[OBJECT_COUNT]{};
 
-    enum class ObjectType
-    {
-        Cube,
-        Sphere,
-        Bone,
-    } objectTypes[OBJECT_COUNT]{};
+    ShapeDrawer::Shape objectTypes[OBJECT_COUNT]{};
 
     static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
     struct SceneUniformBlock
