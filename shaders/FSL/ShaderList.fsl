@@ -14,10 +14,14 @@
 #include "demo2_object.vert.fsl"
 #end
 
+#frag demo2_lit.frag
+#include "demo2_lit.frag.fsl"
+#end
+
 #frag demo2_shadow.frag
 #include "demo2_shadow.frag.fsl"
 #end
 
-#vert VR_MULTIVIEW demo2_shadow.vert
+#vert demo2_shadow.vert
 #include "demo2_shadow.vert.fsl"
 #end

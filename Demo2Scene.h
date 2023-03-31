@@ -20,7 +20,8 @@ public:
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) override;
     void Update(float deltaTime, uint32_t width, uint32_t height) override;
     void PreDraw(uint32_t frameIndex) override;
-    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex) override;
+    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
+              uint32_t frameIndex) override;
 
     bool OnInputAction(InputActionContext *ctx);
 
@@ -31,25 +32,32 @@ private:
 
     Buffer **pUbObjects{};
     Buffer **pUbScene{};
+    Buffer **pUbLightSources{};
 
     ICameraController *pCameraController{};
 
     Shader *pShObjects{};
     Shader *pShShadow{};
+    Shader *pShLightSources{};
+
     RootSignature *pRootSignature{};
 
     DescriptorSet *pDsSceneUniform{};
     DescriptorSet *pDsObjectUniform{};
+    DescriptorSet *pDsLightSourcesUniform{};
     DescriptorSet *pDsTexture{};
 
     Pipeline *pPlObjects{};
     Pipeline *pPlShadow{};
+    Pipeline *pPlLightSources{};
 
     struct ObjectUniformBlock
     {
         mat4 Transform;
         float4 Color;
-    } objects[OBJECT_COUNT]{};
+    };
+
+    ObjectUniformBlock objects[OBJECT_COUNT]{};
 
     ShapeDrawer::Shape objectTypes[OBJECT_COUNT]{};
 
@@ -69,6 +77,8 @@ private:
         // Shadow
         mat4 ShadowTransform;
     } scene{};
+
+    ObjectUniformBlock lightSources[DIRECTIONAL_LIGHT_COUNT] = {};
 
     UIComponent *pObjectWindow{};
 

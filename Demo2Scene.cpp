@@ -29,6 +29,20 @@ void Demo2Scene::Init(uint32_t imageCount)
     ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
+    ubDesc.mDesc.mSize = sizeof(ObjectUniformBlock);
+    ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
+    ubDesc.pData = nullptr;
+
+    arrsetlen(pUbLightSources, imageCount * DIRECTIONAL_LIGHT_COUNT);
+    for (uint32_t i = 0; i < imageCount * DIRECTIONAL_LIGHT_COUNT; ++i)
+    {
+        ubDesc.ppBuffer = &pUbLightSources[i];
+        addResource(&ubDesc, nullptr);
+    }
+
+    ubDesc = {};
+    ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
     ubDesc.mDesc.mSize = sizeof(SceneUniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
@@ -192,6 +206,12 @@ void Demo2Scene::Exit()
     }
     tf_free(pUbObjects);
 
+    for (int i = 0; i < arrlen(pUbLightSources); i++)
+    {
+        removeResource(pUbLightSources[i]);
+    }
+    tf_free(pUbLightSources);
+
     for (int i = 0; i < arrlen(pUbScene); i++)
     {
         removeResource(pUbScene[i]);
@@ -219,6 +239,12 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
         addShader(pRenderer, &shaderLoadDesc, &pShShadow);
 
+        shaderLoadDesc = {};
+        shaderLoadDesc.mStages[0] = {"demo2_object.vert", nullptr};
+        shaderLoadDesc.mStages[1] = {"demo2_lit.frag", nullptr};
+
+        addShader(pRenderer, &shaderLoadDesc, &pShLightSources);
+
         Shader *pShaders[]{pShObjects, pShShadow};
 
         RootSignatureDesc rootDesc = {};
@@ -232,6 +258,9 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsObjectUniform);
+
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * DIRECTIONAL_LIGHT_COUNT)};
+        addDescriptorSet(pRenderer, &desc, &pDsLightSourcesUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
         addDescriptorSet(pRenderer, &desc, &pDsTexture);
@@ -269,6 +298,25 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.mVRFoveatedRendering = true;
             addPipeline(pRenderer, &pipelineDesc, &pPlObjects);
+        }
+
+        {
+            PipelineDesc pipelineDesc = {};
+            pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
+            GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
+            pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
+            pipelineSettings.mRenderTargetCount = 1;
+            pipelineSettings.pDepthState = &depthStateDesc;
+            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
+            pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
+            pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
+            pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
+            pipelineSettings.pRootSignature = pRootSignature;
+            pipelineSettings.pShaderProgram = pShLightSources;
+            pipelineSettings.pVertexLayout = &vertexLayout;
+            pipelineSettings.pRasterizerState = &rasterizerStateDesc;
+            pipelineSettings.mVRFoveatedRendering = true;
+            addPipeline(pRenderer, &pipelineDesc, &pPlLightSources);
         }
 
         {
@@ -317,6 +365,14 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDsObjectUniform, 1, &params);
     }
 
+    for (int i = 0; i < imageCount * DIRECTIONAL_LIGHT_COUNT; i++)
+    {
+        DescriptorData params = {};
+        params.pName = "uniformObjectBlock";
+        params.ppBuffers = &pUbLightSources[i];
+        updateDescriptorSet(pRenderer, i, pDsLightSourcesUniform, 1, &params);
+    }
+
     for (int i = 0; i < imageCount; i++)
     {
         DescriptorData params = {};
@@ -338,6 +394,8 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
         removePipeline(pRenderer, pPlObjects);
         removePipeline(pRenderer, pPlShadow);
+        removePipeline(pRenderer, pPlLightSources);
+
         removeRenderTarget(pRenderer, pRtShadow);
     }
 
@@ -346,10 +404,12 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeDescriptorSet(pRenderer, pDsSceneUniform);
         removeDescriptorSet(pRenderer, pDsObjectUniform);
         removeDescriptorSet(pRenderer, pDsTexture);
+        removeDescriptorSet(pRenderer, pDsLightSourcesUniform);
 
         removeRootSignature(pRenderer, pRootSignature);
         removeShader(pRenderer, pShObjects);
         removeShader(pRenderer, pShShadow);
+        removeShader(pRenderer, pShLightSources);
     }
 }
 
@@ -376,20 +436,35 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     scene.ShadowTransform =
         mat4::orthographic(-10, 10, -10, 10, 1000, 0.1f) *
         mat4::lookAt(lightPos, cameraPos, {0, 1, 0});
+
+    for(int i = 0; i< DIRECTIONAL_LIGHT_COUNT; i++) {
+        lightSources[i].Color = scene.LightColor[i];
+        lightSources[i].Transform = mat4::translation(f3Tov3(-scene.LightDirection[i].getXYZ() * 5.0f)) * mat4::scale({0.5f, 0.5f, 0.5f});
+    }
 }
 
 void Demo2Scene::PreDraw(uint32_t frameIndex)
 {
-    BufferUpdateDesc updateDesc = {pUbScene[frameIndex]};
-    beginUpdateResource(&updateDesc);
-    *(SceneUniformBlock *)updateDesc.pMappedData = scene;
-    endUpdateResource(&updateDesc, nullptr);
+    {
+        BufferUpdateDesc updateDesc = {pUbScene[frameIndex]};
+        beginUpdateResource(&updateDesc);
+        *(SceneUniformBlock *)updateDesc.pMappedData = scene;
+        endUpdateResource(&updateDesc, nullptr);
+    }
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
         BufferUpdateDesc updateDesc = {pUbObjects[frameIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *(ObjectUniformBlock *)updateDesc.pMappedData = objects[i];
+        endUpdateResource(&updateDesc, nullptr);
+    }
+
+    for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
+    {
+        BufferUpdateDesc updateDesc = {pUbLightSources[frameIndex * DIRECTIONAL_LIGHT_COUNT + i]};
+        beginUpdateResource(&updateDesc);
+        *(ObjectUniformBlock *)updateDesc.pMappedData = lightSources[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 }
@@ -420,6 +495,16 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
         shapeDrawer.Draw(pCmd, objectTypes[i]);
     }
+
+    cmdBindPipeline(pCmd, pPlLightSources);
+
+    for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
+    {
+        cmdBindDescriptorSet(pCmd, (frameIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+
+        shapeDrawer.Draw(pCmd, ShapeDrawer::Shape::Bone);
+    }
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
@@ -447,11 +532,7 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
         cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
 
-        int vertexCount = 0;
-
         shapeDrawer.Draw(pCmd, objectTypes[i]);
-
-        cmdDraw(pCmd, vertexCount / 6, 0);
     }
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
