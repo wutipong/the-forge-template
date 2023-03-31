@@ -2,10 +2,11 @@
 
 STRUCT(VSOutput)
 {
-    DATA(float4, Position, SV_Position);
-    DATA(float4, WorldPos, Position);
+    DATA(float4, Position, SV_POSITION);
+    DATA(float4, WorldPos, POSITION0);
     DATA(float4, Color,    COLOR);
     DATA(float4, Normal,   NORMAL);
+    DATA(float4, ShadowMapPos, POSITION1);
 };
 
 float3 doDirectionalLight(
@@ -42,9 +43,14 @@ float4 PS_MAIN( VSOutput In )
             Get(color).a);
     }
 
-    float closestDepthInLSpace = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), In.Position.xy, 0).x;	// TODO point sampler
+    float2 shadowMapCoord = (In.ShadowMapPos.xy + 1.0 )/2.0;
 
-    Out.a = 1.0 + closestDepthInLSpace;
+    float depth = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), shadowMapCoord, 0).x;	// TODO point sampler
+    if (depth > In.ShadowMapPos.z) {
+        Out.rgb = Out.rgb / 2.0;
+    }
+
+    Out.a = 1.0;
 
     RETURN(Out);
 }
