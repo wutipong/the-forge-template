@@ -87,6 +87,12 @@ private:
 
     void ResetLightSettings();
     void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
+    void InitUI();
+
+    float3 cameraPosition;
+    float3 lightPosition;
+
+    bool viewOrtho{false};
 };
 
 #endif // DEMO2SCENE_H

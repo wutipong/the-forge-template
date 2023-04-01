@@ -92,6 +92,10 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     addInputAction(&desc);
 
+    InitUI();
+}
+void Demo2Scene::InitUI()
+{
     UIComponentDesc guiDesc = {};
     uiCreateComponent("Objects", &guiDesc, &pObjectWindow);
 
@@ -179,6 +183,29 @@ void Demo2Scene::Init(uint32_t imageCount)
             uiCreateComponentWidget(pObjectWindow, label, &widget, WIDGET_TYPE_SLIDER_FLOAT);
         }
     }
+
+    guiDesc = {};
+    uiCreateComponent("Camera", &guiDesc, &pObjectWindow);
+
+    SliderFloat3Widget cameraPosWidget{};
+    cameraPosWidget.pData = &cameraPosition;
+    uiCreateComponentWidget(pObjectWindow, "Position", &cameraPosWidget, WIDGET_TYPE_SLIDER_FLOAT3);
+
+    ButtonWidget moveToLightSrcBtnWidget = {};
+    UIWidget *moveToLightSrcBtn =
+        uiCreateComponentWidget(pObjectWindow, "Move to Light Source 0", &moveToLightSrcBtnWidget, WIDGET_TYPE_BUTTON);
+    uiSetWidgetOnEditedCallback(moveToLightSrcBtn, this,
+                                [](void *pUserData)
+                                {
+                                    auto *instance = reinterpret_cast<Demo2Scene *>(pUserData);
+                                    instance->pCameraController->moveTo(f3Tov3(instance->lightPosition));
+                                    instance->pCameraController->lookAt({0, 0, 0});
+                                });
+
+    CheckboxWidget viewOrthoWidget = {};
+    viewOrthoWidget.pData = &viewOrtho;
+
+    uiCreateComponentWidget(pObjectWindow, "Orthogonal", &viewOrthoWidget, WIDGET_TYPE_CHECKBOX);
 }
 
 void Demo2Scene::ResetLightSettings()
@@ -418,12 +445,19 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 {
     pCameraController->update(deltaTime);
 
-    constexpr float lightDistant = 20.0f;
+    cameraPosition = v3ToF3(pCameraController->getViewPosition());
+
+    constexpr float lightDistant = 30.0f;
+    constexpr float lightWindowSize = 40.0f;
     constexpr float horizontal_fov = PI / 2.0f;
 
     const float aspectInverse = (float)height / (float)width;
 
-    CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
+    CameraMatrix projection = viewOrtho
+        ? CameraMatrix::orthographic(-lightWindowSize / 2, lightWindowSize / 2, -lightWindowSize / 2,
+                                     lightWindowSize / 2, lightDistant, 0.1f)
+        : CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
+
     CameraMatrix mProjectView = projection * pCameraController->getViewMatrix();
 
     scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
@@ -434,19 +468,17 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
         dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
     }
 
-    Point3 lightPos = toPoint3(f4Tov4(-scene.LightDirection[0]) * lightDistant);
+    lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
 
-    scene.ShadowTransform =
-        //mat4::orthographic(-lightDistant, lightDistant, -lightDistant, lightDistant,  100.0f, 0) *
-        mat4::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f) *
-        //mat4::lookAt(lightPos, {0, 0, 0}, {0, 1, 0});
+    scene.ShadowTransform = mat4::orthographic(-lightWindowSize / 2, lightWindowSize / 2, -lightWindowSize / 2,
+                                               lightWindowSize / 2, lightDistant, 0.1f) *
         pCameraController->getViewMatrix();
+        //mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
         lightSources[i].Color = scene.LightColor[i];
-        lightSources[i].Transform = mat4::translation(f3Tov3(-scene.LightDirection[i].getXYZ() * lightDistant)) *
-            mat4::scale({0.5f, 0.5f, 0.5f});
+        lightSources[i].Transform = mat4::translation(f3Tov3(-scene.LightDirection[i].getXYZ() * lightDistant));
     }
 }
 
@@ -510,14 +542,12 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdBindDescriptorSet(pCmd, (frameIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
 
-        shapeDrawer.Draw(pCmd, ShapeDrawer::Shape::Bone);
+        shapeDrawer.Draw(pCmd, ShapeDrawer::Shape::Cube);
     }
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 {
-    constexpr uint32_t stride = sizeof(float) * 6;
-
     {
         RenderTargetBarrier barriers[] = {{pRtShadow, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);

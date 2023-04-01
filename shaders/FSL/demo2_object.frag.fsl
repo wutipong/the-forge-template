@@ -4,21 +4,20 @@ STRUCT(VSOutput)
 {
     DATA(float4, Position, SV_POSITION);
     DATA(float4, WorldPos, POSITION0);
-    DATA(float4, Color,    COLOR);
-    DATA(float4, Normal,   NORMAL);
+    DATA(float4, Color, COLOR);
+    DATA(float4, Normal, NORMAL);
     DATA(float4, ShadowMapPos, POSITION1);
+    DATA(float2, ShadowMapCoord, TEXCOORD);
 };
 
-float3 doDirectionalLight(
-    VSOutput In,
-    float4 cameraPosition,
-    float4 lightDirection, float4 lightColor,
-    float lightIntensity, float ambientFactor, float smoothness)
+float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirection, float4 lightColor,
+                          float lightIntensity, float ambientFactor, float smoothness)
 {
     float3 litColor = lightColor.rgb * In.Color.rgb;
 
     float diffuseFactor = dot(normalize(In.Normal.xyz), -normalize(lightDirection.xyz)) * lightIntensity;
-    if(diffuseFactor < 0) diffuseFactor = 0;
+    if (diffuseFactor < 0)
+        diffuseFactor = 0;
 
     float3 viewDir = normalize(cameraPosition.xyz - In.WorldPos.xyz);
     float3 reflectDir = reflect(lightDirection.xyz, In.Normal.xyz);
@@ -28,30 +27,40 @@ float3 doDirectionalLight(
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
 }
 
-float4 PS_MAIN( VSOutput In )
+float4 PS_MAIN(VSOutput In)
 {
     INIT_MAIN;
     float4 Out = {0.0, 0.0, 0.0, 0.0};
 
     int i = 0;
-    for(i = 0; i < LIGHT_COUNT; i++)
+    for (i = 0; i < LIGHT_COUNT; i++)
     {
-        Out.rgb += doDirectionalLight(
-            In, Get(cameraPosition),
-            Get(lightDirection[i]), Get(lightColor[i]),
-            Get(lightIntensity[i]), Get(lightAmbient[i]),
-            Get(color).a);
+        Out.rgb += doDirectionalLight(In, Get(cameraPosition), Get(lightDirection[i]), Get(lightColor[i]),
+                                      Get(lightIntensity[i]), Get(lightAmbient[i]), Get(color).a);
     }
 
-    float2 shadowMapCoord = (In.ShadowMapPos.xy + 1.0 )/2.0;
-    // shadowMapCoord.x = 1.0 - shadowMapCoord.x;
+    float2 shadowMapCoord = In.ShadowMapCoord;
 
-    float depth = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), shadowMapCoord, 0).x;	// TODO point sampler
-    if (depth <= In.ShadowMapPos.z) {
-        Out.rgb = Out.rgb / 2.0;
+    if (In.ShadowMapCoord.x >= 0 && In.ShadowMapCoord.y >= 0 && In.ShadowMapCoord.x <= 1.0 &&
+        In.ShadowMapCoord.y <= 1.0)
+    {
+        float depth = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord, 0).x;
+        if (depth < In.ShadowMapPos.z)
+        {
+            Out.rgb = Out.rgb / 2.0;
+        }
     }
 
-    Out.a = 1.0;
+    /* Debug code.
+    if(shadowMapCoord.x <= 0 || shadowMapCoord.x > 1.0 || shadowMapCoord.y <= 0 || shadowMapCoord.y >1.0 ) {
+        Out = float4(0.5, 0.5, 0.5, 1.0);
+    } else {
+        Out = float4(depth, In.ShadowMapPos.z, 0, 1.0);
+    }
+    */
 
+    /* another debug
+     * Out.rgb = float3(In.Position.z, In.Position.z, In.Position.z);
+     * */
     RETURN(Out);
 }
