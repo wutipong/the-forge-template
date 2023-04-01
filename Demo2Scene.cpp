@@ -259,7 +259,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsObjectUniform);
 
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * DIRECTIONAL_LIGHT_COUNT)};
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW,
+                static_cast<uint32_t>(imageCount * DIRECTIONAL_LIGHT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsLightSourcesUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
@@ -417,8 +418,11 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 {
     pCameraController->update(deltaTime);
 
+    constexpr float lightDistant = 20.0f;
+    constexpr float horizontal_fov = PI / 2.0f;
+
     const float aspectInverse = (float)height / (float)width;
-    const float horizontal_fov = PI / 2.0f;
+
     CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
     CameraMatrix mProjectView = projection * pCameraController->getViewMatrix();
 
@@ -430,16 +434,19 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
         dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
     }
 
-    Point3 lightPos = toPoint3(-f4Tov4(scene.LightDirection[0]));
-    Point3 cameraPos{pCameraController->getViewPosition()};
+    Point3 lightPos = toPoint3(f4Tov4(-scene.LightDirection[0]) * lightDistant);
 
     scene.ShadowTransform =
-        mat4::orthographic(-10, 10, -10, 10, 1000, 0.1f) *
-        mat4::lookAt(lightPos, cameraPos, {0, 1, 0});
+        //mat4::orthographic(-lightDistant, lightDistant, -lightDistant, lightDistant,  100.0f, 0) *
+        mat4::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f) *
+        //mat4::lookAt(lightPos, {0, 0, 0}, {0, 1, 0});
+        pCameraController->getViewMatrix();
 
-    for(int i = 0; i< DIRECTIONAL_LIGHT_COUNT; i++) {
+    for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
+    {
         lightSources[i].Color = scene.LightColor[i];
-        lightSources[i].Transform = mat4::translation(f3Tov3(-scene.LightDirection[i].getXYZ() * 5.0f)) * mat4::scale({0.5f, 0.5f, 0.5f});
+        lightSources[i].Transform = mat4::translation(f3Tov3(-scene.LightDirection[i].getXYZ() * lightDistant)) *
+            mat4::scale({0.5f, 0.5f, 0.5f});
     }
 }
 

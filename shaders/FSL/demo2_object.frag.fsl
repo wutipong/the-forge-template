@@ -43,10 +43,11 @@ float4 PS_MAIN( VSOutput In )
             Get(color).a);
     }
 
-    float2 shadowMapCoord =1.0 - (In.ShadowMapPos.xy + 1.0 )/2.0;
+    float2 shadowMapCoord = (In.ShadowMapPos.xy + 1.0 )/2.0;
+    // shadowMapCoord.x = 1.0 - shadowMapCoord.x;
 
     float depth = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), shadowMapCoord, 0).x;	// TODO point sampler
-    if (depth > In.ShadowMapPos.z) {
+    if (depth <= In.ShadowMapPos.z) {
         Out.rgb = Out.rgb / 2.0;
     }
 
