@@ -194,6 +194,7 @@ void Demo2Scene::InitUI()
     ButtonWidget moveToLightSrcBtnWidget = {};
     UIWidget *moveToLightSrcBtn =
         uiCreateComponentWidget(pObjectWindow, "Move to Light Source 0", &moveToLightSrcBtnWidget, WIDGET_TYPE_BUTTON);
+
     uiSetWidgetOnEditedCallback(moveToLightSrcBtn, this,
                                 [](void *pUserData)
                                 {
@@ -201,11 +202,6 @@ void Demo2Scene::InitUI()
                                     instance->pCameraController->moveTo(f3Tov3(instance->lightPosition));
                                     instance->pCameraController->lookAt({0, 0, 0});
                                 });
-
-    CheckboxWidget viewOrthoWidget = {};
-    viewOrthoWidget.pData = &viewOrtho;
-
-    uiCreateComponentWidget(pObjectWindow, "Orthogonal", &viewOrthoWidget, WIDGET_TYPE_CHECKBOX);
 }
 
 void Demo2Scene::ResetLightSettings()
@@ -448,17 +444,13 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     cameraPosition = v3ToF3(pCameraController->getViewPosition());
 
     constexpr float lightDistant = 30.0f;
-    constexpr float lightWindowSize = 40.0f;
     constexpr float horizontal_fov = PI / 2.0f;
 
     const float aspectInverse = (float)height / (float)width;
 
-    CameraMatrix projection = viewOrtho
-        ? CameraMatrix::orthographic(-lightWindowSize / 2, lightWindowSize / 2, -lightWindowSize / 2,
-                                     lightWindowSize / 2, lightDistant, 0.1f)
-        : CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
-
-    CameraMatrix mProjectView = projection * pCameraController->getViewMatrix();
+    CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.0f);
+    mat4 view = pCameraController->getViewMatrix();
+    CameraMatrix mProjectView = projection * view;
 
     scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
     scene.ProjectView = mProjectView;
@@ -469,11 +461,10 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     }
 
     lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
+    auto lightView =  mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
-    scene.ShadowTransform = mat4::orthographic(-lightWindowSize / 2, lightWindowSize / 2, -lightWindowSize / 2,
-                                               lightWindowSize / 2, lightDistant, 0.1f) *
-        pCameraController->getViewMatrix();
-        //mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
+    scene.ShadowTransform = mat4::perspective(horizontal_fov, 1, 10.0f, 0.1f) *
+        lightView;
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {

@@ -91,8 +91,6 @@ private:
 
     float3 cameraPosition;
     float3 lightPosition;
-
-    bool viewOrtho{false};
 };
 
 #endif // DEMO2SCENE_H
