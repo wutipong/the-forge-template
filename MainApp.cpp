@@ -261,13 +261,13 @@ void MainApp::Draw()
     DrawCurrentScene(cmd, pRenderer, pRenderTarget, pDepthBuffer, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
+    cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
     loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
     cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
 
-    loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
-    cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, NULL, NULL, -1, -1);
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
 
     gFrameTimeDraw.mFontColor = 0xff00ffff;

@@ -39,6 +39,7 @@ private:
     Shader *pShObjects{};
     Shader *pShShadow{};
     Shader *pShLightSources{};
+    Shader *pShShadowViewport{};
 
     RootSignature *pRootSignature{};
 
@@ -50,6 +51,7 @@ private:
     Pipeline *pPlObjects{};
     Pipeline *pPlShadow{};
     Pipeline *pPlLightSources{};
+    Pipeline *pPlShadowViewport{};
 
     struct ObjectUniformBlock
     {
@@ -83,10 +85,14 @@ private:
     UIComponent *pObjectWindow{};
 
     static constexpr float SHADOW_MAP_DIMENSION = 1024;
+    static constexpr float SHADOW_VIEWPORT = 512;
+
     RenderTarget *pRtShadow;
 
     void ResetLightSettings();
     void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
+    void DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex);
+
     void InitUI();
 
     float3 cameraPosition;

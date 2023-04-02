@@ -268,10 +268,16 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
         addShader(pRenderer, &shaderLoadDesc, &pShLightSources);
 
-        Shader *pShaders[]{pShObjects, pShShadow};
+        shaderLoadDesc = {};
+        shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr};
+        shaderLoadDesc.mStages[1] = {"demo2_object.frag", nullptr};
+
+        addShader(pRenderer, &shaderLoadDesc, &pShShadowViewport);
+
+        Shader *pShaders[]{pShObjects, pShShadow, pShLightSources, pShShadowViewport};
 
         RootSignatureDesc rootDesc = {};
-        rootDesc.mShaderCount = 2;
+        rootDesc.mShaderCount = 4;
         rootDesc.ppShaders = pShaders;
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
@@ -379,6 +385,26 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
             addPipeline(pRenderer, &pipelineDesc, &pPlShadow);
         }
+
+        {
+            PipelineDesc pipelineDesc = {};
+            pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
+            GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
+            pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
+            pipelineSettings.mRenderTargetCount = 1;
+            pipelineSettings.pDepthState = &depthStateDesc;
+            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
+            pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
+            pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
+            pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
+            pipelineSettings.pRootSignature = pRootSignature;
+            pipelineSettings.pShaderProgram = pShShadowViewport;
+            pipelineSettings.pVertexLayout = &vertexLayout;
+            pipelineSettings.pRasterizerState = &rasterizerStateDesc;
+            pipelineSettings.mVRFoveatedRendering = true;
+
+            addPipeline(pRenderer, &pipelineDesc, &pPlShadowViewport);
+        }
     }
 
     for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
@@ -419,7 +445,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removePipeline(pRenderer, pPlObjects);
         removePipeline(pRenderer, pPlShadow);
         removePipeline(pRenderer, pPlLightSources);
-
+        removePipeline(pRenderer, pPlShadowViewport);
         removeRenderTarget(pRenderer, pRtShadow);
     }
 
@@ -434,6 +460,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeShader(pRenderer, pShObjects);
         removeShader(pRenderer, pShShadow);
         removeShader(pRenderer, pShLightSources);
+        removeShader(pRenderer, pShShadowViewport);
     }
 }
 
@@ -448,7 +475,7 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     const float aspectInverse = (float)height / (float)width;
 
-    CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.0f);
+    CameraMatrix projection = CameraMatrix::perspective(horizontal_fov, aspectInverse, 1000.0f, 0.1f);
     mat4 view = pCameraController->getViewMatrix();
     CameraMatrix mProjectView = projection * view;
 
@@ -461,10 +488,9 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     }
 
     lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
-    auto lightView =  mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
+    auto lightView = mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
-    scene.ShadowTransform = mat4::perspective(horizontal_fov, 1, 10.0f, 0.1f) *
-        lightView;
+    scene.ShadowTransform = mat4::perspective(horizontal_fov, 1, 1000.0f, 0.1f) * lightView;
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
@@ -512,7 +538,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
     loadActions.mClearDepth.depth = 0.0f;
 
     cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetViewport(pCmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
     cmdBindPipeline(pCmd, pPlObjects);
@@ -535,6 +561,8 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
         shapeDrawer.Draw(pCmd, ShapeDrawer::Shape::Cube);
     }
+
+    DrawShadowViewport(pCmd, pRenderTarget, frameIndex);
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
@@ -570,6 +598,26 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
             {pRtShadow, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
         };
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    }
+}
+
+void Demo2Scene::DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex)
+{
+    cmdSetViewport(pCmd, (float)pRenderTarget->mWidth - SHADOW_VIEWPORT,
+                   (float)pRenderTarget->mHeight - SHADOW_VIEWPORT, SHADOW_VIEWPORT, SHADOW_VIEWPORT, 0.0f, 1.0f);
+
+    cmdSetScissor(pCmd, pRenderTarget->mWidth - SHADOW_VIEWPORT,
+                  pRenderTarget->mHeight - SHADOW_VIEWPORT, SHADOW_VIEWPORT, SHADOW_VIEWPORT);
+
+    cmdBindPipeline(pCmd, pPlShadowViewport);
+
+    for (int i = 0; i < OBJECT_COUNT; i++)
+    {
+        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, 0, pDsTexture);
+
+        shapeDrawer.Draw(pCmd, objectTypes[i]);
     }
 }
 
