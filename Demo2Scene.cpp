@@ -482,11 +482,6 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     scene.CameraPosition = {pCameraController->getViewPosition(), 1.0f};
     scene.ProjectView = mProjectView;
 
-    for (auto &dir : scene.LightDirection)
-    {
-        dir = v4ToF4({normalize(f3Tov3(dir.getXYZ())), 1.0f});
-    }
-
     lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
     auto lightView = mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
