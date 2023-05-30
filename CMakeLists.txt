@@ -1,16 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(TARGET_NAME the-forge-template)
+project(the-forge-template)
 
-project(${TARGET_NAME})
-
-if(WIN32)
-    set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
-endif()
-
-FIND_PACKAGE(Python3 3.6 EXACT COMPONENTS Interpreter)
-
-add_executable(${TARGET_NAME}
+add_executable(main
         "MainApp.cpp"
         "DemoScene.cpp"
         "SceneManagement.cpp"
@@ -140,20 +132,21 @@ add_executable(${TARGET_NAME}
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_msl.cpp"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_parser.cpp"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_reflect.cpp"
-        Demo2Scene.cpp Demo2Scene.h ShapeDrawer.cpp ShapeDrawer.h)
+        Demo2Scene.cpp Demo2Scene.h ShapeDrawer.cpp ShapeDrawer.h
+)
 
 find_package(Vulkan REQUIRED)
 
-target_compile_features(${TARGET_NAME} PRIVATE cxx_std_20)
-set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 20)
-set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+target_compile_features(main PRIVATE cxx_std_20)
+set_property(TARGET main PROPERTY CXX_STANDARD 20)
+set_property(TARGET main PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
-    # set_property(TARGET the-forge-template PROPERTY WIN32_EXECUTABLE ON)
-    target_compile_options(${TARGET_NAME} PRIVATE /Zc:__cplusplus)
+    # set_property(TARGET main PROPERTY WIN32_EXECUTABLE ON)
+    target_compile_options(main PRIVATE /Zc:__cplusplus)
 endif ()
 
-target_include_directories(${TARGET_NAME} PRIVATE
+target_include_directories(main PRIVATE
         "The-Forge/Common_3/Application/Interfaces"
         "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
         "The-Forge/Common_3/Graphics/Interfaces"
@@ -163,46 +156,51 @@ target_include_directories(${TARGET_NAME} PRIVATE
         "The-Forge/Common_3/Utilities/Interfaces"
         "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/Nothings/"
         ${VULKAN_HEADERS_INCLUDE_DIRS}
-        )
+)
 
-target_link_directories(${TARGET_NAME} PRIVATE
+target_link_directories(main PRIVATE
         "The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib"
         "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/nvapi/amd64"
-        )
+)
 
-target_link_libraries(${TARGET_NAME} PRIVATE XInput Vulkan::Vulkan WinPixEventRuntime amd_ags_x64 nvapi64)
+target_link_libraries(main PRIVATE XInput Vulkan::Vulkan WinPixEventRuntime amd_ags_x64 nvapi64)
 
-file(COPY
-        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll"
-        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+add_custom_target(CopyDlls ALL      
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/"      
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll" "$<TARGET_FILE_DIR:main>/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll" "$<TARGET_FILE_DIR:main>/"
+)
 
-file(COPY
-        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll"
-        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+add_custom_target(CopyGpuCfg ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/GPUCfg/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/GPUCfg/gpu.cfg" "$<TARGET_FILE_DIR:main>/GPUCfg/"
+)
 
-file(COPY
-        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/GPUCfg/gpu.cfg"
-        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/GPUCfg")
+add_custom_target(CopyFonts ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
+)
 
-file(COPY
-        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf"
-        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Fonts/TitilliumText")
+if(WIN32)
+    set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
+endif()
+
+find_package(Python3 3.6 EXACT COMPONENTS Interpreter)
 
 function(compile_shaders)
     set(oneValueArgs TARGET SHADER_LIST)
-    cmake_parse_arguments(COMPILE_SHADERS "${options}" "${oneValueArgs}"
-            "${multiValueArgs}" ${ARGN}
-            )
+    cmake_parse_arguments(COMPILE_SHADERS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     add_custom_target(${COMPILE_SHADERS_TARGET}
             COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Tools/ForgeShadingLanguage/fsl.py"
             "-dShaders" "-bCompiledShaders" "-l DIRECT3D12 VULKAN" --compile --verbose
             ${COMPILE_SHADERS_SHADER_LIST}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-            )
-    add_dependencies(${TARGET_NAME} ${COMPILE_SHADERS_TARGET})
+            WORKING_DIRECTORY "$<TARGET_FILE_DIR:main>"
+        )
+
+    add_dependencies(main ${COMPILE_SHADERS_TARGET})
 endfunction()
 
 compile_shaders(
