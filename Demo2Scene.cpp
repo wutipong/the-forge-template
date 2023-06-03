@@ -8,6 +8,81 @@
 #include "IUI.h"
 #include "stb_ds.h"
 
+namespace Demo2Scene 
+{
+    constexpr size_t OBJECT_COUNT = 3;
+
+    ShapeDrawer shapeDrawer;
+
+    Buffer **pUbObjects{};
+    Buffer **pUbScene{};
+    Buffer **pUbLightSources{};
+
+    ICameraController *pCameraController{};
+
+    Shader *pShObjects{};
+    Shader *pShShadow{};
+    Shader *pShLightSources{};
+    Shader *pShShadowViewport{};
+
+    RootSignature *pRootSignature{};
+
+    DescriptorSet *pDsSceneUniform{};
+    DescriptorSet *pDsObjectUniform{};
+    DescriptorSet *pDsLightSourcesUniform{};
+    DescriptorSet *pDsTexture{};
+
+    Pipeline *pPlObjects{};
+    Pipeline *pPlShadow{};
+    Pipeline *pPlLightSources{};
+    Pipeline *pPlShadowViewport{};
+
+    struct ObjectUniformBlock
+    {
+        mat4 Transform;
+        float4 Color;
+    };
+
+    ObjectUniformBlock objects[OBJECT_COUNT]{};
+
+    ShapeDrawer::Shape objectTypes[OBJECT_COUNT]{};
+
+    constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
+    struct SceneUniformBlock
+    {
+        // Camera
+        vec4 CameraPosition;
+        CameraMatrix ProjectView;
+
+        // Directional Light;
+        float4 LightDirection[DIRECTIONAL_LIGHT_COUNT];
+        float4 LightColor[DIRECTIONAL_LIGHT_COUNT];
+        float4 LightAmbient[DIRECTIONAL_LIGHT_COUNT];
+        float4 LightIntensity[DIRECTIONAL_LIGHT_COUNT];
+
+        // Shadow
+        mat4 ShadowTransform;
+    } scene{};
+
+    ObjectUniformBlock lightSources[DIRECTIONAL_LIGHT_COUNT] = {};
+
+    UIComponent *pObjectWindow{};
+
+    constexpr float SHADOW_MAP_DIMENSION = 1024;
+    constexpr float SHADOW_VIEWPORT = 512;
+
+    RenderTarget *pRtShadow;
+
+    void ResetLightSettings();
+    void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
+    void DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex);
+
+    void InitUI();
+
+    float3 cameraPosition;
+    float3 lightPosition;
+}
+
 void Demo2Scene::Init(uint32_t imageCount)
 {
     shapeDrawer.Init();
@@ -73,22 +148,22 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     InputActionDesc desc{DefaultInputActions::ROTATE_CAMERA,
                          [](InputActionContext *ctx) -> bool
-                         { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
-                         this};
+                         { return OnInputAction(ctx); },
+                         };
 
     addInputAction(&desc);
 
     desc = {DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
             [](InputActionContext *ctx) -> bool
-            { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
-            this};
+            { return OnInputAction(ctx); }
+            };
 
     addInputAction(&desc);
 
     desc = {DefaultInputActions::DefaultInputActions::RESET_CAMERA,
             [](InputActionContext *ctx) -> bool
-            { return static_cast<Demo2Scene *>(ctx->pUserData)->OnInputAction(ctx); },
-            this};
+            { return OnInputAction(ctx); },
+            };
 
     addInputAction(&desc);
 
@@ -114,11 +189,10 @@ void Demo2Scene::InitUI()
 
     ButtonWidget resetBtnWidget = {};
     UIWidget *resetBtn = uiCreateComponentWidget(pObjectWindow, "Reset", &resetBtnWidget, WIDGET_TYPE_BUTTON);
-    uiSetWidgetOnEditedCallback(resetBtn, this,
+    uiSetWidgetOnEditedCallback(resetBtn, nullptr,
                                 [](void *pUserData)
                                 {
-                                    auto *instance = reinterpret_cast<Demo2Scene *>(pUserData);
-                                    instance->ResetLightSettings();
+                                    ResetLightSettings();
                                 });
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
@@ -195,12 +269,11 @@ void Demo2Scene::InitUI()
     UIWidget *moveToLightSrcBtn =
         uiCreateComponentWidget(pObjectWindow, "Move to Light Source 0", &moveToLightSrcBtnWidget, WIDGET_TYPE_BUTTON);
 
-    uiSetWidgetOnEditedCallback(moveToLightSrcBtn, this,
+    uiSetWidgetOnEditedCallback(moveToLightSrcBtn, nullptr,
                                 [](void *pUserData)
                                 {
-                                    auto *instance = reinterpret_cast<Demo2Scene *>(pUserData);
-                                    instance->pCameraController->moveTo(f3Tov3(instance->lightPosition));
-                                    instance->pCameraController->lookAt({0, 0, 0});
+                                    pCameraController->moveTo(f3Tov3(lightPosition));
+                                    pCameraController->lookAt({0, 0, 0});
                                 });
 }
 

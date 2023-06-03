@@ -4,8 +4,6 @@ project(the-forge-template)
 
 add_executable(main
     "MainApp.cpp"
-    "DemoScene.cpp"
-    "SceneManagement.cpp"
     "Demo2Scene.cpp" "Demo2Scene.h" 
     "ShapeDrawer.cpp" "ShapeDrawer.h"
     "The-Forge/Common_3/Application/CameraController.cpp"

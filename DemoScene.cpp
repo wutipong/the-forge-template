@@ -2,6 +2,36 @@
 #include <IResourceLoader.h>
 #include <stb_ds.h>
 
+namespace DemoScene 
+{
+    int vertexCount{};
+    static constexpr size_t MAX_STARS = 768;
+
+    vec3 position[MAX_STARS] = {};
+    vec4 color[MAX_STARS] = {};
+    vec3 lightPosition{1.0f, 0, 0};
+    vec3 lightColor{0.9f, 0.9f, 0.7f};
+
+    Shader *pShader;
+    RootSignature *pRootSignature;
+    DescriptorSet *pDescriptorSetUniforms;
+    Buffer **pProjViewUniformBuffer = nullptr;
+    Buffer *pSphereVertexBuffer = nullptr;
+    Pipeline *pSpherePipeline;
+
+    ICameraController *pCameraController;
+
+    struct UniformBlock
+    {
+        CameraMatrix mProjectView;
+        mat4 mToWorldMat[MAX_STARS];
+        vec4 mColor[MAX_STARS];
+
+        vec3 mLightPosition;
+        vec3 mLightColor;
+    } uniform = {};
+}
+
 void DemoScene::Init(uint32_t imageCount)
 {
     float *vertices{};

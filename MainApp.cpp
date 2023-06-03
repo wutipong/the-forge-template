@@ -3,7 +3,8 @@
 #include <IGraphics.h>
 #include <cstdlib>
 #include "Demo2Scene.h"
-#include "SceneManagement.h"
+
+namespace Scene = Demo2Scene;
 
 extern RendererApi gSelectedRendererApi;
 
@@ -112,15 +113,14 @@ bool MainApp::Init()
     GlobalInputActionDesc globalInputActionDesc = {GlobalInputActionDesc::ANY_BUTTON_ACTION, onAnyInput, this};
     setGlobalInputAction(&globalInputActionDesc);
 
-    SetStartScene<Demo2Scene>();
-    InitCurrentScene(gImageCount);
+    Scene::Init(gImageCount);
 
     return true;
 }
 
 void MainApp::Exit()
 {
-    ExitCurrentScene();
+    Scene::Exit();
     exitInputSystem();
     exitUserInterface();
     exitFontSystem();
@@ -194,7 +194,7 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
     fontLoad.mLoadType = pReloadDesc->mType;
     loadFontSystem(&fontLoad);
 
-    LoadCurrentScene(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], pDepthBuffer, gImageCount);
+    Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], pDepthBuffer, gImageCount);
     return true;
 }
 
@@ -202,7 +202,7 @@ void MainApp::Unload(ReloadDesc *pReloadDesc)
 {
     waitQueueIdle(pGraphicsQueue);
 
-    UnloadCurrentScene(pReloadDesc, pRenderer);
+    Scene::Unload(pReloadDesc, pRenderer);
     unloadFontSystem(pReloadDesc->mType);
     unloadUserInterface(pReloadDesc->mType);
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
@@ -216,7 +216,7 @@ void MainApp::Update(float deltaTime)
 {
     updateInputSystem(deltaTime, mSettings.mWidth, mSettings.mHeight);
 
-    UpdateCurrentScene(deltaTime, mSettings.mWidth, mSettings.mHeight);
+    Scene::Update(deltaTime, mSettings.mWidth, mSettings.mHeight);
 }
 
 void MainApp::Draw()
@@ -234,7 +234,7 @@ void MainApp::Draw()
     if (fenceStatus == FENCE_STATUS_INCOMPLETE)
         waitForFences(pRenderer, 1, &pRenderCompleteFence);
 
-    PreDrawCurrentScene(gFrameIndex);
+    Scene::PreDraw(gFrameIndex);
 
     // Reset cmd pool for this frame
     resetCmdPool(pRenderer, pCmdPools[gFrameIndex]);
@@ -258,7 +258,7 @@ void MainApp::Draw()
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    DrawCurrentScene(cmd, pRenderer, pRenderTarget, pDepthBuffer, gFrameIndex);
+    Scene::Draw(cmd, pRenderer, pRenderTarget, pDepthBuffer, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);

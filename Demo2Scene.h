@@ -10,93 +10,19 @@
 #include "IUI.h"
 #include "ShapeDrawer.h"
 
-class Demo2Scene : public IScene
+namespace Demo2Scene
 {
-public:
-    void Init(uint32_t imageCount) override;
-    void Exit() override;
+    void Init(uint32_t imageCount) ;
+    void Exit() ;
     void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
-              uint32_t imageCount) override;
-    void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) override;
-    void Update(float deltaTime, uint32_t width, uint32_t height) override;
-    void PreDraw(uint32_t frameIndex) override;
+              uint32_t imageCount) ;
+    void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) ;
+    void Update(float deltaTime, uint32_t width, uint32_t height) ;
+    void PreDraw(uint32_t frameIndex) ;
     void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
-              uint32_t frameIndex) override;
+              uint32_t frameIndex) ;
 
     bool OnInputAction(InputActionContext *ctx);
-
-private:
-    static constexpr size_t OBJECT_COUNT = 3;
-
-    ShapeDrawer shapeDrawer;
-
-    Buffer **pUbObjects{};
-    Buffer **pUbScene{};
-    Buffer **pUbLightSources{};
-
-    ICameraController *pCameraController{};
-
-    Shader *pShObjects{};
-    Shader *pShShadow{};
-    Shader *pShLightSources{};
-    Shader *pShShadowViewport{};
-
-    RootSignature *pRootSignature{};
-
-    DescriptorSet *pDsSceneUniform{};
-    DescriptorSet *pDsObjectUniform{};
-    DescriptorSet *pDsLightSourcesUniform{};
-    DescriptorSet *pDsTexture{};
-
-    Pipeline *pPlObjects{};
-    Pipeline *pPlShadow{};
-    Pipeline *pPlLightSources{};
-    Pipeline *pPlShadowViewport{};
-
-    struct ObjectUniformBlock
-    {
-        mat4 Transform;
-        float4 Color;
-    };
-
-    ObjectUniformBlock objects[OBJECT_COUNT]{};
-
-    ShapeDrawer::Shape objectTypes[OBJECT_COUNT]{};
-
-    static constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
-    struct SceneUniformBlock
-    {
-        // Camera
-        vec4 CameraPosition;
-        CameraMatrix ProjectView;
-
-        // Directional Light;
-        float4 LightDirection[DIRECTIONAL_LIGHT_COUNT];
-        float4 LightColor[DIRECTIONAL_LIGHT_COUNT];
-        float4 LightAmbient[DIRECTIONAL_LIGHT_COUNT];
-        float4 LightIntensity[DIRECTIONAL_LIGHT_COUNT];
-
-        // Shadow
-        mat4 ShadowTransform;
-    } scene{};
-
-    ObjectUniformBlock lightSources[DIRECTIONAL_LIGHT_COUNT] = {};
-
-    UIComponent *pObjectWindow{};
-
-    static constexpr float SHADOW_MAP_DIMENSION = 1024;
-    static constexpr float SHADOW_VIEWPORT = 512;
-
-    RenderTarget *pRtShadow;
-
-    void ResetLightSettings();
-    void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
-    void DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex);
-
-    void InitUI();
-
-    float3 cameraPosition;
-    float3 lightPosition;
 };
 
 #endif // DEMO2SCENE_H
