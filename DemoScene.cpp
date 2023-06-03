@@ -1,25 +1,21 @@
 #include "DemoScene.h"
+
+#include <ICameraController.h>
+#include <IGraphics.h>
+#include <IOperatingSystem.h>
 #include <IResourceLoader.h>
-#include <stb_ds.h>
+#include <IUI.h>
+#include <Math/MathTypes.h>
 
 namespace DemoScene
 {
     int vertexCount{};
-    static constexpr size_t MAX_STARS = 768;
 
-    vec3 position[MAX_STARS] = {};
-    vec4 color[MAX_STARS] = {};
+    constexpr size_t MAX_STARS = 768;
+    vec3 position[MAX_STARS]{};
+    vec4 color[MAX_STARS]{};
     vec3 lightPosition{1.0f, 0, 0};
     vec3 lightColor{0.9f, 0.9f, 0.7f};
-
-    Shader *pShader;
-    RootSignature *pRootSignature;
-    DescriptorSet *pDescriptorSetUniforms;
-    Buffer **pProjViewUniformBuffer = nullptr;
-    Buffer *pSphereVertexBuffer = nullptr;
-    Pipeline *pSpherePipeline;
-
-    ICameraController *pCameraController;
 
     struct UniformBlock
     {
@@ -30,6 +26,15 @@ namespace DemoScene
         vec3 mLightPosition;
         vec3 mLightColor;
     } uniform = {};
+
+    Shader *pShader{nullptr};
+    RootSignature *pRootSignature{nullptr};
+    DescriptorSet *pDescriptorSetUniforms{nullptr};
+    Buffer **pProjViewUniformBuffer{nullptr};
+    Buffer *pSphereVertexBuffer{nullptr};
+    Pipeline *pSpherePipeline{nullptr};
+
+    ICameraController *pCameraController{nullptr};
 } // namespace DemoScene
 
 void DemoScene::Init(uint32_t imageCount)
@@ -73,7 +78,6 @@ void DemoScene::Init(uint32_t imageCount)
     vec3 lookAt{vec3(0)};
 
     pCameraController = initFpsCameraController(camPos, lookAt);
-
     pCameraController->setMotionParameters(cmp);
 }
 

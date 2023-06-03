@@ -1,10 +1,7 @@
 #ifndef DEMO_SCENE_H
 #define DEMO_SCENE_H
 
-#include <ICameraController.h>
 #include <IGraphics.h>
-#include <IOperatingSystem.h>
-#include <Math/MathTypes.h>
 
 namespace DemoScene
 {

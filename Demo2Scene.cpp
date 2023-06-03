@@ -4,11 +4,13 @@
 
 #include "Demo2Scene.h"
 
+#include <ICameraController.h>
+#include <IGraphics.h>
 #include <IInput.h>
 #include <IResourceLoader.h>
 #include <IUI.h>
-#include <ICameraController.h>
 #include <stb_ds.h>
+#include "ShapeDrawer.h"
 
 namespace Demo2Scene
 {
@@ -78,6 +80,7 @@ namespace Demo2Scene
     void DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex);
 
     void InitUI();
+    bool OnInputAction(InputActionContext *ctx);
 
     float3 cameraPosition;
     float3 lightPosition;
@@ -148,19 +151,21 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     InputActionDesc desc{
         DefaultInputActions::ROTATE_CAMERA,
-        [](InputActionContext *ctx) -> bool { return OnInputAction(ctx); },
+        OnInputAction,
     };
 
     addInputAction(&desc);
 
-    desc = {DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
-            [](InputActionContext *ctx) -> bool { return OnInputAction(ctx); }};
+    desc = {
+        DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
+        OnInputAction,
+    };
 
     addInputAction(&desc);
 
     desc = {
         DefaultInputActions::DefaultInputActions::RESET_CAMERA,
-        [](InputActionContext *ctx) -> bool { return OnInputAction(ctx); },
+        OnInputAction,
     };
 
     addInputAction(&desc);
@@ -566,7 +571,7 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     {
         BufferUpdateDesc updateDesc = {pUbScene[frameIndex]};
         beginUpdateResource(&updateDesc);
-        *(SceneUniformBlock *)updateDesc.pMappedData = scene;
+        *static_cast<SceneUniformBlock *>(updateDesc.pMappedData) = scene;
         endUpdateResource(&updateDesc, nullptr);
     }
 
@@ -574,7 +579,7 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     {
         BufferUpdateDesc updateDesc = {pUbObjects[frameIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
-        *(ObjectUniformBlock *)updateDesc.pMappedData = objects[i];
+        *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = objects[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 
@@ -582,7 +587,7 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     {
         BufferUpdateDesc updateDesc = {pUbLightSources[frameIndex * DIRECTIONAL_LIGHT_COUNT + i]};
         beginUpdateResource(&updateDesc);
-        *(ObjectUniformBlock *)updateDesc.pMappedData = lightSources[i];
+        *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = lightSources[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 }

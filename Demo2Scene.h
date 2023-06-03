@@ -5,9 +5,7 @@
 #ifndef DEMO2SCENE_H
 #define DEMO2SCENE_H
 
-#include "IInput.h"
-#include "IUI.h"
-#include "ShapeDrawer.h"
+#include <IGraphics.h>
 
 namespace Demo2Scene
 {
@@ -20,8 +18,6 @@ namespace Demo2Scene
     void PreDraw(uint32_t frameIndex);
     void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
               uint32_t frameIndex);
-
-    bool OnInputAction(InputActionContext *ctx);
 }; // namespace Demo2Scene
 
 #endif // DEMO2SCENE_H
