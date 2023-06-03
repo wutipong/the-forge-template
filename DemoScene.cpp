@@ -2,7 +2,7 @@
 #include <IResourceLoader.h>
 #include <stb_ds.h>
 
-namespace DemoScene 
+namespace DemoScene
 {
     int vertexCount{};
     static constexpr size_t MAX_STARS = 768;
@@ -30,7 +30,7 @@ namespace DemoScene
         vec3 mLightPosition;
         vec3 mLightColor;
     } uniform = {};
-}
+} // namespace DemoScene
 
 void DemoScene::Init(uint32_t imageCount)
 {
@@ -92,7 +92,7 @@ void DemoScene::Exit()
 }
 
 void DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget,
-                    RenderTarget *pDepthBuffer, uint32_t imageCount)
+                     RenderTarget *pDepthBuffer, uint32_t imageCount)
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
@@ -203,7 +203,8 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     uniform.mLightPosition = lightPosition;
 }
 
-void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex)
+void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
+                     uint32_t frameIndex)
 {
     constexpr uint32_t sphereVbStride = sizeof(float) * 6;
 

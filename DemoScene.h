@@ -1,8 +1,6 @@
 #ifndef DEMO_SCENE_H
 #define DEMO_SCENE_H
 
-#include "IScene.h"
-
 #include <ICameraController.h>
 #include <IGraphics.h>
 #include <IOperatingSystem.h>
@@ -17,8 +15,9 @@ namespace DemoScene
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
     void Update(float deltaTime, uint32_t width, uint32_t height);
     void PreDraw(uint32_t frameIndex);
-    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer, uint32_t frameIndex);
-};
+    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
+              uint32_t frameIndex);
+}; // namespace DemoScene
 
 
 #endif // DEMO_SCENE_H

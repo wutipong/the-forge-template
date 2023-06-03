@@ -3,15 +3,15 @@
 //
 
 #include "Demo2Scene.h"
-#include "IInput.h"
-#include "IResourceLoader.h"
-#include "IUI.h"
-#include "stb_ds.h"
 
-namespace Demo2Scene 
+#include <IInput.h>
+#include <IResourceLoader.h>
+#include <IUI.h>
+#include <ICameraController.h>
+#include <stb_ds.h>
+
+namespace Demo2Scene
 {
-    constexpr size_t OBJECT_COUNT = 3;
-
     ShapeDrawer shapeDrawer;
 
     Buffer **pUbObjects{};
@@ -43,8 +43,8 @@ namespace Demo2Scene
         float4 Color;
     };
 
+    constexpr size_t OBJECT_COUNT = 3;
     ObjectUniformBlock objects[OBJECT_COUNT]{};
-
     ShapeDrawer::Shape objectTypes[OBJECT_COUNT]{};
 
     constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
@@ -81,7 +81,7 @@ namespace Demo2Scene
 
     float3 cameraPosition;
     float3 lightPosition;
-}
+} // namespace Demo2Scene
 
 void Demo2Scene::Init(uint32_t imageCount)
 {
@@ -146,24 +146,22 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
-    InputActionDesc desc{DefaultInputActions::ROTATE_CAMERA,
-                         [](InputActionContext *ctx) -> bool
-                         { return OnInputAction(ctx); },
-                         };
+    InputActionDesc desc{
+        DefaultInputActions::ROTATE_CAMERA,
+        [](InputActionContext *ctx) -> bool { return OnInputAction(ctx); },
+    };
 
     addInputAction(&desc);
 
     desc = {DefaultInputActions::DefaultInputActions::TRANSLATE_CAMERA,
-            [](InputActionContext *ctx) -> bool
-            { return OnInputAction(ctx); }
-            };
+            [](InputActionContext *ctx) -> bool { return OnInputAction(ctx); }};
 
     addInputAction(&desc);
 
-    desc = {DefaultInputActions::DefaultInputActions::RESET_CAMERA,
-            [](InputActionContext *ctx) -> bool
-            { return OnInputAction(ctx); },
-            };
+    desc = {
+        DefaultInputActions::DefaultInputActions::RESET_CAMERA,
+        [](InputActionContext *ctx) -> bool { return OnInputAction(ctx); },
+    };
 
     addInputAction(&desc);
 
@@ -189,11 +187,7 @@ void Demo2Scene::InitUI()
 
     ButtonWidget resetBtnWidget = {};
     UIWidget *resetBtn = uiCreateComponentWidget(pObjectWindow, "Reset", &resetBtnWidget, WIDGET_TYPE_BUTTON);
-    uiSetWidgetOnEditedCallback(resetBtn, nullptr,
-                                [](void *pUserData)
-                                {
-                                    ResetLightSettings();
-                                });
+    uiSetWidgetOnEditedCallback(resetBtn, nullptr, [](void *pUserData) { ResetLightSettings(); });
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
@@ -674,8 +668,8 @@ void Demo2Scene::DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, ui
     cmdSetViewport(pCmd, (float)pRenderTarget->mWidth - SHADOW_VIEWPORT,
                    (float)pRenderTarget->mHeight - SHADOW_VIEWPORT, SHADOW_VIEWPORT, SHADOW_VIEWPORT, 0.0f, 1.0f);
 
-    cmdSetScissor(pCmd, pRenderTarget->mWidth - SHADOW_VIEWPORT,
-                  pRenderTarget->mHeight - SHADOW_VIEWPORT, SHADOW_VIEWPORT, SHADOW_VIEWPORT);
+    cmdSetScissor(pCmd, pRenderTarget->mWidth - SHADOW_VIEWPORT, pRenderTarget->mHeight - SHADOW_VIEWPORT,
+                  SHADOW_VIEWPORT, SHADOW_VIEWPORT);
 
     cmdBindPipeline(pCmd, pPlShadowViewport);
 
