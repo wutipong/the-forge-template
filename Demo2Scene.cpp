@@ -10,12 +10,11 @@
 #include <IResourceLoader.h>
 #include <IUI.h>
 #include <stb_ds.h>
-#include "ShapeDrawer.h"
+
+#include "DrawShape.h"
 
 namespace Demo2Scene
 {
-    ShapeDrawer shapeDrawer;
-
     Buffer **pUbObjects{};
     Buffer **pUbScene{};
     Buffer **pUbLightSources{};
@@ -47,7 +46,7 @@ namespace Demo2Scene
 
     constexpr size_t OBJECT_COUNT = 3;
     ObjectUniformBlock objects[OBJECT_COUNT]{};
-    ShapeDrawer::Shape objectTypes[OBJECT_COUNT]{};
+    DrawShape::Shape objectTypes[OBJECT_COUNT]{};
 
     constexpr size_t DIRECTIONAL_LIGHT_COUNT = 2;
     struct SceneUniformBlock
@@ -88,7 +87,7 @@ namespace Demo2Scene
 
 void Demo2Scene::Init(uint32_t imageCount)
 {
-    shapeDrawer.Init();
+    DrawShape::Init();
 
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -134,15 +133,15 @@ void Demo2Scene::Init(uint32_t imageCount)
 
     ResetLightSettings();
 
-    objectTypes[0] = ShapeDrawer::Shape::Cube;
+    objectTypes[0] = DrawShape::Shape::Cube;
     objects[0].Color = {1.0f, 1.0f, 1.0f, 1.0f};
     objects[0].Transform = mat4::translation({0.0f, -2.0f, 0.0f}) * mat4::scale(vec3{1000.0f, 1.0f, 1000.0f});
 
-    objectTypes[1] = ShapeDrawer::Shape::Sphere;
+    objectTypes[1] = DrawShape::Shape::Sphere;
     objects[1].Color = {1.0f, 0.0f, 0.0f, 1.0f};
     objects[1].Transform = mat4::translation({0.0f, 0.0f, 0.0f});
 
-    objectTypes[2] = ShapeDrawer::Shape::Cube;
+    objectTypes[2] = DrawShape::Shape::Cube;
     objects[2].Color = {0.0f, 0.70f, 0.4f, 1.0f};
     objects[2].Transform = mat4::translation({4.0f, 0.0f, 0.0f}) * mat4::rotationZ(0.75f * PI) *
         mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
@@ -293,7 +292,7 @@ void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
 
-    shapeDrawer.Exit();
+    DrawShape::Exit();
 
     for (int i = 0; i < arrlen(pUbObjects); i++)
     {
@@ -370,7 +369,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
-        VertexLayout vertexLayout = shapeDrawer.GetVertexLayout();
+        VertexLayout vertexLayout = DrawShape::GetVertexLayout();
 
         RasterizerStateDesc rasterizerStateDesc = {};
         rasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
@@ -616,7 +615,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
         cmdBindDescriptorSet(pCmd, 0, pDsTexture);
 
-        shapeDrawer.Draw(pCmd, objectTypes[i]);
+        DrawShape::Draw(pCmd, objectTypes[i]);
     }
 
     cmdBindPipeline(pCmd, pPlLightSources);
@@ -626,7 +625,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdBindDescriptorSet(pCmd, (frameIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
 
-        shapeDrawer.Draw(pCmd, ShapeDrawer::Shape::Cube);
+        DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
 
     DrawShadowViewport(pCmd, pRenderTarget, frameIndex);
@@ -655,7 +654,7 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
         cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
 
-        shapeDrawer.Draw(pCmd, objectTypes[i]);
+        DrawShape::Draw(pCmd, objectTypes[i]);
     }
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
@@ -684,7 +683,7 @@ void Demo2Scene::DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, ui
         cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
         cmdBindDescriptorSet(pCmd, 0, pDsTexture);
 
-        shapeDrawer.Draw(pCmd, objectTypes[i]);
+        DrawShape::Draw(pCmd, objectTypes[i]);
     }
 }
 

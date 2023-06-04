@@ -2,11 +2,23 @@
 // Created by mr_ta on 3/31/2023.
 //
 
-#include "ShapeDrawer.h"
+#include "DrawShape.h"
 
-#include "IResourceLoader.h"
+#include <IResourceLoader.h>
 
-void ShapeDrawer::Init()
+namespace DrawShape
+{
+    int cubeVertexCount{};
+    Buffer *pVbCube{};
+
+    int sphereVertexCount{};
+    Buffer *pVbSphere{};
+
+    int boneVertexCount{};
+    Buffer *pVbBone{};
+} // namespace DrawShape
+
+void DrawShape::Init()
 {
     float *vertices{};
 
@@ -44,14 +56,14 @@ void ShapeDrawer::Init()
     tf_free(vertices);
 }
 
-void ShapeDrawer::Exit()
+void DrawShape::Exit()
 {
     removeResource(pVbCube);
     removeResource(pVbSphere);
     removeResource(pVbBone);
 }
 
-VertexLayout ShapeDrawer::GetVertexLayout()
+VertexLayout DrawShape::GetVertexLayout()
 {
     // layout and pipeline for sphere draw
     VertexLayout vertexLayout = {};
@@ -71,7 +83,7 @@ VertexLayout ShapeDrawer::GetVertexLayout()
     return vertexLayout;
 }
 
-void ShapeDrawer::Draw(Cmd *pCmd, Shape shape)
+void DrawShape::Draw(Cmd *pCmd, Shape shape)
 {
     int vertexCount = 0;
     constexpr uint32_t stride = sizeof(float) * 6;

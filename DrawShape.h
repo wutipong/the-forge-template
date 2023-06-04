@@ -5,12 +5,10 @@
 #ifndef SHAPEDRAWER_H
 #define SHAPEDRAWER_H
 
-
 #include "IGraphics.h"
 
-class ShapeDrawer
+namespace DrawShape
 {
-public:
     enum class Shape
     {
         Cube,
@@ -24,17 +22,7 @@ public:
     void Draw(Cmd *pCmd, Shape shape);
 
     VertexLayout GetVertexLayout();
-
-private:
-    int cubeVertexCount{};
-    Buffer *pVbCube{};
-
-    int sphereVertexCount{};
-    Buffer *pVbSphere{};
-
-    int boneVertexCount{};
-    Buffer *pVbBone{};
-};
+}; // namespace DrawShape
 
 
 #endif // SHAPEDRAWER_H
