@@ -16,7 +16,7 @@ bool MainApp::Init()
 {
     srand(time(NULL));
 
-    gSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
+    // gSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
 
     // FILE PATHS
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
@@ -113,7 +113,10 @@ bool MainApp::Init()
     GlobalInputActionDesc globalInputActionDesc = {GlobalInputActionDesc::ANY_BUTTON_ACTION, onAnyInput, this};
     setGlobalInputAction(&globalInputActionDesc);
 
-    Scene::Init(gImageCount);
+    if (!Scene::Init(gImageCount))
+    {
+        return false;
+    };
 
     return true;
 }
@@ -180,7 +183,11 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
     fontLoad.mLoadType = pReloadDesc->mType;
     loadFontSystem(&fontLoad);
 
-    Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], gImageCount);
+    if (!Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], gImageCount))
+    {
+        return false;
+    };
+
     return true;
 }
 

@@ -78,7 +78,7 @@ namespace Demo2Scene
     void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
     void DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex);
 
-    void InitUI();
+    bool InitUI();
     bool OnInputAction(InputActionContext *ctx);
 
     float3 cameraPosition;
@@ -87,7 +87,7 @@ namespace Demo2Scene
     RenderTarget *pDepthBuffer;
 } // namespace Demo2Scene
 
-void Demo2Scene::Init(uint32_t imageCount)
+bool Demo2Scene::Init(uint32_t imageCount)
 {
     DrawShape::Init();
 
@@ -172,8 +172,11 @@ void Demo2Scene::Init(uint32_t imageCount)
     addInputAction(&desc);
 
     InitUI();
+
+    return true;
 }
-void Demo2Scene::InitUI()
+
+bool Demo2Scene::InitUI()
 {
     UIComponentDesc guiDesc = {};
     uiCreateComponent("Objects", &guiDesc, &pObjectWindow);
@@ -275,6 +278,8 @@ void Demo2Scene::InitUI()
                                     pCameraController->moveTo(f3Tov3(lightPosition));
                                     pCameraController->lookAt({0, 0, 0});
                                 });
+
+    return true;
 }
 
 void Demo2Scene::ResetLightSettings()
@@ -317,7 +322,7 @@ void Demo2Scene::Exit()
     exitCameraController(pCameraController);
 }
 
-void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
+bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
@@ -327,24 +332,28 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         shaderLoadDesc.mStages[1] = {"demo2_object.frag", nullptr, 0};
 
         addShader(pRenderer, &shaderLoadDesc, &pShObjects);
+        ASSERT(pShObjects);
 
         shaderLoadDesc = {};
         shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr};
         shaderLoadDesc.mStages[1] = {"demo2_shadow.frag", nullptr};
 
         addShader(pRenderer, &shaderLoadDesc, &pShShadow);
+        ASSERT(pShShadow);
 
         shaderLoadDesc = {};
         shaderLoadDesc.mStages[0] = {"demo2_object.vert", nullptr};
         shaderLoadDesc.mStages[1] = {"demo2_lit.frag", nullptr};
 
         addShader(pRenderer, &shaderLoadDesc, &pShLightSources);
+        ASSERT(pShLightSources);
 
         shaderLoadDesc = {};
         shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr};
         shaderLoadDesc.mStages[1] = {"demo2_object.frag", nullptr};
 
         addShader(pRenderer, &shaderLoadDesc, &pShShadowViewport);
+        ASSERT(pShShadowViewport);
 
         Shader *pShaders[]{pShObjects, pShShadow, pShLightSources, pShShadowViewport};
 
@@ -353,19 +362,24 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         rootDesc.ppShaders = pShaders;
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
+        ASSERT(pRootSignature);
 
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
         addDescriptorSet(pRenderer, &desc, &pDsSceneUniform);
+        ASSERT(pDsSceneUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsObjectUniform);
+        ASSERT(pDsObjectUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW,
                 static_cast<uint32_t>(imageCount * DIRECTIONAL_LIGHT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsLightSourcesUniform);
+        ASSERT(pDsLightSourcesUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
         addDescriptorSet(pRenderer, &desc, &pDsTexture);
+        ASSERT(pDsTexture);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -400,6 +414,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.mVRFoveatedRendering = true;
             addPipeline(pRenderer, &pipelineDesc, &pPlObjects);
+
+            ASSERT(pPlObjects);
         }
 
         {
@@ -419,6 +435,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.mVRFoveatedRendering = true;
             addPipeline(pRenderer, &pipelineDesc, &pPlLightSources);
+            ASSERT(pPlLightSources);
         }
 
         {
@@ -437,6 +454,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
             renderTargetDesc.pName = "Shadow Map Render Target";
             addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadow);
+            ASSERT(pRtShadow);
         }
 
         {
@@ -456,6 +474,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mVRFoveatedRendering = true;
 
             addPipeline(pRenderer, &pipelineDesc, &pPlShadow);
+            ASSERT(pPlShadow);
         }
 
         {
@@ -476,6 +495,7 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mVRFoveatedRendering = true;
 
             addPipeline(pRenderer, &pipelineDesc, &pPlShadowViewport);
+            ASSERT(pPlShadowViewport);
         }
     }
 
@@ -494,6 +514,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc.mSampleQuality = 0;
         desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
         addRenderTarget(pRenderer, &desc, &pDepthBuffer);
+
+        ASSERT(pDepthBuffer);
     }
 
     for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
@@ -525,6 +547,8 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     params.pName = "shadowMap";
     params.ppTextures = &pRtShadow->pTexture;
     updateDescriptorSet(pRenderer, 0, pDsTexture, 1, &params);
+
+    return true;
 }
 
 void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)

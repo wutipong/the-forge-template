@@ -39,7 +39,7 @@ namespace DemoScene
     RenderTarget *pDepthBuffer{nullptr};
 } // namespace DemoScene
 
-void DemoScene::Init(uint32_t imageCount)
+bool DemoScene::Init(uint32_t imageCount)
 {
     float *vertices{};
     generateSpherePoints(&vertices, &vertexCount, 24, 1.0f);
@@ -63,6 +63,7 @@ void DemoScene::Init(uint32_t imageCount)
     ubDesc.mDesc.mSize = sizeof(UniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
+
     for (uint32_t i = 0; i < imageCount; ++i)
     {
         ubDesc.ppBuffer = &pProjViewUniformBuffer[i];
@@ -81,6 +82,8 @@ void DemoScene::Init(uint32_t imageCount)
 
     pCameraController = initFpsCameraController(camPos, lookAt);
     pCameraController->setMotionParameters(cmp);
+
+    return true;
 }
 
 void DemoScene::Exit()
@@ -97,24 +100,28 @@ void DemoScene::Exit()
     exitCameraController(pCameraController);
 }
 
-void DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
+bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
         ShaderLoadDesc basicShader = {};
         basicShader.mStages[0] = {"basic.vert", nullptr, 0, nullptr, SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
-        basicShader.mStages[1] = {"basic.frag", nullptr, 0};
+        basicShader.mStages[1] = {"basic.frag"};
 
         addShader(pRenderer, &basicShader, &pShader);
+        ASSERT(pShader);
 
         RootSignatureDesc rootDesc = {};
         rootDesc.mShaderCount = 1;
         rootDesc.ppShaders = &pShader;
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
+        ASSERT(pRootSignature);
 
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
+
+        ASSERT(pDescriptorSetUniforms);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
@@ -132,6 +139,7 @@ void DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         desc.mSampleQuality = 0;
         desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
         addRenderTarget(pRenderer, &desc, &pDepthBuffer);
+        ASSERT(pDepthBuffer);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -175,6 +183,7 @@ void DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         pipelineSettings.pRasterizerState = &sphereRasterizerStateDesc;
         pipelineSettings.mVRFoveatedRendering = true;
         addPipeline(pRenderer, &desc, &pSpherePipeline);
+        ASSERT(pSpherePipeline);
     }
 
     for (uint32_t i = 0; i < imageCount; ++i)
@@ -185,6 +194,8 @@ void DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
         updateDescriptorSet(pRenderer, i, pDescriptorSetUniforms, 1, &params);
     }
+
+    return true;
 }
 
 void DemoScene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)

@@ -9,9 +9,9 @@
 
 namespace Demo2Scene
 {
-    void Init(uint32_t imageCount);
+    bool Init(uint32_t imageCount);
     void Exit();
-    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount);
+    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount);
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
     void Update(float deltaTime, uint32_t width, uint32_t height);
     void PreDraw(uint32_t frameIndex);
