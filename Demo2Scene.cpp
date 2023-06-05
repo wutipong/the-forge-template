@@ -629,7 +629,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     DrawShadowRT(pCmd, frameIndex);
 
-    LoadActionsDesc loadActions = {};
+    loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
     loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
     loadActions.mClearDepth.depth = 0.0f;

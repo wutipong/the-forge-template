@@ -2,9 +2,10 @@
 
 #include <IGraphics.h>
 #include <cstdlib>
+#include "Demo2Scene.h"
 #include "DemoScene.h"
 
-namespace Scene = DemoScene;
+namespace Scene = Demo2Scene;
 
 extern RendererApi gSelectedRendererApi;
 
