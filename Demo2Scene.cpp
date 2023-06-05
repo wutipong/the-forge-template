@@ -305,19 +305,19 @@ void Demo2Scene::Exit()
     {
         removeResource(pUbObjects[i]);
     }
-    tf_free(pUbObjects);
+    arrfree(pUbObjects);
 
     for (int i = 0; i < arrlen(pUbLightSources); i++)
     {
         removeResource(pUbLightSources[i]);
     }
-    tf_free(pUbLightSources);
+    arrfree(pUbLightSources);
 
     for (int i = 0; i < arrlen(pUbScene); i++)
     {
         removeResource(pUbScene[i]);
     }
-    tf_free(pUbScene);
+    arrfree(pUbScene);
 
     exitCameraController(pCameraController);
 }
@@ -382,6 +382,25 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         ASSERT(pDsTexture);
     }
 
+    if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
+    {
+        RenderTargetDesc desc = {};
+        desc.mArraySize = 1;
+        desc.mClearValue.depth = 0.0f;
+        desc.mClearValue.stencil = 0;
+        desc.mDepth = 1;
+        desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
+        desc.mFormat = TinyImageFormat_D32_SFLOAT;
+        desc.mWidth = pRenderTarget->mWidth;
+        desc.mHeight = pRenderTarget->mHeight;
+        desc.mSampleCount = SAMPLE_COUNT_1;
+        desc.mSampleQuality = 0;
+        desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
+        addRenderTarget(pRenderer, &desc, &pDepthBuffer);
+
+        ASSERT(pDepthBuffer);
+    }
+
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
         VertexLayout vertexLayout = DrawShape::GetVertexLayout();
@@ -407,7 +426,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
             pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
             pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-            pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
+            pipelineSettings.mDepthStencilFormat = TinyImageFormat_D32_SFLOAT;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShObjects;
             pipelineSettings.pVertexLayout = &vertexLayout;
@@ -497,25 +516,6 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             addPipeline(pRenderer, &pipelineDesc, &pPlShadowViewport);
             ASSERT(pPlShadowViewport);
         }
-    }
-
-    if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
-    {
-        RenderTargetDesc desc = {};
-        desc.mArraySize = 1;
-        desc.mClearValue.depth = 0.0f;
-        desc.mClearValue.stencil = 0;
-        desc.mDepth = 1;
-        desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
-        desc.mFormat = TinyImageFormat_D32_SFLOAT;
-        desc.mWidth = pRenderTarget->mWidth;
-        desc.mHeight = pRenderTarget->mHeight;
-        desc.mSampleCount = SAMPLE_COUNT_1;
-        desc.mSampleQuality = 0;
-        desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
-        addRenderTarget(pRenderer, &desc, &pDepthBuffer);
-
-        ASSERT(pDepthBuffer);
     }
 
     for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
