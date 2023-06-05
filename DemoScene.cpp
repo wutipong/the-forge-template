@@ -37,6 +37,7 @@ namespace DemoScene
     ICameraController *pCameraController{nullptr};
 
     RenderTarget *pDepthBuffer{nullptr};
+    TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 } // namespace DemoScene
 
 bool DemoScene::Init(uint32_t imageCount)
@@ -132,7 +133,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         desc.mClearValue.stencil = 0;
         desc.mDepth = 1;
         desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
-        desc.mFormat = TinyImageFormat_D32_SFLOAT;
+        desc.mFormat = depthBufferFormat;
         desc.mWidth = pRenderTarget->mWidth;
         desc.mHeight = pRenderTarget->mHeight;
         desc.mSampleCount = SAMPLE_COUNT_1;
@@ -176,7 +177,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
         pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
         pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-        pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
+        pipelineSettings.mDepthStencilFormat = depthBufferFormat;
         pipelineSettings.pRootSignature = pRootSignature;
         pipelineSettings.pShaderProgram = pShader;
         pipelineSettings.pVertexLayout = &vertexLayout;

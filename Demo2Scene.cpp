@@ -85,6 +85,7 @@ namespace Demo2Scene
     float3 lightPosition;
 
     RenderTarget *pDepthBuffer;
+    TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 } // namespace Demo2Scene
 
 bool Demo2Scene::Init(uint32_t imageCount)
@@ -390,7 +391,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc.mClearValue.stencil = 0;
         desc.mDepth = 1;
         desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
-        desc.mFormat = TinyImageFormat_D32_SFLOAT;
+        desc.mFormat = TinyImageFormat_D32_SFLOAT;;
         desc.mWidth = pRenderTarget->mWidth;
         desc.mHeight = pRenderTarget->mHeight;
         desc.mSampleCount = SAMPLE_COUNT_1;
@@ -426,7 +427,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
             pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
             pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-            pipelineSettings.mDepthStencilFormat = TinyImageFormat_D32_SFLOAT;
+            pipelineSettings.mDepthStencilFormat = depthBufferFormat;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShObjects;
             pipelineSettings.pVertexLayout = &vertexLayout;
