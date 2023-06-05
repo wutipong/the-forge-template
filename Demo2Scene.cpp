@@ -83,6 +83,8 @@ namespace Demo2Scene
 
     float3 cameraPosition;
     float3 lightPosition;
+
+    RenderTarget *pDepthBuffer;
 } // namespace Demo2Scene
 
 void Demo2Scene::Init(uint32_t imageCount)
@@ -315,8 +317,7 @@ void Demo2Scene::Exit()
     exitCameraController(pCameraController);
 }
 
-void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget,
-                      RenderTarget *pDepthBuffer, uint32_t imageCount)
+void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
@@ -478,6 +479,23 @@ void Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
     }
 
+    if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
+    {
+        RenderTargetDesc desc = {};
+        desc.mArraySize = 1;
+        desc.mClearValue.depth = 0.0f;
+        desc.mClearValue.stencil = 0;
+        desc.mDepth = 1;
+        desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
+        desc.mFormat = TinyImageFormat_D32_SFLOAT;
+        desc.mWidth = pRenderTarget->mWidth;
+        desc.mHeight = pRenderTarget->mHeight;
+        desc.mSampleCount = SAMPLE_COUNT_1;
+        desc.mSampleQuality = 0;
+        desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
+        addRenderTarget(pRenderer, &desc, &pDepthBuffer);
+    }
+
     for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
     {
         DescriptorData params = {};
@@ -532,6 +550,11 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeShader(pRenderer, pShShadow);
         removeShader(pRenderer, pShLightSources);
         removeShader(pRenderer, pShShadowViewport);
+    }
+
+    if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
+    {
+        removeRenderTarget(pRenderer, pDepthBuffer);
     }
 }
 
@@ -591,9 +614,17 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
     }
 }
 
-void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, RenderTarget *pDepthBuffer,
-                      uint32_t frameIndex)
+void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t frameIndex)
 {
+    // simply record the screen cleaning command
+    LoadActionsDesc loadActions = {};
+    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
+    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
+    loadActions.mClearDepth.depth = 0.0f;
+    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
     DrawShadowRT(pCmd, frameIndex);
