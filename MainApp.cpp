@@ -2,15 +2,14 @@
 
 #include <IGraphics.h>
 #include <cstdlib>
-#include "Demo2Scene.h"
+#include "DemoScene.h"
 
-namespace Scene = Demo2Scene;
+namespace Scene = DemoScene;
 
 extern RendererApi gSelectedRendererApi;
 
 Renderer *pRenderer = nullptr;
 SwapChain *pSwapChain = nullptr;
-RenderTarget *pDepthBuffer = nullptr;
 
 bool MainApp::Init()
 {
@@ -161,23 +160,9 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
         addSwapChain(pRenderer, &swapChainDesc, &pSwapChain);
 
         if (pSwapChain == nullptr)
+        {
             return false;
-
-        RenderTargetDesc depthRT = {};
-        depthRT.mArraySize = 1;
-        depthRT.mClearValue.depth = 0.0f;
-        depthRT.mClearValue.stencil = 0;
-        depthRT.mDepth = 1;
-        depthRT.mFormat = TinyImageFormat_D32_SFLOAT;
-        depthRT.mStartState = RESOURCE_STATE_DEPTH_WRITE;
-        depthRT.mHeight = mSettings.mHeight;
-        depthRT.mSampleCount = SAMPLE_COUNT_1;
-        depthRT.mSampleQuality = 0;
-        depthRT.mWidth = mSettings.mWidth;
-        depthRT.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
-        addRenderTarget(pRenderer, &depthRT, &pDepthBuffer);
-        if (pDepthBuffer == nullptr)
-            return false;
+        }
     }
 
     UserInterfaceLoadDesc uiLoad = {};
@@ -194,7 +179,7 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
     fontLoad.mLoadType = pReloadDesc->mType;
     loadFontSystem(&fontLoad);
 
-    Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], pDepthBuffer, gImageCount);
+    Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], gImageCount);
     return true;
 }
 
@@ -208,7 +193,6 @@ void MainApp::Unload(ReloadDesc *pReloadDesc)
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
         removeSwapChain(pRenderer, pSwapChain);
-        removeRenderTarget(pRenderer, pDepthBuffer);
     }
 }
 
@@ -248,23 +232,15 @@ void MainApp::Draw()
         {pRenderTarget, RESOURCE_STATE_PRESENT, RESOURCE_STATE_RENDER_TARGET},
     };
     cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
-    // simply record the screen cleaning command
-    LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
-    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
-    cmdBindRenderTargets(cmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(cmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
-    cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    Scene::Draw(cmd, pRenderer, pRenderTarget, pDepthBuffer, gFrameIndex);
+    Scene::Draw(cmd, pRenderer, pRenderTarget, gFrameIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    loadActions = {};
+    LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
     cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
 
