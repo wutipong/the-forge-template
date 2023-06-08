@@ -14,20 +14,6 @@ constexpr uint32_t gImageCount = 3;
 
 class MainApp : public IApp
 {
-private:
-    UIComponent *pGuiWindow = nullptr;
-    Queue *pGraphicsQueue = nullptr;
-    uint32_t gFontID = 0;
-    Cmd *pCmds[gImageCount]{nullptr};
-    CmdPool *pCmdPools[gImageCount]{nullptr};
-    uint32_t gFrameIndex = 0;
-    Fence *pRenderCompleteFences[gImageCount]{nullptr};
-    Semaphore *pRenderCompleteSemaphores[gImageCount] = {nullptr};
-    Semaphore *pImageAcquiredSemaphore = nullptr;
-
-    ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
-    FontDrawDesc gFrameTimeDraw;
-
 public:
     bool Init() override;
     void Exit() override;

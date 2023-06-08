@@ -9,8 +9,24 @@ namespace Scene = Demo2Scene;
 
 extern RendererApi gSelectedRendererApi;
 
-Renderer *pRenderer = nullptr;
-SwapChain *pSwapChain = nullptr;
+namespace
+{
+    Renderer *pRenderer = nullptr;
+    SwapChain *pSwapChain = nullptr;
+
+    UIComponent *pGuiWindow = nullptr;
+    Queue *pGraphicsQueue = nullptr;
+    uint32_t gFontID = 0;
+    Cmd *pCmds[gImageCount]{nullptr};
+    CmdPool *pCmdPools[gImageCount]{nullptr};
+    uint32_t gFrameIndex = 0;
+    Fence *pRenderCompleteFences[gImageCount]{nullptr};
+    Semaphore *pRenderCompleteSemaphores[gImageCount] = {nullptr};
+    Semaphore *pImageAcquiredSemaphore = nullptr;
+
+    ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
+    FontDrawDesc gFrameTimeDraw;
+} // namespace
 
 bool MainApp::Init()
 {
