@@ -24,11 +24,11 @@ namespace
     UIComponent *pGuiWindow = nullptr;
     Queue *pGraphicsQueue = nullptr;
     uint32_t gFontID = 0;
-    Cmd *pCmds[gImageCount]{nullptr};
-    CmdPool *pCmdPools[gImageCount]{nullptr};
+    Cmd *pCmds[IMAGE_COUNT]{nullptr};
+    CmdPool *pCmdPools[IMAGE_COUNT]{nullptr};
     uint32_t gFrameIndex = 0;
-    Fence *pRenderCompleteFences[gImageCount]{nullptr};
-    Semaphore *pRenderCompleteSemaphores[gImageCount] = {nullptr};
+    Fence *pRenderCompleteFences[IMAGE_COUNT]{nullptr};
+    Semaphore *pRenderCompleteSemaphores[IMAGE_COUNT] = {nullptr};
     Semaphore *pImageAcquiredSemaphore = nullptr;
 
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
@@ -67,7 +67,7 @@ bool MainApp::Init()
     queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
     addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
 
-    for (uint32_t i = 0; i < gImageCount; ++i)
+    for (uint32_t i = 0; i < IMAGE_COUNT; ++i)
     {
         CmdPoolDesc cmdPoolDesc = {};
         cmdPoolDesc.pQueue = pGraphicsQueue;
@@ -192,7 +192,7 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
         swapChainDesc.ppPresentQueues = &pGraphicsQueue;
         swapChainDesc.mWidth = mSettings.mWidth;
         swapChainDesc.mHeight = mSettings.mHeight;
-        swapChainDesc.mImageCount = gImageCount;
+        swapChainDesc.mImageCount = IMAGE_COUNT;
         swapChainDesc.mColorFormat = getRecommendedSwapchainFormat(true, true);
         swapChainDesc.mEnableVsync = mSettings.mVSyncEnabled;
         swapChainDesc.mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR;
@@ -327,7 +327,7 @@ void MainApp::Draw()
     queuePresent(pGraphicsQueue, &presentDesc);
     flipProfiler();
 
-    gFrameIndex = (gFrameIndex + 1) % gImageCount;
+    gFrameIndex = (gFrameIndex + 1) % IMAGE_COUNT;
 }
 
 const char *MainApp::GetName() { return "The Forge Template"; }

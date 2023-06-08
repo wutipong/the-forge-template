@@ -45,12 +45,12 @@ namespace Demo2Scene
 
     ObjectUniformBlock lightSources[DIRECTIONAL_LIGHT_COUNT] = {};
 
-    constexpr size_t OBJECT_UNIFORM_COUNT = OBJECT_COUNT * gImageCount;
+    constexpr size_t OBJECT_UNIFORM_COUNT = OBJECT_COUNT * IMAGE_COUNT;
     Buffer *pUbObjects[OBJECT_UNIFORM_COUNT]{};
 
     Buffer *pUbScene[OBJECT_COUNT]{};
 
-    constexpr size_t LIGHT_UNIFORM_COUNT = gImageCount * DIRECTIONAL_LIGHT_COUNT;
+    constexpr size_t LIGHT_UNIFORM_COUNT = IMAGE_COUNT * DIRECTIONAL_LIGHT_COUNT;
     Buffer *pUbLightSources[LIGHT_UNIFORM_COUNT]{};
 
     ICameraController *pCameraController{};
@@ -100,7 +100,7 @@ bool Demo2Scene::Init()
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    for (uint32_t i = 0; i < gImageCount * OBJECT_COUNT; ++i)
+    for (uint32_t i = 0; i < IMAGE_COUNT * OBJECT_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbObjects[i];
         addResource(&ubDesc, nullptr);
@@ -113,7 +113,7 @@ bool Demo2Scene::Init()
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    for (uint32_t i = 0; i < gImageCount * DIRECTIONAL_LIGHT_COUNT; ++i)
+    for (uint32_t i = 0; i < IMAGE_COUNT * DIRECTIONAL_LIGHT_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbLightSources[i];
         addResource(&ubDesc, nullptr);
@@ -126,7 +126,7 @@ bool Demo2Scene::Init()
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    for (uint32_t i = 0; i < gImageCount; ++i)
+    for (uint32_t i = 0; i < IMAGE_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbScene[i];
         addResource(&ubDesc, nullptr);
@@ -353,16 +353,16 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
 
-        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, gImageCount};
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, IMAGE_COUNT};
         addDescriptorSet(pRenderer, &desc, &pDsSceneUniform);
         ASSERT(pDsSceneUniform);
 
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(gImageCount * OBJECT_COUNT)};
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(IMAGE_COUNT * OBJECT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsObjectUniform);
         ASSERT(pDsObjectUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW,
-                static_cast<uint32_t>(gImageCount * DIRECTIONAL_LIGHT_COUNT)};
+                static_cast<uint32_t>(IMAGE_COUNT * DIRECTIONAL_LIGHT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsLightSourcesUniform);
         ASSERT(pDsLightSourcesUniform);
 
@@ -487,7 +487,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
     }
 
-    for (int i = 0; i < gImageCount * OBJECT_COUNT; i++)
+    for (int i = 0; i < IMAGE_COUNT * OBJECT_COUNT; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
@@ -495,7 +495,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDsObjectUniform, 1, &params);
     }
 
-    for (int i = 0; i < gImageCount * DIRECTIONAL_LIGHT_COUNT; i++)
+    for (int i = 0; i < IMAGE_COUNT * DIRECTIONAL_LIGHT_COUNT; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
@@ -503,7 +503,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDsLightSourcesUniform, 1, &params);
     }
 
-    for (int i = 0; i < gImageCount; i++)
+    for (int i = 0; i < IMAGE_COUNT; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformSceneBlock";

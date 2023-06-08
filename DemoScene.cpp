@@ -32,7 +32,7 @@ namespace DemoScene
     Shader *pShader{nullptr};
     RootSignature *pRootSignature{nullptr};
     DescriptorSet *pDescriptorSetUniforms{nullptr};
-    std::array<Buffer *, gImageCount> pProjViewUniformBuffers{nullptr};
+    std::array<Buffer *, IMAGE_COUNT> pProjViewUniformBuffers{nullptr};
     Buffer *pSphereVertexBuffer{nullptr};
     Pipeline *pSpherePipeline{nullptr};
 
@@ -117,7 +117,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
 
-        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, gImageCount};
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, IMAGE_COUNT};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
 
         ASSERT(pDescriptorSetUniforms);
