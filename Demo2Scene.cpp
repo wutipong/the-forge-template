@@ -24,7 +24,6 @@ namespace Demo2Scene
     Shader *pShObjects{};
     Shader *pShShadow{};
     Shader *pShLightSources{};
-    Shader *pShShadowViewport{};
 
     RootSignature *pRootSignature{};
 
@@ -36,7 +35,6 @@ namespace Demo2Scene
     Pipeline *pPlObjects{};
     Pipeline *pPlShadow{};
     Pipeline *pPlLightSources{};
-    Pipeline *pPlShadowViewport{};
 
     struct ObjectUniformBlock
     {
@@ -70,13 +68,11 @@ namespace Demo2Scene
     UIComponent *pObjectWindow{};
 
     constexpr float SHADOW_MAP_DIMENSION = 1024;
-    constexpr float SHADOW_VIEWPORT = 512;
 
-    RenderTarget *pRtShadow;
+    RenderTarget *pRtShadowBuffer;
 
     void ResetLightSettings();
     void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
-    void DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex);
 
     bool InitUI();
     bool OnInputAction(InputActionContext *ctx);
@@ -349,17 +345,10 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addShader(pRenderer, &shaderLoadDesc, &pShLightSources);
         ASSERT(pShLightSources);
 
-        shaderLoadDesc = {};
-        shaderLoadDesc.mStages[0] = {"demo2_shadow.vert", nullptr};
-        shaderLoadDesc.mStages[1] = {"demo2_object.frag", nullptr};
-
-        addShader(pRenderer, &shaderLoadDesc, &pShShadowViewport);
-        ASSERT(pShShadowViewport);
-
-        Shader *pShaders[]{pShObjects, pShShadow, pShLightSources, pShShadowViewport};
+        Shader *pShaders[]{pShObjects, pShShadow, pShLightSources};
 
         RootSignatureDesc rootDesc = {};
-        rootDesc.mShaderCount = 4;
+        rootDesc.mShaderCount = 3;
         rootDesc.ppShaders = pShaders;
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
@@ -473,8 +462,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             renderTargetDesc.mSampleQuality = 0;
             renderTargetDesc.mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
             renderTargetDesc.pName = "Shadow Map Render Target";
-            addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadow);
-            ASSERT(pRtShadow);
+            addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadowBuffer);
+            ASSERT(pRtShadowBuffer);
         }
 
         {
@@ -484,8 +473,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
             pipelineSettings.mRenderTargetCount = 0;
             pipelineSettings.pDepthState = &depthStateDesc;
-            pipelineSettings.mSampleCount = pRtShadow->mSampleCount;
-            pipelineSettings.mSampleQuality = pRtShadow->mSampleQuality;
+            pipelineSettings.mSampleCount = pRtShadowBuffer->mSampleCount;
+            pipelineSettings.mSampleQuality = pRtShadowBuffer->mSampleQuality;
             pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShShadow;
@@ -495,27 +484,6 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
             addPipeline(pRenderer, &pipelineDesc, &pPlShadow);
             ASSERT(pPlShadow);
-        }
-
-        {
-            PipelineDesc pipelineDesc = {};
-            pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
-            GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
-            pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
-            pipelineSettings.mRenderTargetCount = 1;
-            pipelineSettings.pDepthState = &depthStateDesc;
-            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
-            pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
-            pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-            pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
-            pipelineSettings.pRootSignature = pRootSignature;
-            pipelineSettings.pShaderProgram = pShShadowViewport;
-            pipelineSettings.pVertexLayout = &vertexLayout;
-            pipelineSettings.pRasterizerState = &rasterizerStateDesc;
-            pipelineSettings.mVRFoveatedRendering = true;
-
-            addPipeline(pRenderer, &pipelineDesc, &pPlShadowViewport);
-            ASSERT(pPlShadowViewport);
         }
     }
 
@@ -546,7 +514,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
 
     DescriptorData params = {};
     params.pName = "shadowMap";
-    params.ppTextures = &pRtShadow->pTexture;
+    params.ppTextures = &pRtShadowBuffer->pTexture;
     updateDescriptorSet(pRenderer, 0, pDsTexture, 1, &params);
 
     return true;
@@ -559,8 +527,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removePipeline(pRenderer, pPlObjects);
         removePipeline(pRenderer, pPlShadow);
         removePipeline(pRenderer, pPlLightSources);
-        removePipeline(pRenderer, pPlShadowViewport);
-        removeRenderTarget(pRenderer, pRtShadow);
+        removeRenderTarget(pRenderer, pRtShadowBuffer);
     }
 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
@@ -574,7 +541,6 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeShader(pRenderer, pShObjects);
         removeShader(pRenderer, pShShadow);
         removeShader(pRenderer, pShLightSources);
-        removeShader(pRenderer, pShShadowViewport);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
@@ -683,26 +649,24 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
-
-    DrawShadowViewport(pCmd, pRenderTarget, frameIndex);
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 {
     {
-        RenderTargetBarrier barriers[] = {{pRtShadow, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
+        RenderTargetBarrier barriers[] = {{pRtShadowBuffer, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
 
     LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_DONTCARE;
     loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
-    // loadActions.mClearDepth.stencil = 0;
+    loadActions.mClearDepth.depth = pRtShadowBuffer->mClearValue.depth;
+    loadActions.mClearDepth.stencil = pRtShadowBuffer->mClearValue.stencil;
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, pRtShadow, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRtShadow->mWidth, (float)pRtShadow->mHeight, 0.0f, 1.0f);
-    cmdSetScissor(pCmd, 0, 0, pRtShadow->mWidth, pRtShadow->mHeight);
+    cmdBindRenderTargets(pCmd, 0, nullptr, pRtShadowBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRtShadowBuffer->mWidth, (float)pRtShadowBuffer->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, pRtShadowBuffer->mWidth, pRtShadowBuffer->mHeight);
     cmdBindPipeline(pCmd, pPlShadow);
 
     for (int i = 0; i < OBJECT_COUNT; i++)
@@ -717,29 +681,9 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 
     {
         RenderTargetBarrier barriers[] = {
-            {pRtShadow, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
+            {pRtShadowBuffer, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
         };
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
-    }
-}
-
-void Demo2Scene::DrawShadowViewport(Cmd *&pCmd, RenderTarget *&pRenderTarget, uint32_t frameIndex)
-{
-    cmdSetViewport(pCmd, (float)pRenderTarget->mWidth - SHADOW_VIEWPORT,
-                   (float)pRenderTarget->mHeight - SHADOW_VIEWPORT, SHADOW_VIEWPORT, SHADOW_VIEWPORT, 0.0f, 1.0f);
-
-    cmdSetScissor(pCmd, pRenderTarget->mWidth - SHADOW_VIEWPORT, pRenderTarget->mHeight - SHADOW_VIEWPORT,
-                  SHADOW_VIEWPORT, SHADOW_VIEWPORT);
-
-    cmdBindPipeline(pCmd, pPlShadowViewport);
-
-    for (int i = 0; i < OBJECT_COUNT; i++)
-    {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
-        cmdBindDescriptorSet(pCmd, 0, pDsTexture);
-
-        DrawShape::Draw(pCmd, objectTypes[i]);
     }
 }
 
