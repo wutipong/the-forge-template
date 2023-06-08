@@ -6,6 +6,8 @@
 #include <IResourceLoader.h>
 #include <IUI.h>
 #include <Math/MathTypes.h>
+#include <array>
+#include "Settings.h"
 
 namespace DemoScene
 {
@@ -30,7 +32,7 @@ namespace DemoScene
     Shader *pShader{nullptr};
     RootSignature *pRootSignature{nullptr};
     DescriptorSet *pDescriptorSetUniforms{nullptr};
-    Buffer **pProjViewUniformBuffer{nullptr};
+    std::array<Buffer *, gImageCount> pProjViewUniformBuffers{nullptr};
     Buffer *pSphereVertexBuffer{nullptr};
     Pipeline *pSpherePipeline{nullptr};
 
@@ -40,7 +42,7 @@ namespace DemoScene
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 } // namespace DemoScene
 
-bool DemoScene::Init(uint32_t imageCount)
+bool DemoScene::Init()
 {
     float *vertices{};
     generateSpherePoints(&vertices, &vertexCount, 24, 1.0f);
@@ -56,8 +58,6 @@ bool DemoScene::Init(uint32_t imageCount)
 
     tf_free(vertices);
 
-    arrsetlen(pProjViewUniformBuffer, imageCount);
-
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
@@ -65,9 +65,9 @@ bool DemoScene::Init(uint32_t imageCount)
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    for (uint32_t i = 0; i < imageCount; ++i)
+    for (auto &buffer : pProjViewUniformBuffers)
     {
-        ubDesc.ppBuffer = &pProjViewUniformBuffer[i];
+        ubDesc.ppBuffer = &buffer;
         addResource(&ubDesc, nullptr);
     }
 
@@ -89,19 +89,17 @@ bool DemoScene::Init(uint32_t imageCount)
 
 void DemoScene::Exit()
 {
-    for (int i = 0; i < arrlen(pProjViewUniformBuffer); i++)
+    for (auto &buffer : pProjViewUniformBuffers)
     {
-        removeResource(pProjViewUniformBuffer[i]);
+        removeResource(buffer);
     }
-
-    arrfree(pProjViewUniformBuffer);
 
     removeResource(pSphereVertexBuffer);
 
     exitCameraController(pCameraController);
 }
 
-bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
+bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
@@ -119,7 +117,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
 
-        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, gImageCount};
         addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
 
         ASSERT(pDescriptorSetUniforms);
@@ -187,11 +185,11 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         ASSERT(pSpherePipeline);
     }
 
-    for (uint32_t i = 0; i < imageCount; ++i)
+    for (uint32_t i = 0; i < pProjViewUniformBuffers.size(); ++i)
     {
         DescriptorData params = {};
         params.pName = "uniformBlock";
-        params.ppBuffers = &pProjViewUniformBuffer[i];
+        params.ppBuffers = &pProjViewUniformBuffers[i];
 
         updateDescriptorSet(pRenderer, i, pDescriptorSetUniforms, 1, &params);
     }
@@ -270,7 +268,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
 
 void DemoScene::PreDraw(uint32_t frameIndex)
 {
-    BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffer[frameIndex]};
+    BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffers[frameIndex]};
     beginUpdateResource(&viewProjCbv);
     *(UniformBlock *)viewProjCbv.pMappedData = uniform;
     endUpdateResource(&viewProjCbv, nullptr);

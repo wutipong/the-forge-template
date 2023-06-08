@@ -1,9 +1,16 @@
 #include "MainApp.h"
 
+#include <IFileSystem.h>
+#include <IFont.h>
 #include <IGraphics.h>
+#include <IInput.h>
+#include <IProfiler.h>
+#include <IResourceLoader.h>
+#include <IUI.h>
 #include <cstdlib>
 #include "Demo2Scene.h"
 #include "DemoScene.h"
+#include "Settings.h"
 
 namespace Scene = Demo2Scene;
 
@@ -65,6 +72,7 @@ bool MainApp::Init()
         CmdPoolDesc cmdPoolDesc = {};
         cmdPoolDesc.pQueue = pGraphicsQueue;
         addCmdPool(pRenderer, &cmdPoolDesc, &pCmdPools[i]);
+
         CmdDesc cmdDesc = {};
         cmdDesc.pPool = pCmdPools[i];
         addCmd(pRenderer, &cmdDesc, &pCmds[i]);
@@ -95,7 +103,7 @@ bool MainApp::Init()
     fontRenderDesc.pRenderer = pRenderer;
     if (!initFontSystem(&fontRenderDesc))
     {
-        return false; // report?
+        return false;
     }
 
     UserInterfaceDesc uiRenderDesc = {};
@@ -107,12 +115,12 @@ bool MainApp::Init()
     uiCreateComponent(GetName(), &guiDesc, &pGuiWindow);
 
     // Take a screenshot with a button.
-    ButtonWidget screenshot;
+    ButtonWidget screenshot{};
     UIWidget *pScreenshot = uiCreateComponentWidget(pGuiWindow, "Screenshot", &screenshot, WIDGET_TYPE_BUTTON);
 
     waitForAllResourceLoads();
 
-    InputSystemDesc inputDesc = {};
+    InputSystemDesc inputDesc{};
     inputDesc.pRenderer = pRenderer;
     inputDesc.pWindow = pWindow;
     if (!initInputSystem(&inputDesc))
@@ -129,7 +137,7 @@ bool MainApp::Init()
     GlobalInputActionDesc globalInputActionDesc = {GlobalInputActionDesc::ANY_BUTTON_ACTION, onAnyInput, this};
     setGlobalInputAction(&globalInputActionDesc);
 
-    if (!Scene::Init(gImageCount))
+    if (!Scene::Init())
     {
         return false;
     };
@@ -146,13 +154,24 @@ void MainApp::Exit()
 
     exitProfiler();
 
-    for (uint32_t i = 0; i < gImageCount; ++i)
+    for (auto &f : pRenderCompleteFences)
     {
-        removeFence(pRenderer, pRenderCompleteFences[i]);
-        removeSemaphore(pRenderer, pRenderCompleteSemaphores[i]);
+        removeFence(pRenderer, f);
+    }
 
-        removeCmd(pRenderer, pCmds[i]);
-        removeCmdPool(pRenderer, pCmdPools[i]);
+    for (auto &s : pRenderCompleteSemaphores)
+    {
+        removeSemaphore(pRenderer, s);
+    }
+
+    for (auto &c : pCmds)
+    {
+        removeCmd(pRenderer, c);
+    }
+
+    for (auto &p : pCmdPools)
+    {
+        removeCmdPool(pRenderer, p);
     }
 
     removeSemaphore(pRenderer, pImageAcquiredSemaphore);
@@ -199,7 +218,7 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
     fontLoad.mLoadType = pReloadDesc->mType;
     loadFontSystem(&fontLoad);
 
-    if (!Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0], gImageCount))
+    if (!Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0]))
     {
         return false;
     };
@@ -214,6 +233,7 @@ void MainApp::Unload(ReloadDesc *pReloadDesc)
     Scene::Unload(pReloadDesc, pRenderer);
     unloadFontSystem(pReloadDesc->mType);
     unloadUserInterface(pReloadDesc->mType);
+
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
         removeSwapChain(pRenderer, pSwapChain);
@@ -252,7 +272,7 @@ void MainApp::Draw()
 
     cmdBeginGpuFrameProfile(cmd, gGpuProfileToken);
 
-    RenderTargetBarrier barriers[] = {
+    RenderTargetBarrier barriers[]{
         {pRenderTarget, RESOURCE_STATE_PRESENT, RESOURCE_STATE_RENDER_TARGET},
     };
     cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
@@ -296,6 +316,7 @@ void MainApp::Draw()
     submitDesc.ppWaitSemaphores = &pImageAcquiredSemaphore;
     submitDesc.pSignalFence = pRenderCompleteFence;
     queueSubmit(pGraphicsQueue, &submitDesc);
+
     QueuePresentDesc presentDesc = {};
     presentDesc.mIndex = swapchainImageIndex;
     presentDesc.mWaitSemaphoreCount = 1;

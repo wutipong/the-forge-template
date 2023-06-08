@@ -2,15 +2,6 @@
 #define MAIN_H
 
 #include <IApp.h>
-#include <IFileSystem.h>
-#include <IFont.h>
-#include <IGraphics.h>
-#include <IInput.h>
-#include <IResourceLoader.h>
-#include <IUI.h>
-#include "IProfiler.h"
-
-constexpr uint32_t gImageCount = 3;
 
 class MainApp : public IApp
 {

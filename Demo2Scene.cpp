@@ -12,30 +12,10 @@
 #include <stb_ds.h>
 
 #include "DrawShape.h"
+#include "Settings.h"
 
 namespace Demo2Scene
 {
-    Buffer **pUbObjects{};
-    Buffer **pUbScene{};
-    Buffer **pUbLightSources{};
-
-    ICameraController *pCameraController{};
-
-    Shader *pShObjects{};
-    Shader *pShShadow{};
-    Shader *pShLightSources{};
-
-    RootSignature *pRootSignature{};
-
-    DescriptorSet *pDsSceneUniform{};
-    DescriptorSet *pDsObjectUniform{};
-    DescriptorSet *pDsLightSourcesUniform{};
-    DescriptorSet *pDsTexture{};
-
-    Pipeline *pPlObjects{};
-    Pipeline *pPlShadow{};
-    Pipeline *pPlLightSources{};
-
     struct ObjectUniformBlock
     {
         mat4 Transform;
@@ -65,6 +45,31 @@ namespace Demo2Scene
 
     ObjectUniformBlock lightSources[DIRECTIONAL_LIGHT_COUNT] = {};
 
+    constexpr size_t OBJECT_UNIFORM_COUNT = OBJECT_COUNT * gImageCount;
+    Buffer *pUbObjects[OBJECT_UNIFORM_COUNT]{};
+
+    Buffer *pUbScene[OBJECT_COUNT]{};
+
+    constexpr size_t LIGHT_UNIFORM_COUNT = gImageCount * DIRECTIONAL_LIGHT_COUNT;
+    Buffer *pUbLightSources[LIGHT_UNIFORM_COUNT]{};
+
+    ICameraController *pCameraController{};
+
+    Shader *pShObjects{};
+    Shader *pShShadow{};
+    Shader *pShLightSources{};
+
+    RootSignature *pRootSignature{};
+
+    DescriptorSet *pDsSceneUniform{};
+    DescriptorSet *pDsObjectUniform{};
+    DescriptorSet *pDsLightSourcesUniform{};
+    DescriptorSet *pDsTexture{};
+
+    Pipeline *pPlObjects{};
+    Pipeline *pPlShadow{};
+    Pipeline *pPlLightSources{};
+
     UIComponent *pObjectWindow{};
 
     constexpr float SHADOW_MAP_DIMENSION = 1024;
@@ -84,7 +89,7 @@ namespace Demo2Scene
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 } // namespace Demo2Scene
 
-bool Demo2Scene::Init(uint32_t imageCount)
+bool Demo2Scene::Init()
 {
     DrawShape::Init();
 
@@ -95,8 +100,7 @@ bool Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    arrsetlen(pUbObjects, imageCount * OBJECT_COUNT);
-    for (uint32_t i = 0; i < imageCount * OBJECT_COUNT; ++i)
+    for (uint32_t i = 0; i < gImageCount * OBJECT_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbObjects[i];
         addResource(&ubDesc, nullptr);
@@ -109,8 +113,7 @@ bool Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    arrsetlen(pUbLightSources, imageCount * DIRECTIONAL_LIGHT_COUNT);
-    for (uint32_t i = 0; i < imageCount * DIRECTIONAL_LIGHT_COUNT; ++i)
+    for (uint32_t i = 0; i < gImageCount * DIRECTIONAL_LIGHT_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbLightSources[i];
         addResource(&ubDesc, nullptr);
@@ -122,9 +125,8 @@ bool Demo2Scene::Init(uint32_t imageCount)
     ubDesc.mDesc.mSize = sizeof(SceneUniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
-    arrsetlen(pUbScene, imageCount);
 
-    for (uint32_t i = 0; i < imageCount; ++i)
+    for (uint32_t i = 0; i < gImageCount; ++i)
     {
         ubDesc.ppBuffer = &pUbScene[i];
         addResource(&ubDesc, nullptr);
@@ -302,24 +304,21 @@ void Demo2Scene::Exit()
     {
         removeResource(pUbObjects[i]);
     }
-    arrfree(pUbObjects);
 
     for (int i = 0; i < arrlen(pUbLightSources); i++)
     {
         removeResource(pUbLightSources[i]);
     }
-    arrfree(pUbLightSources);
 
     for (int i = 0; i < arrlen(pUbScene); i++)
     {
         removeResource(pUbScene[i]);
     }
-    arrfree(pUbScene);
 
     exitCameraController(pCameraController);
 }
 
-bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageCount)
+bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
@@ -354,16 +353,16 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
 
-        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, imageCount};
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, gImageCount};
         addDescriptorSet(pRenderer, &desc, &pDsSceneUniform);
         ASSERT(pDsSceneUniform);
 
-        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(imageCount * OBJECT_COUNT)};
+        desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, static_cast<uint32_t>(gImageCount * OBJECT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsObjectUniform);
         ASSERT(pDsObjectUniform);
 
         desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW,
-                static_cast<uint32_t>(imageCount * DIRECTIONAL_LIGHT_COUNT)};
+                static_cast<uint32_t>(gImageCount * DIRECTIONAL_LIGHT_COUNT)};
         addDescriptorSet(pRenderer, &desc, &pDsLightSourcesUniform);
         ASSERT(pDsLightSourcesUniform);
 
@@ -380,7 +379,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc.mClearValue.stencil = 0;
         desc.mDepth = 1;
         desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
-        desc.mFormat = TinyImageFormat_D32_SFLOAT;;
+        desc.mFormat = TinyImageFormat_D32_SFLOAT;
+        ;
         desc.mWidth = pRenderTarget->mWidth;
         desc.mHeight = pRenderTarget->mHeight;
         desc.mSampleCount = SAMPLE_COUNT_1;
@@ -487,7 +487,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
     }
 
-    for (int i = 0; i < imageCount * OBJECT_COUNT; i++)
+    for (int i = 0; i < gImageCount * OBJECT_COUNT; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
@@ -495,7 +495,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDsObjectUniform, 1, &params);
     }
 
-    for (int i = 0; i < imageCount * DIRECTIONAL_LIGHT_COUNT; i++)
+    for (int i = 0; i < gImageCount * DIRECTIONAL_LIGHT_COUNT; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformObjectBlock";
@@ -503,7 +503,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         updateDescriptorSet(pRenderer, i, pDsLightSourcesUniform, 1, &params);
     }
 
-    for (int i = 0; i < imageCount; i++)
+    for (int i = 0; i < gImageCount; i++)
     {
         DescriptorData params = {};
         params.pName = "uniformSceneBlock";
@@ -654,7 +654,8 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 {
     {
-        RenderTargetBarrier barriers[] = {{pRtShadowBuffer, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
+        RenderTargetBarrier barriers[] = {
+            {pRtShadowBuffer, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
 
