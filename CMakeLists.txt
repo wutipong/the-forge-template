@@ -150,6 +150,7 @@ target_include_directories(main PRIVATE
     "The-Forge/Common_3/Application/Interfaces"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
     "The-Forge/Common_3/Graphics/Interfaces"
+    "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/inc"
     "The-Forge/Common_3/OS/Interfaces"
     "The-Forge/Common_3/Resources/ResourceLoader/Interfaces"
     "The-Forge/Common_3/Utilities"
@@ -159,9 +160,10 @@ target_include_directories(main PRIVATE
 )
 
 target_link_directories(main PRIVATE
-    "The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin"
     "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib"
+    "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/lib/x64"
     "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/nvapi/amd64"
+    "The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin"
 )
 
 target_link_libraries(main PRIVATE 
@@ -170,12 +172,15 @@ target_link_libraries(main PRIVATE
     WinPixEventRuntime 
     amd_ags_x64 
     nvapi64
+    dxcompiler
 )
 
 add_custom_target(CopyDlls ALL      
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/"      
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll" "$<TARGET_FILE_DIR:main>/"
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll" "$<TARGET_FILE_DIR:main>/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll" "$<TARGET_FILE_DIR:main>/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxil.dll" "$<TARGET_FILE_DIR:main>/"
 )
 
 add_custom_target(CopyGpuCfg ALL
