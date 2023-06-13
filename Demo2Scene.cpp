@@ -77,7 +77,7 @@ namespace Demo2Scene
     RenderTarget *pRtShadowBuffer;
 
     void ResetLightSettings();
-    void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
+    void DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex);
 
     bool InitUI();
     bool OnInputAction(InputActionContext *ctx);
@@ -579,10 +579,10 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     }
 }
 
-void Demo2Scene::PreDraw(uint32_t frameIndex)
+void Demo2Scene::PreDraw(uint32_t imageIndex)
 {
     {
-        BufferUpdateDesc updateDesc = {pUbScene[frameIndex]};
+        BufferUpdateDesc updateDesc = {pUbScene[imageIndex]};
         beginUpdateResource(&updateDesc);
         *static_cast<SceneUniformBlock *>(updateDesc.pMappedData) = scene;
         endUpdateResource(&updateDesc, nullptr);
@@ -590,7 +590,7 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        BufferUpdateDesc updateDesc = {pUbObjects[frameIndex * OBJECT_COUNT + i]};
+        BufferUpdateDesc updateDesc = {pUbObjects[imageIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = objects[i];
         endUpdateResource(&updateDesc, nullptr);
@@ -598,14 +598,14 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
-        BufferUpdateDesc updateDesc = {pUbLightSources[frameIndex * DIRECTIONAL_LIGHT_COUNT + i]};
+        BufferUpdateDesc updateDesc = {pUbLightSources[imageIndex * DIRECTIONAL_LIGHT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = lightSources[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 }
 
-void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t frameIndex)
+void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
 {
     // simply record the screen cleaning command
     LoadActionsDesc loadActions = {};
@@ -618,7 +618,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
-    DrawShadowRT(pCmd, frameIndex);
+    DrawShadowRT(pCmd, imageIndex);
 
     loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
@@ -633,8 +633,8 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, (imageIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
         cmdBindDescriptorSet(pCmd, 0, pDsTexture);
 
         DrawShape::Draw(pCmd, objectTypes[i]);
@@ -644,14 +644,14 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, (imageIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
+        cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
 
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
 }
 
-void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
+void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
 {
     {
         RenderTargetBarrier barriers[] = {
@@ -672,8 +672,8 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, (imageIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
 
         DrawShape::Draw(pCmd, objectTypes[i]);
     }

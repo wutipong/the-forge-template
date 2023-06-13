@@ -240,7 +240,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     uniform.mLightPosition = lightPosition;
 }
 
-void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t frameIndex)
+void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
 {
     // simply record the screen cleaning command
     LoadActionsDesc loadActions = {};
@@ -258,7 +258,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
 
     cmdBindPipeline(pCmd, pSpherePipeline);
-    cmdBindDescriptorSet(pCmd, frameIndex, pDescriptorSetUniforms);
+    cmdBindDescriptorSet(pCmd, imageIndex, pDescriptorSetUniforms);
 
     constexpr uint32_t sphereVbStride = sizeof(float) * 6;
     cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &sphereVbStride, nullptr);
@@ -266,9 +266,9 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdDrawInstanced(pCmd, vertexCount / 6, 0, MAX_STARS, 0);
 }
 
-void DemoScene::PreDraw(uint32_t frameIndex)
+void DemoScene::PreDraw(uint32_t imageIndex)
 {
-    BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffers[frameIndex]};
+    BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffers[imageIndex]};
     beginUpdateResource(&viewProjCbv);
     *(UniformBlock *)viewProjCbv.pMappedData = uniform;
     endUpdateResource(&viewProjCbv, nullptr);
