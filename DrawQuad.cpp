@@ -128,7 +128,7 @@ namespace DrawQuad
     {
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
         {
-            DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_DRAW, IMAGE_COUNT};
+            DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, IMAGE_COUNT};
             addDescriptorSet(pRenderer, &desc, &q._pDSTransform);
             ASSERT(q._pDSTransform);
 
