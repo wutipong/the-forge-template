@@ -7,29 +7,34 @@
 #include <utility>
 #include "Settings.h"
 
-
 namespace DrawQuad
 {
     struct Quad
     {
-        mat4 Transform;
+        mat4 transform;
         Texture *pTexture;
-        std::array<DescriptorSet *, IMAGE_COUNT> pDescriptorSets;
+
+        // internal-use only
+        DescriptorSet *_pDSTransform;
+        std::array<Buffer *, IMAGE_COUNT> _pUniformBuffer;
+
+        DescriptorSet *_pDSTexture;
     };
 
-    bool Init();
+    void Init(SyncToken *token);
     void Exit();
 
-    bool Load();
-    void Unload();
+    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture);
+    void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
 
-    bool LoadQuad(Quad &q);
-    void UnloadQuad(Quad &q);
+    bool InitQuad(SyncToken *token, Quad &q);
+    void ExitQuad(Quad &q);
 
-    std::pair<Quad, bool> CreateQuad(Texture *pTexture);
-    void RemoveQuad(Quad &q);
+    bool LoadQuad(ReloadDesc *pReloadDesc, Renderer *pRenderer, Quad &q);
+    void UnloadQuad(ReloadDesc *pReloadDesc, Renderer *pRenderer, Quad &q);
 
-    void DrawQuad(Quad &q);
-} // namespace DrawQuad
+    void PreDrawQuad(Renderer *pRenderer, Quad &quad, const uint32_t &imageIndex);
+    void DrawQuad(Cmd *pCmd, Renderer *pRenderer, Quad &quad, const uint32_t &imageIndex);
+}; // namespace DrawQuad
 
 #endif
