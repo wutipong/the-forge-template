@@ -7,6 +7,7 @@ add_executable(main
     "DemoScene.cpp" "DemoScene.h"
     "Demo2Scene.cpp" "Demo2Scene.h" 
     "DrawShape.cpp" "DrawShape.h"
+    "Drawquad.cpp" "DrawQuad.h"
     "The-Forge/Common_3/Application/CameraController.cpp"
     "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
     "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
