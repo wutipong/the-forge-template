@@ -10,9 +10,10 @@
 #include <cstdlib>
 #include "Demo2Scene.h"
 #include "DemoScene.h"
+#include "QuadDemoScene.h"
 #include "Settings.h"
 
-namespace Scene = Demo2Scene;
+namespace Scene = QuadDemoScene;
 
 extern RendererApi gSelectedRendererApi;
 
