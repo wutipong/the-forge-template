@@ -21,10 +21,10 @@ namespace DrawQuad
         DescriptorSet *_pDSTexture;
     };
 
-    void Init(SyncToken *token);
+    void Init(SyncToken *token = nullptr);
     void Exit();
 
-    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture);
+    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget);
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
 
     bool InitQuad(SyncToken *token, Quad &q);

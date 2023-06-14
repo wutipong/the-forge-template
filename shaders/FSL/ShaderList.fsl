@@ -25,3 +25,11 @@
 #vert demo2_shadow.vert
 #include "demo2_shadow.vert.fsl"
 #end
+
+#frag quad.frag
+#include "quad.frag.fsl"
+#end
+
+#vert quad.vert
+#include "quad.vert.fsl"
+#end
