@@ -1,0 +1,10 @@
+#include "quad.h.fsl"
+
+float4 PS_MAIN(VSOutput In)
+{
+    INIT_MAIN;
+
+    float4 Out = SampleTex2D(Get(texture), Get(textureSampler), In.Texcoord);
+
+    RETURN(Out);    
+}

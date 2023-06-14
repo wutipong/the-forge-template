@@ -12,6 +12,7 @@
 #include <stb_ds.h>
 
 #include "DrawShape.h"
+#include "DrawQuad.h"
 #include "Settings.h"
 
 namespace Demo2Scene
@@ -92,6 +93,7 @@ namespace Demo2Scene
 bool Demo2Scene::Init()
 {
     DrawShape::Init();
+    DrawQuad::Init();
 
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -113,7 +115,7 @@ bool Demo2Scene::Init()
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    for (uint32_t i = 0; i < IMAGE_COUNT * DIRECTIONAL_LIGHT_COUNT; ++i)
+    for (uint32_t i = 0; i < LIGHT_UNIFORM_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbLightSources[i];
         addResource(&ubDesc, nullptr);
@@ -299,20 +301,21 @@ void Demo2Scene::Exit()
     uiDestroyComponent(pObjectWindow);
 
     DrawShape::Exit();
+    DrawQuad::Exit();
 
-    for (int i = 0; i < arrlen(pUbObjects); i++)
+    for (auto &p :pUbObjects)
     {
-        removeResource(pUbObjects[i]);
+        removeResource(p);
     }
 
-    for (int i = 0; i < arrlen(pUbLightSources); i++)
+    for (auto &p : pUbLightSources)
     {
-        removeResource(pUbLightSources[i]);
+        removeResource(p);
     }
 
-    for (int i = 0; i < arrlen(pUbScene); i++)
+    for (auto &p : pUbScene)
     {
-        removeResource(pUbScene[i]);
+        removeResource(p);
     }
 
     exitCameraController(pCameraController);
@@ -517,6 +520,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     params.ppTextures = &pRtShadowBuffer->pTexture;
     updateDescriptorSet(pRenderer, 0, pDsTexture, 1, &params);
 
+    DrawQuad::Load(pReloadDesc, pRenderer, pRenderTarget);
+
     return true;
 }
 
@@ -547,6 +552,8 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
         removeRenderTarget(pRenderer, pDepthBuffer);
     }
+
+    DrawQuad::Unload(pReloadDesc, pRenderer);
 }
 
 void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)

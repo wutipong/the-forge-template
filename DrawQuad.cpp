@@ -34,7 +34,7 @@ namespace DrawQuad
 
     void Exit() { removeResource(pVertexBuffer); }
 
-    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture)
+    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget)
     {
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
         {
