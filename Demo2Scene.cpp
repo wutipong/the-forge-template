@@ -11,8 +11,8 @@
 #include <IUI.h>
 #include <stb_ds.h>
 
-#include "DrawShape.h"
 #include "DrawQuad.h"
+#include "DrawShape.h"
 #include "Settings.h"
 
 namespace Demo2Scene
@@ -88,6 +88,10 @@ namespace Demo2Scene
 
     RenderTarget *pDepthBuffer;
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
+
+    Texture *pQuadTextures[2];
+    DrawQuad::Quad quads[2];
+
 } // namespace Demo2Scene
 
 bool Demo2Scene::Init()
@@ -173,6 +177,34 @@ bool Demo2Scene::Init()
     addInputAction(&desc);
 
     InitUI();
+
+    {
+        SyncToken token = {};
+        TextureLoadDesc desc{};
+        desc.ppTexture = &pQuadTextures[0];
+        desc.pFileName = "Quad0";
+
+        addResource(&desc, &token);
+
+        desc = {};
+        desc.ppTexture = &pQuadTextures[1];
+        desc.pFileName = "Quad1";
+
+        addResource(&desc, &token);
+
+        waitForToken(&token);
+    }
+
+    quads[0].pTexture = pQuadTextures[0];
+    quads[0].transform = mat4::translation({0.25f, 0.25f, 0.0f}) * mat4::scale({0.25f, 0.25f, 1.0f});
+
+    quads[1].pTexture = pQuadTextures[1];
+    quads[1].transform = mat4::translation({-0.25f, -0.25f, 0.0f}) * mat4::scale({0.25f, 0.25f, 1.0f});
+
+    for (auto &quad : quads)
+    {
+        DrawQuad::InitQuad(nullptr, quad);
+    }
 
     return true;
 }
@@ -300,10 +332,7 @@ void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
 
-    DrawShape::Exit();
-    DrawQuad::Exit();
-
-    for (auto &p :pUbObjects)
+    for (auto &p : pUbObjects)
     {
         removeResource(p);
     }
@@ -318,7 +347,20 @@ void Demo2Scene::Exit()
         removeResource(p);
     }
 
+    for (auto &p : pQuadTextures)
+    {
+        removeResource(p);
+    }
+
+    for (auto &quad : quads)
+    {
+        DrawQuad::ExitQuad(quad);
+    }
+
     exitCameraController(pCameraController);
+
+    DrawShape::Exit();
+    DrawQuad::Exit();
 }
 
 bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget)
@@ -521,6 +563,10 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     updateDescriptorSet(pRenderer, 0, pDsTexture, 1, &params);
 
     DrawQuad::Load(pReloadDesc, pRenderer, pRenderTarget);
+    for (auto &quad : quads)
+    {
+        DrawQuad::LoadQuad(pReloadDesc, pRenderer, quad);
+    }
 
     return true;
 }
@@ -551,6 +597,11 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
         removeRenderTarget(pRenderer, pDepthBuffer);
+    }
+
+    for (auto &quad : quads)
+    {
+        DrawQuad::UnloadQuad(pReloadDesc, pRenderer, quad);
     }
 
     DrawQuad::Unload(pReloadDesc, pRenderer);
@@ -610,6 +661,11 @@ void Demo2Scene::PreDraw(uint32_t imageIndex)
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = lightSources[i];
         endUpdateResource(&updateDesc, nullptr);
     }
+
+    for (auto &quad : quads)
+    {
+        DrawQuad::PreDrawQuad(quad, imageIndex);
+    }
 }
 
 void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
@@ -655,6 +711,11 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
 
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
+    }
+
+    for (auto &quad : quads)
+    {
+        DrawQuad::DrawQuad(pCmd, pRenderer, quad, imageIndex);
     }
 }
 

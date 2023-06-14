@@ -83,7 +83,7 @@ namespace DrawQuad
             pipelineSettings.mRenderTargetCount = 1;
             pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
             pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-            pipelineSettings.pBlendState = & blendStateDesc;
+            pipelineSettings.pBlendState = &blendStateDesc;
             pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
             pipelineSettings.pDepthState = nullptr;
             pipelineSettings.pRasterizerState = &rasterizerStateDesc;
@@ -149,7 +149,7 @@ namespace DrawQuad
 
         {
             DescriptorData params = {};
-            params.pName = "colorTex";
+            params.pName = "texture";
             params.ppTextures = &q.pTexture;
 
             updateDescriptorSet(pRenderer, 0, q._pDSTexture, 1, &params);
@@ -175,7 +175,7 @@ namespace DrawQuad
         }
     }
 
-    void PreDrawQuad(Renderer *pRenderer, Quad &quad, const uint32_t &imageIndex)
+    void PreDrawQuad(Quad &quad, const uint32_t &imageIndex)
     {
         BufferUpdateDesc updateDesc = {quad._pUniformBuffer[imageIndex]};
         beginUpdateResource(&updateDesc);

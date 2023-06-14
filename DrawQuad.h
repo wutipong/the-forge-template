@@ -33,7 +33,7 @@ namespace DrawQuad
     bool LoadQuad(ReloadDesc *pReloadDesc, Renderer *pRenderer, Quad &q);
     void UnloadQuad(ReloadDesc *pReloadDesc, Renderer *pRenderer, Quad &q);
 
-    void PreDrawQuad(Renderer *pRenderer, Quad &quad, const uint32_t &imageIndex);
+    void PreDrawQuad(Quad &quad, const uint32_t &imageIndex);
     void DrawQuad(Cmd *pCmd, Renderer *pRenderer, Quad &quad, const uint32_t &imageIndex);
 }; // namespace DrawQuad
 
