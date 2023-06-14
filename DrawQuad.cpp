@@ -67,19 +67,29 @@ namespace DrawQuad
             vertexLayout.mAttribs[1].mLocation = 1;
             vertexLayout.mAttribs[1].mOffset = sizeof(float2);
 
+            BlendStateDesc blendStateDesc = {};
+            blendStateDesc.mSrcFactors[0] = BC_SRC_ALPHA;
+            blendStateDesc.mDstFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
+            blendStateDesc.mSrcAlphaFactors[0] = BC_SRC_ALPHA;
+            blendStateDesc.mDstAlphaFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
+            blendStateDesc.mMasks[0] = ALL;
+            blendStateDesc.mRenderTargetMask = BLEND_STATE_TARGET_ALL;
+            blendStateDesc.mIndependentBlend = false;
+
             PipelineDesc pipelineDesc = {};
             pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
             GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
             pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_STRIP;
             pipelineSettings.mRenderTargetCount = 1;
-            pipelineSettings.pDepthState = nullptr;
-            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
             pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
             pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
+            pipelineSettings.pBlendState = & blendStateDesc;
+            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
+            pipelineSettings.pDepthState = nullptr;
+            pipelineSettings.pRasterizerState = &rasterizerStateDesc;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShader;
             pipelineSettings.pVertexLayout = &vertexLayout;
-            pipelineSettings.pRasterizerState = &rasterizerStateDesc;
 
             addPipeline(pRenderer, &pipelineDesc, &pPipeline);
             ASSERT(pPipeline);
