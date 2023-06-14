@@ -108,7 +108,7 @@ namespace DrawQuad
         }
     }
 
-    bool InitQuad(SyncToken *token, Quad &q)
+    bool Quad::Init(SyncToken *token)
     {
         BufferLoadDesc desc = {};
         desc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -117,7 +117,7 @@ namespace DrawQuad
         desc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
         desc.pData = nullptr;
 
-        for (auto &u : q._pUniformBuffer)
+        for (auto &u : _pUniformBuffer)
         {
             desc.ppBuffer = &u;
             addResource(&desc, token);
@@ -126,68 +126,68 @@ namespace DrawQuad
         return true;
     }
 
-    void ExitQuad(Quad &q)
+    void Quad::Exit()
     {
-        for (auto &u : q._pUniformBuffer)
+        for (auto &u : _pUniformBuffer)
         {
             removeResource(u);
         }
     }
 
-    bool LoadQuad(ReloadDesc *pReloadDesc, Renderer *pRenderer, Quad &q)
+    bool Quad::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
         {
             DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, IMAGE_COUNT};
-            addDescriptorSet(pRenderer, &desc, &q._pDSTransform);
-            ASSERT(q._pDSTransform);
+            addDescriptorSet(pRenderer, &desc, &_pDSTransform);
+            ASSERT(_pDSTransform);
 
             desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
-            addDescriptorSet(pRenderer, &desc, &q._pDSTexture);
-            ASSERT(q._pDSTexture);
+            addDescriptorSet(pRenderer, &desc, &_pDSTexture);
+            ASSERT(_pDSTexture);
         }
 
         {
             DescriptorData params = {};
             params.pName = "texture";
-            params.ppTextures = &q.pTexture;
+            params.ppTextures = &pTexture;
 
-            updateDescriptorSet(pRenderer, 0, q._pDSTexture, 1, &params);
+            updateDescriptorSet(pRenderer, 0, _pDSTexture, 1, &params);
         }
 
         for (int i = 0; i < IMAGE_COUNT; i++)
         {
             DescriptorData params = {};
             params.pName = "uniformBlock";
-            params.ppBuffers = &q._pUniformBuffer[i];
-            updateDescriptorSet(pRenderer, i, q._pDSTransform, 1, &params);
+            params.ppBuffers = &_pUniformBuffer[i];
+            updateDescriptorSet(pRenderer, i, _pDSTransform, 1, &params);
         }
 
         return true;
     }
 
-    void UnloadQuad(ReloadDesc *pReloadDesc, Renderer *pRenderer, Quad &q)
+    void Quad::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
         {
-            removeDescriptorSet(pRenderer, q._pDSTransform);
-            removeDescriptorSet(pRenderer, q._pDSTexture);
+            removeDescriptorSet(pRenderer, _pDSTransform);
+            removeDescriptorSet(pRenderer, _pDSTexture);
         }
     }
 
-    void PreDrawQuad(Quad &quad, const uint32_t &imageIndex)
+    void Quad::PreDraw(const uint32_t &imageIndex)
     {
-        BufferUpdateDesc updateDesc = {quad._pUniformBuffer[imageIndex]};
+        BufferUpdateDesc updateDesc = {_pUniformBuffer[imageIndex]};
         beginUpdateResource(&updateDesc);
-        *static_cast<mat4 *>(updateDesc.pMappedData) = quad.transform;
+        *static_cast<mat4 *>(updateDesc.pMappedData) = transform;
         endUpdateResource(&updateDesc, nullptr);
     }
 
-    void DrawQuad(Cmd *pCmd, Renderer *pRenderer, Quad &quad, const uint32_t &imageIndex)
+    void Quad::Draw(Cmd *pCmd, Renderer *pRenderer, const uint32_t &imageIndex)
     {
         cmdBindPipeline(pCmd, pPipeline);
-        cmdBindDescriptorSet(pCmd, 0, quad._pDSTexture);
-        cmdBindDescriptorSet(pCmd, imageIndex, quad._pDSTransform);
+        cmdBindDescriptorSet(pCmd, 0, _pDSTexture);
+        cmdBindDescriptorSet(pCmd, imageIndex, _pDSTransform);
 
         constexpr uint32_t stride = sizeof(Vertex);
         cmdBindVertexBuffer(pCmd, 1, &pVertexBuffer, &stride, nullptr);

@@ -203,7 +203,7 @@ bool Demo2Scene::Init()
 
     for (auto &quad : quads)
     {
-        DrawQuad::InitQuad(nullptr, quad);
+        quad.Init();
     }
 
     return true;
@@ -354,7 +354,7 @@ void Demo2Scene::Exit()
 
     for (auto &quad : quads)
     {
-        DrawQuad::ExitQuad(quad);
+        quad.Exit();
     }
 
     exitCameraController(pCameraController);
@@ -565,7 +565,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     DrawQuad::Load(pReloadDesc, pRenderer, pRenderTarget);
     for (auto &quad : quads)
     {
-        DrawQuad::LoadQuad(pReloadDesc, pRenderer, quad);
+        quad.Load(pReloadDesc, pRenderer);
     }
 
     return true;
@@ -601,7 +601,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 
     for (auto &quad : quads)
     {
-        DrawQuad::UnloadQuad(pReloadDesc, pRenderer, quad);
+        quad.Unload(pReloadDesc, pRenderer);
     }
 
     DrawQuad::Unload(pReloadDesc, pRenderer);
@@ -664,7 +664,7 @@ void Demo2Scene::PreDraw(uint32_t imageIndex)
 
     for (auto &quad : quads)
     {
-        DrawQuad::PreDrawQuad(quad, imageIndex);
+        quad.PreDraw(imageIndex);
     }
 }
 
@@ -715,7 +715,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     for (auto &quad : quads)
     {
-        DrawQuad::DrawQuad(pCmd, pRenderer, quad, imageIndex);
+        quad.Draw(pCmd, pRenderer, imageIndex);
     }
 }
 
