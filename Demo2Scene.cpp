@@ -76,12 +76,6 @@ namespace Demo2Scene
 
     RenderTarget *pRtShadowBuffer;
 
-    void ResetLightSettings();
-    void DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex);
-
-    bool InitUI();
-    bool OnInputAction(InputActionContext *ctx);
-
     float3 cameraPosition;
     float3 lightPosition;
 
@@ -95,6 +89,12 @@ namespace Demo2Scene
     float shadowBottom = -1;
     float shadowNear = 1;
     float shadowFar = 1024;
+
+    void ResetLightSettings();
+    void DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex);
+
+    bool InitUI();
+    bool OnInputAction(InputActionContext *ctx);
 
 } // namespace Demo2Scene
 
@@ -295,6 +295,9 @@ bool Demo2Scene::InitUI()
         widget.mTextureDisplaySize = {256, 256};
 
         debugTexturesWidget = uiCreateComponentWidget(pObjectWindow, "Shadow Map", &widget, WIDGET_TYPE_DEBUG_TEXTURES);
+
+        LabelWidget label = {};
+        uiCreateComponentWidget(pObjectWindow, "", &label, WIDGET_TYPE_LABEL);
     }
 
     {
@@ -647,7 +650,8 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
     auto lightView = mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
-    scene.ShadowTransform = mat4::orthographic(shadowLeft, shadowRight, shadowBottom, shadowTop, shadowNear, shadowFar);
+    scene.ShadowTransform =
+        mat4::orthographic(shadowLeft, shadowRight, shadowBottom, shadowTop, shadowNear, shadowFar) * lightView;
     // mat4::perspective(horizontal_fov, 1, 1000.0f, 0.1f) * lightView;
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
