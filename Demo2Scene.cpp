@@ -88,6 +88,8 @@ namespace Demo2Scene
     RenderTarget *pDepthBuffer;
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 
+    UIWidget *debugTexturesWidget;
+
 } // namespace Demo2Scene
 
 bool Demo2Scene::Init()
@@ -279,6 +281,15 @@ bool Demo2Scene::InitUI()
                                     pCameraController->lookAt({0, 0, 0});
                                 });
 
+    guiDesc = {};
+    uiCreateComponent("Shadow Map", &guiDesc, &pObjectWindow);
+
+    DebugTexturesWidget widget = {};
+    widget.mTexturesCount = 1;
+    widget.mTextureDisplaySize = {256, 256};
+
+    debugTexturesWidget = uiCreateComponentWidget(pObjectWindow, "Shadow Map", &widget, WIDGET_TYPE_DEBUG_TEXTURES);
+
     return true;
 }
 
@@ -465,6 +476,9 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             renderTargetDesc.pName = "Shadow Map Render Target";
             addRenderTarget(pRenderer, &renderTargetDesc, &pRtShadowBuffer);
             ASSERT(pRtShadowBuffer);
+
+            reinterpret_cast<DebugTexturesWidget *>(debugTexturesWidget->pWidget)->pTextures =
+                &pRtShadowBuffer->pTexture;
         }
 
         {
