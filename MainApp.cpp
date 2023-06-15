@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include "Demo2Scene.h"
 #include "DemoScene.h"
+#include "QuadDemoScene.h"
 #include "Settings.h"
 
 namespace Scene = Demo2Scene;
@@ -26,7 +27,7 @@ namespace
     uint32_t gFontID = 0;
     Cmd *pCmds[IMAGE_COUNT]{nullptr};
     CmdPool *pCmdPools[IMAGE_COUNT]{nullptr};
-    uint32_t gFrameIndex = 0;
+    uint32_t gimageIndex = 0;
     Fence *pRenderCompleteFences[IMAGE_COUNT]{nullptr};
     Semaphore *pRenderCompleteSemaphores[IMAGE_COUNT] = {nullptr};
     Semaphore *pImageAcquiredSemaphore = nullptr;
@@ -253,8 +254,8 @@ void MainApp::Draw()
     acquireNextImage(pRenderer, pSwapChain, pImageAcquiredSemaphore, nullptr, &swapchainImageIndex);
 
     RenderTarget *pRenderTarget = pSwapChain->ppRenderTargets[swapchainImageIndex];
-    Semaphore *pRenderCompleteSemaphore = pRenderCompleteSemaphores[gFrameIndex];
-    Fence *pRenderCompleteFence = pRenderCompleteFences[gFrameIndex];
+    Semaphore *pRenderCompleteSemaphore = pRenderCompleteSemaphores[gimageIndex];
+    Fence *pRenderCompleteFence = pRenderCompleteFences[gimageIndex];
 
     // Stall if CPU is running "Swap Chain Buffer Count" frames ahead of GPU
     FenceStatus fenceStatus;
@@ -262,12 +263,12 @@ void MainApp::Draw()
     if (fenceStatus == FENCE_STATUS_INCOMPLETE)
         waitForFences(pRenderer, 1, &pRenderCompleteFence);
 
-    Scene::PreDraw(gFrameIndex);
+    Scene::PreDraw(gimageIndex);
 
     // Reset cmd pool for this frame
-    resetCmdPool(pRenderer, pCmdPools[gFrameIndex]);
+    resetCmdPool(pRenderer, pCmdPools[gimageIndex]);
 
-    Cmd *cmd = pCmds[gFrameIndex];
+    Cmd *cmd = pCmds[gimageIndex];
     beginCmd(cmd);
 
     cmdBeginGpuFrameProfile(cmd, gGpuProfileToken);
@@ -278,7 +279,7 @@ void MainApp::Draw()
     cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    Scene::Draw(cmd, pRenderer, pRenderTarget, gFrameIndex);
+    Scene::Draw(cmd, pRenderer, pRenderTarget, gimageIndex);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
@@ -327,7 +328,7 @@ void MainApp::Draw()
     queuePresent(pGraphicsQueue, &presentDesc);
     flipProfiler();
 
-    gFrameIndex = (gFrameIndex + 1) % IMAGE_COUNT;
+    gimageIndex = (gimageIndex + 1) % IMAGE_COUNT;
 }
 
 const char *MainApp::GetName() { return "The Forge Template"; }

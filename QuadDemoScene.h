@@ -1,9 +1,9 @@
-#ifndef DEMO_SCENE_H
-#define DEMO_SCENE_H
+#ifndef QUAD_DEMO_SCENE_H
+#define QUAD_DEMO_SCENE_H
 
 #include <IGraphics.h>
 
-namespace DemoScene
+namespace QuadDemoScene
 {
     bool Init();
     void Exit();

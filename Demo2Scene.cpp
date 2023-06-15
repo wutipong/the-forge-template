@@ -77,7 +77,7 @@ namespace Demo2Scene
     RenderTarget *pRtShadowBuffer;
 
     void ResetLightSettings();
-    void DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex);
+    void DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex);
 
     bool InitUI();
     bool OnInputAction(InputActionContext *ctx);
@@ -87,6 +87,7 @@ namespace Demo2Scene
 
     RenderTarget *pDepthBuffer;
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
+
 } // namespace Demo2Scene
 
 bool Demo2Scene::Init()
@@ -113,7 +114,7 @@ bool Demo2Scene::Init()
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
 
-    for (uint32_t i = 0; i < IMAGE_COUNT * DIRECTIONAL_LIGHT_COUNT; ++i)
+    for (uint32_t i = 0; i < LIGHT_UNIFORM_COUNT; ++i)
     {
         ubDesc.ppBuffer = &pUbLightSources[i];
         addResource(&ubDesc, nullptr);
@@ -298,24 +299,24 @@ void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
 
-    DrawShape::Exit();
-
-    for (int i = 0; i < arrlen(pUbObjects); i++)
+    for (auto &p : pUbObjects)
     {
-        removeResource(pUbObjects[i]);
+        removeResource(p);
     }
 
-    for (int i = 0; i < arrlen(pUbLightSources); i++)
+    for (auto &p : pUbLightSources)
     {
-        removeResource(pUbLightSources[i]);
+        removeResource(p);
     }
 
-    for (int i = 0; i < arrlen(pUbScene); i++)
+    for (auto &p : pUbScene)
     {
-        removeResource(pUbScene[i]);
+        removeResource(p);
     }
 
     exitCameraController(pCameraController);
+
+    DrawShape::Exit();
 }
 
 bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget)
@@ -579,10 +580,10 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     }
 }
 
-void Demo2Scene::PreDraw(uint32_t frameIndex)
+void Demo2Scene::PreDraw(uint32_t imageIndex)
 {
     {
-        BufferUpdateDesc updateDesc = {pUbScene[frameIndex]};
+        BufferUpdateDesc updateDesc = {pUbScene[imageIndex]};
         beginUpdateResource(&updateDesc);
         *static_cast<SceneUniformBlock *>(updateDesc.pMappedData) = scene;
         endUpdateResource(&updateDesc, nullptr);
@@ -590,7 +591,7 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        BufferUpdateDesc updateDesc = {pUbObjects[frameIndex * OBJECT_COUNT + i]};
+        BufferUpdateDesc updateDesc = {pUbObjects[imageIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = objects[i];
         endUpdateResource(&updateDesc, nullptr);
@@ -598,14 +599,14 @@ void Demo2Scene::PreDraw(uint32_t frameIndex)
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
-        BufferUpdateDesc updateDesc = {pUbLightSources[frameIndex * DIRECTIONAL_LIGHT_COUNT + i]};
+        BufferUpdateDesc updateDesc = {pUbLightSources[imageIndex * DIRECTIONAL_LIGHT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = lightSources[i];
         endUpdateResource(&updateDesc, nullptr);
     }
 }
 
-void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t frameIndex)
+void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
 {
     // simply record the screen cleaning command
     LoadActionsDesc loadActions = {};
@@ -618,7 +619,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
-    DrawShadowRT(pCmd, frameIndex);
+    DrawShadowRT(pCmd, imageIndex);
 
     loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
@@ -633,8 +634,8 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, (imageIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
         cmdBindDescriptorSet(pCmd, 0, pDsTexture);
 
         DrawShape::Draw(pCmd, objectTypes[i]);
@@ -644,14 +645,14 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, (imageIndex * DIRECTIONAL_LIGHT_COUNT) + i, pDsLightSourcesUniform);
+        cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
 
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
 }
 
-void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
+void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
 {
     {
         RenderTargetBarrier barriers[] = {
@@ -672,8 +673,8 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t frameIndex)
 
     for (int i = 0; i < OBJECT_COUNT; i++)
     {
-        cmdBindDescriptorSet(pCmd, (frameIndex * OBJECT_COUNT) + i, pDsObjectUniform);
-        cmdBindDescriptorSet(pCmd, frameIndex, pDsSceneUniform);
+        cmdBindDescriptorSet(pCmd, (imageIndex * OBJECT_COUNT) + i, pDsObjectUniform);
+        cmdBindDescriptorSet(pCmd, imageIndex, pDsSceneUniform);
 
         DrawShape::Draw(pCmd, objectTypes[i]);
     }
