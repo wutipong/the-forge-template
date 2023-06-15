@@ -89,6 +89,12 @@ namespace Demo2Scene
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 
     UIWidget *debugTexturesWidget;
+    float shadowLeft = -1;
+    float shadowRight = 1;
+    float shadowTop = 1;
+    float shadowBottom = -1;
+    float shadowNear = 1;
+    float shadowFar = 1024;
 
 } // namespace Demo2Scene
 
@@ -283,12 +289,68 @@ bool Demo2Scene::InitUI()
 
     guiDesc = {};
     uiCreateComponent("Shadow Map", &guiDesc, &pObjectWindow);
+    {
+        DebugTexturesWidget widget = {};
+        widget.mTexturesCount = 1;
+        widget.mTextureDisplaySize = {256, 256};
 
-    DebugTexturesWidget widget = {};
-    widget.mTexturesCount = 1;
-    widget.mTextureDisplaySize = {256, 256};
+        debugTexturesWidget = uiCreateComponentWidget(pObjectWindow, "Shadow Map", &widget, WIDGET_TYPE_DEBUG_TEXTURES);
+    }
 
-    debugTexturesWidget = uiCreateComponentWidget(pObjectWindow, "Shadow Map", &widget, WIDGET_TYPE_DEBUG_TEXTURES);
+    {
+        guiDesc = {};
+        SliderFloatWidget widget{};
+        widget.mMax = 1024;
+        widget.mMin = -1024;
+        widget.pData = &shadowLeft;
+        uiCreateComponentWidget(pObjectWindow, "Left", &widget, WIDGET_TYPE_SLIDER_FLOAT);
+    }
+
+    {
+        guiDesc = {};
+        SliderFloatWidget widget{};
+        widget.mMax = 1024;
+        widget.mMin = -1024;
+        widget.pData = &shadowRight;
+        uiCreateComponentWidget(pObjectWindow, "Right", &widget, WIDGET_TYPE_SLIDER_FLOAT);
+    }
+
+    {
+        guiDesc = {};
+        SliderFloatWidget widget{};
+        widget.mMax = 1024;
+        widget.mMin = -1024;
+        widget.pData = &shadowBottom;
+        uiCreateComponentWidget(pObjectWindow, "Bottom", &widget, WIDGET_TYPE_SLIDER_FLOAT);
+    }
+
+    {
+        guiDesc = {};
+        SliderFloatWidget widget{};
+        widget.mMax = 1024;
+        widget.mMin = -1024;
+        widget.pData = &shadowTop;
+        uiCreateComponentWidget(pObjectWindow, "Top", &widget, WIDGET_TYPE_SLIDER_FLOAT);
+    }
+
+    {
+        guiDesc = {};
+        SliderFloatWidget widget{};
+        widget.mMax = 1024;
+        widget.mMin = -1024;
+        widget.pData = &shadowNear;
+        uiCreateComponentWidget(pObjectWindow, "Near", &widget, WIDGET_TYPE_SLIDER_FLOAT);
+    }
+
+    {
+        guiDesc = {};
+        SliderFloatWidget widget{};
+        widget.mMax = 1024;
+        widget.mMin = -1024;
+        widget.pData = &shadowFar;
+        uiCreateComponentWidget(pObjectWindow, "Far", &widget, WIDGET_TYPE_SLIDER_FLOAT);
+    }
+
 
     return true;
 }
@@ -585,7 +647,8 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
     auto lightView = mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
-    scene.ShadowTransform = mat4::perspective(horizontal_fov, 1, 1000.0f, 0.1f) * lightView;
+    scene.ShadowTransform = mat4::orthographic(shadowLeft, shadowRight, shadowBottom, shadowTop, shadowNear, shadowFar);
+    // mat4::perspective(horizontal_fov, 1, 1000.0f, 0.1f) * lightView;
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
