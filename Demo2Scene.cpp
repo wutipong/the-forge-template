@@ -83,12 +83,12 @@ namespace Demo2Scene
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 
     UIWidget *debugTexturesWidget;
-    float shadowLeft = -1;
-    float shadowRight = 1;
-    float shadowTop = 1;
-    float shadowBottom = -1;
-    float shadowNear = 1;
-    float shadowFar = 1024;
+    float shadowLeft = 10;
+    float shadowRight = -10;
+    float shadowTop = 10;
+    float shadowBottom = -10;
+    float shadowNear = -10;
+    float shadowFar = 20;
 
     void ResetLightSettings();
     void DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex);
@@ -478,12 +478,13 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         RasterizerStateDesc rasterizerStateCullNoneDesc = {};
         rasterizerStateCullNoneDesc.mCullMode = CULL_MODE_NONE;
 
-        DepthStateDesc depthStateDesc = {};
-        depthStateDesc.mDepthTest = true;
-        depthStateDesc.mDepthWrite = true;
-        depthStateDesc.mDepthFunc = CMP_GEQUAL;
-
         {
+
+            DepthStateDesc depthStateDesc = {};
+            depthStateDesc.mDepthTest = true;
+            depthStateDesc.mDepthWrite = true;
+            depthStateDesc.mDepthFunc = CMP_GEQUAL;
+
             PipelineDesc pipelineDesc = {};
             pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
             GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
@@ -505,6 +506,11 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
 
         {
+            DepthStateDesc depthStateDesc = {};
+            depthStateDesc.mDepthTest = true;
+            depthStateDesc.mDepthWrite = true;
+            depthStateDesc.mDepthFunc = CMP_GEQUAL;
+
             PipelineDesc pipelineDesc = {};
             pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
             GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
@@ -547,6 +553,11 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
 
         {
+            DepthStateDesc depthStateDesc = {};
+            depthStateDesc.mDepthTest = true;
+            depthStateDesc.mDepthWrite = true;
+            depthStateDesc.mDepthFunc = CMP_LEQUAL;
+
             PipelineDesc pipelineDesc = {};
             pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
             GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
@@ -635,7 +646,7 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     cameraPosition = v3ToF3(pCameraController->getViewPosition());
 
-    constexpr float lightDistant = 30.0f;
+    constexpr float lightDistant = 10.0f;
     constexpr float horizontal_fov = PI / 2.0f;
 
     const float aspectInverse = (float)height / (float)width;
