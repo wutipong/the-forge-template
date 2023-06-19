@@ -479,7 +479,6 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         rasterizerStateCullNoneDesc.mCullMode = CULL_MODE_NONE;
 
         {
-
             DepthStateDesc depthStateDesc = {};
             depthStateDesc.mDepthTest = true;
             depthStateDesc.mDepthWrite = true;
@@ -533,7 +532,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         {
             RenderTargetDesc renderTargetDesc = {};
             renderTargetDesc.mArraySize = 1;
-            renderTargetDesc.mClearValue.depth = 1.0f;
+            renderTargetDesc.mClearValue.depth = 0.0f;
             renderTargetDesc.mClearValue.stencil = 0;
             renderTargetDesc.mDepth = 1;
             renderTargetDesc.mDescriptors = DESCRIPTOR_TYPE_TEXTURE;
@@ -556,7 +555,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             DepthStateDesc depthStateDesc = {};
             depthStateDesc.mDepthTest = true;
             depthStateDesc.mDepthWrite = true;
-            depthStateDesc.mDepthFunc = CMP_LEQUAL;
+            depthStateDesc.mDepthFunc = CMP_GEQUAL;
 
             PipelineDesc pipelineDesc = {};
             pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;

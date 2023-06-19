@@ -44,23 +44,15 @@ float4 PS_MAIN(VSOutput In)
     if (In.ShadowMapCoord.x >= 0 && In.ShadowMapCoord.y >= 0 && In.ShadowMapCoord.x <= 1.0 &&
         In.ShadowMapCoord.y <= 1.0)
     {
-        float litdepth = SampleLvlTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord, 0).x;
-        if (litdepth < In.ShadowMapPos.z)
+        float litdepth = SampleTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord).x;
+        if (litdepth != 0 && litdepth - In.ShadowMapPos.z > 0.1)
         {
             Out.rgb = Out.rgb / 2.0;
         }
+
+        // Out.r = litdepth;
+        // Out.g = In.ShadowMapPos.z;
     }
 
-    /* Debug code.
-    if(shadowMapCoord.x <= 0 || shadowMapCoord.x > 1.0 || shadowMapCoord.y <= 0 || shadowMapCoord.y >1.0 ) {
-        Out = float4(0.5, 0.5, 0.5, 1.0);
-    } else {
-        Out = float4(depth, In.ShadowMapPos.z, 0, 1.0);
-    }
-    */
-
-    /* another debug
-     * Out.rgb = float3(In.Position.z, In.Position.z, In.Position.z);
-     * */
     RETURN(Out);
 }

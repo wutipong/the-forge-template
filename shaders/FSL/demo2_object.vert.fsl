@@ -35,7 +35,7 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
     Out.WorldPos = mul(Get(toWorld), float4(In.Position.xyz, 1.0f));
     Out.Color = Get(color);
 
-    Out.ShadowMapCoord = (Out.ShadowMapPos.xy + 1.0 )/2.0;
+    Out.ShadowMapCoord = (1.0 + float2(Out.ShadowMapPos.x, -Out.ShadowMapPos.y))/2.0;
 
     RETURN(Out);
 }
