@@ -33,8 +33,13 @@ float4 PS_MAIN(VSOutput In)
     float4 Out = {0.0, 0.0, 0.0, 0.0};
 
     int i = 0;
+    float3 ambientColor = {0, 0, 0};
+    
     for (i = 0; i < LIGHT_COUNT; i++)
     {
+        float3 baseColor = Get(lightColor[i]).rgb * In.Color.rgb;
+        ambientColor += baseColor * Get(lightAmbient[i]);
+
         Out.rgb += doDirectionalLight(In, Get(cameraPosition), Get(lightDirection[i]), Get(lightColor[i]),
                                       Get(lightIntensity[i]), Get(lightAmbient[i]), Get(color).a);
     }
@@ -45,14 +50,16 @@ float4 PS_MAIN(VSOutput In)
         In.ShadowMapCoord.y <= 1.0)
     {
         float litdepth = SampleTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord).x;
-        if (litdepth != 0 && litdepth - In.ShadowMapPos.z > 0.1)
-        {
-            Out.rgb = Out.rgb / 2.0;
-        }
+        bool isDirectlyLit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
 
+        if ((isDirectlyLit && (litdepth != 0)) && (litdepth - In.ShadowMapPos.z > 0.1))
+        {
+            Out.rgb = ambientColor;
+        }
+        
         // Out.r = litdepth;
         // Out.g = In.ShadowMapPos.z;
-    }
+    } 
 
     RETURN(Out);
 }
