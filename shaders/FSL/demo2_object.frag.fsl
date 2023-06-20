@@ -45,7 +45,7 @@ float4 PS_MAIN(VSOutput In)
         In.ShadowMapCoord.y <= 1.0)
     {
         float litdepth = SampleTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord).x;
-        if (litdepth != 0 && litdepth - In.ShadowMapPos.z > 0.1)
+        if (litdepth != 0 && litdepth - In.ShadowMapPos.z > 0.01)
         {
             Out.rgb = Out.rgb / 2.0;
         }
