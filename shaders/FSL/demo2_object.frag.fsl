@@ -52,13 +52,10 @@ float4 PS_MAIN(VSOutput In)
         float litdepth = SampleTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord).x;
         bool isDirectlyLit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
 
-        if ((isDirectlyLit && (litdepth != 0)) && (litdepth - In.ShadowMapPos.z > 0.1))
+        if (isDirectlyLit && litdepth != 0 && (litdepth - In.ShadowMapPos.z) > 0.01)
         {
             Out.rgb = ambientColor;
         }
-        
-        // Out.r = litdepth;
-        // Out.g = In.ShadowMapPos.z;
     } 
 
     RETURN(Out);
