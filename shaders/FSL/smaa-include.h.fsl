@@ -1,0 +1,51 @@
+RES(Tex2D(float4), colorTex, UPDATE_FREQ_NONE, t0, binding = 0);
+RES(Tex2D(float4), blendTex, UPDATE_FREQ_NONE, t1, binding = 1);
+RES(Tex2D(float4), edgesTex, UPDATE_FREQ_NONE, t2, binding = 2);
+RES(Tex2D(float4), areaTex, UPDATE_FREQ_NONE, t3, binding = 3);
+RES(Tex2D(float4), searchTex, UPDATE_FREQ_NONE, t4, binding = 4);
+
+RES(SamplerState, LinearSampler, UPDATE_FREQ_NONE, s0, binding = 5);
+RES(SamplerState, PointSampler, UPDATE_FREQ_NONE, s1, binding = 6);
+
+#define SMAA_CUSTOM_SL
+
+#define SMAATexture2D(tex) Tex2D(float4) tex
+#define SMAATexturePass2D(tex) tex
+#define SMAASampleLevelZero(tex, coord) SampleLvlTex2D(tex, Get(LinearSampler), coord, 0)
+#define SMAASampleLevelZeroPoint(tex, coord) SampleLvlTex2D(tex, Get(PointSampler), coord, 0)
+#define SMAASampleLevelZeroOffset(tex, coord, offset) SampleLvlTex2D(tex, Get(LinearSampler), coord, 0)
+#define SMAASample(tex, coord) SampleTex2D(tex, Get(LinearSampler), coord)
+#define SMAASamplePoint(tex, coord) SampleTex2D(tex, Get(PointSampler), coord)
+#define SMAASampleOffset(tex, coord, offset) SampleLvlOffsetTex2D(tex, Get(LinearSampler), coord, 0, offset)
+#define SMAA_FLATTEN
+#define SMAA_BRANCH
+#define SMAATexture2DMS2(tex) Tex2DMS(float4, 2) tex
+
+#define SMAA_RT_METRICS float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
+#define SMAA_PRESET_ULTRA
+
+#ifdef VULKAN
+#define bool2 bvec2
+#define bool3 bvec3
+#define bool4 bvec4
+#endif
+
+#define SMAA_THRESHOLD 0.05
+
+#include "../../ThirdParty/smaa/SMAA.hlsl"
+
+STRUCT(VSInput)
+{
+    DATA(float4, Position, POSITION);
+    DATA(float2, Texcoord, TEXCOORD0);
+};
+
+STRUCT(VSOutput)
+{
+    DATA(float4, Position, SV_POSITION);
+    DATA(float2, Texcoord, TEXCOORD0);
+    DATA(float2, PixCoord, TEXCOORD1);
+    DATA(float4, Offset0, TEXCOORD2);
+    DATA(float4, Offset1, TEXCOORD3);
+    DATA(float4, Offset2, TEXCOORD4);
+};

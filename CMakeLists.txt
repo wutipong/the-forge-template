@@ -9,6 +9,7 @@ add_executable(main
     "DrawShape.cpp" "DrawShape.h"
     "Drawquad.cpp" "DrawQuad.h"
     "QuadDemoScene.cpp" "QuadDemoScene.h"
+    "SMAA.cpp"  "SMAA.h"
     "The-Forge/Common_3/Application/CameraController.cpp"
     "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
     "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
@@ -199,6 +200,12 @@ add_custom_target(CopyTexture ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Textures/"
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad0.dds" "$<TARGET_FILE_DIR:main>/Textures/"
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad1.dds" "$<TARGET_FILE_DIR:main>/Textures/"
+)
+
+add_custom_target(CopyMSAATexture ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Textures/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/smaa/Textures/AreaTexDX10.dds" "$<TARGET_FILE_DIR:main>/Textures/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/smaa/Textures/SearchTex.dds" "$<TARGET_FILE_DIR:main>/Textures/"
 )
 
 if(WIN32)
