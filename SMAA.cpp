@@ -1,5 +1,8 @@
 #include "SMAA.h"
 
+#include "ThirdParty/smaa/Textures/AreaTex.h"
+#include "ThirdParty/smaa/Textures/SearchTex.h"
+
 #include <IGraphics.h>
 #include <IResourceLoader.h>
 
@@ -120,17 +123,10 @@ namespace SMAA
 
     void Init(SyncToken *token)
     {
-        TextureLoadDesc desc{};
-        desc.ppTexture = &areaTexture;
-        desc.pFileName = "AreaTexDX10";
-
-        addResource(&desc, token);
-
-        desc = {};
-        desc.ppTexture = &searchTexture;
-        desc.pFileName = "SearchTex";
-
-        addResource(&desc, token);
+        areaTexture =
+            CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, TinyImageFormat_R8G8_UNORM, "areaTex", areaTexBytes, nullptr);
+        searchTexture = CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, TinyImageFormat_R8_UNORM, "searchTex",
+                                      searchTexBytes, nullptr);
 
         BufferLoadDesc vbDesc = {};
         vbDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;

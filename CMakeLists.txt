@@ -202,12 +202,6 @@ add_custom_target(CopyTexture ALL
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad1.dds" "$<TARGET_FILE_DIR:main>/Textures/"
 )
 
-add_custom_target(CopyMSAATexture ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/smaa/Textures/AreaTexDX10.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/smaa/Textures/SearchTex.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-)
-
 if(WIN32)
     set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
 endif()

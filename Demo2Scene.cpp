@@ -12,6 +12,7 @@
 #include <stb_ds.h>
 
 #include "DrawShape.h"
+#include "SMAA.h"
 #include "Settings.h"
 
 namespace Demo2Scene
@@ -162,6 +163,9 @@ bool Demo2Scene::Init()
         mat4::rotationX(0.75f * PI) * mat4::scale(vec3{3.0f});
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
+
+    SMAA::Init(nullptr);
+
 
     InputActionDesc desc{
         DefaultInputActions::ROTATE_CAMERA,
@@ -379,6 +383,8 @@ void Demo2Scene::ResetLightSettings()
 void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
+
+    SMAA::Exit();
 
     for (auto &p : pUbObjects)
     {
@@ -599,6 +605,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
     }
 
+    SMAA::Load(pReloadDesc, pRenderer, pRenderTarget, pSceneRenderTarget->pTexture);
+
     for (int i = 0; i < IMAGE_COUNT * OBJECT_COUNT; i++)
     {
         DescriptorData params = {};
@@ -660,6 +668,8 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeRenderTarget(pRenderer, pDepthBuffer);
         removeRenderTarget(pRenderer, pSceneRenderTarget);
     }
+
+    SMAA::Unload(pReloadDesc, pRenderer);
 }
 
 void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
@@ -721,19 +731,9 @@ void Demo2Scene::PreDraw(uint32_t imageIndex)
 
 void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
 {
-    // simply record the screen cleaning command
-    LoadActionsDesc loadActions = {};
-    // loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
-    // loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    // loadActions.mClearDepth.depth = 0.0f;
-    // cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-    // cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
-    // cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
-
     DrawShadowRT(pCmd, imageIndex);
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
-
     {
         RenderTargetBarrier barriers[] = {
             {pSceneRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_RENDER_TARGET},
@@ -742,7 +742,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 2, barriers);
     }
 
-    loadActions = {};
+    LoadActionsDesc loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
     loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
     loadActions.mClearDepth.depth = 0.0f;
@@ -779,6 +779,8 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         };
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 2, barriers);
     }
+
+    SMAA::Draw(pCmd, pRenderer, pRenderTarget);
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
