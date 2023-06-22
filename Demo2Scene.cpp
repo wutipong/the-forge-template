@@ -76,6 +76,11 @@ namespace Demo2Scene
 
     RenderTarget *pRtShadowBuffer;
 
+    constexpr int renderTargetWidth = 1280;
+    constexpr int renderTargetHeight = 720;
+
+    RenderTarget *pSceneRenderTarget;
+
     float3 cameraPosition;
     float3 lightPosition;
 
@@ -452,17 +457,34 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     {
         RenderTargetDesc desc = {};
         desc.mArraySize = 1;
+        desc.mClearValue.r = 0.0f;
+        desc.mClearValue.g = 0.0f;
+        desc.mClearValue.b = 0.0f;
+        desc.mClearValue.a = 0.0f;
+        desc.mDepth = 1;
+        desc.mFlags = TEXTURE_CREATION_FLAG_VR_MULTIVIEW | TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
+        desc.mFormat = TinyImageFormat_R8G8B8A8_UNORM;
+        desc.mWidth = renderTargetWidth;
+        desc.mHeight = renderTargetHeight;
+        desc.mSampleCount = SAMPLE_COUNT_1;
+        desc.mSampleQuality = 0;
+        desc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
+        addRenderTarget(pRenderer, &desc, &pSceneRenderTarget);
+
+        ASSERT(pSceneRenderTarget);
+
+        desc = {};
+        desc.mArraySize = 1;
         desc.mClearValue.depth = 0.0f;
         desc.mClearValue.stencil = 0;
         desc.mDepth = 1;
         desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
         desc.mFormat = TinyImageFormat_D32_SFLOAT;
-        ;
-        desc.mWidth = pRenderTarget->mWidth;
-        desc.mHeight = pRenderTarget->mHeight;
+        desc.mWidth = renderTargetWidth;
+        desc.mHeight = renderTargetHeight;
         desc.mSampleCount = SAMPLE_COUNT_1;
         desc.mSampleQuality = 0;
-        desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
+        desc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
         addRenderTarget(pRenderer, &desc, &pDepthBuffer);
 
         ASSERT(pDepthBuffer);
@@ -490,10 +512,10 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
             pipelineSettings.mRenderTargetCount = 1;
             pipelineSettings.pDepthState = &depthStateDesc;
-            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
-            pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
-            pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-            pipelineSettings.mDepthStencilFormat = depthBufferFormat;
+            pipelineSettings.pColorFormats = &pSceneRenderTarget->mFormat;
+            pipelineSettings.mSampleCount = pSceneRenderTarget->mSampleCount;
+            pipelineSettings.mSampleQuality = pSceneRenderTarget->mSampleQuality;
+            pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShObjects;
             pipelineSettings.pVertexLayout = &vertexLayout;
@@ -516,9 +538,9 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
             pipelineSettings.mRenderTargetCount = 1;
             pipelineSettings.pDepthState = &depthStateDesc;
-            pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
-            pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
-            pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
+            pipelineSettings.pColorFormats = &pSceneRenderTarget->mFormat;
+            pipelineSettings.mSampleCount = pSceneRenderTarget->mSampleCount;
+            pipelineSettings.mSampleQuality = pSceneRenderTarget->mSampleQuality;
             pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShLightSources;
@@ -636,6 +658,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
         removeRenderTarget(pRenderer, pDepthBuffer);
+        removeRenderTarget(pRenderer, pSceneRenderTarget);
     }
 }
 
@@ -662,7 +685,6 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     scene.ShadowTransform =
         mat4::orthographic(shadowLeft, shadowRight, shadowBottom, shadowTop, shadowNear, shadowFar) * lightView;
-    // mat4::perspective(horizontal_fov, 1, 1000.0f, 0.1f) * lightView;
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
@@ -701,25 +723,33 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 {
     // simply record the screen cleaning command
     LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
-    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
-    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
-    cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+    // loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
+    // loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
+    // loadActions.mClearDepth.depth = 0.0f;
+    // cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    // cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+    // cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
+    DrawShadowRT(pCmd, imageIndex);
 
     cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
 
-    DrawShadowRT(pCmd, imageIndex);
+    {
+        RenderTargetBarrier barriers[] = {
+            {pSceneRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_RENDER_TARGET},
+            {pDepthBuffer, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
+        };
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 2, barriers);
+    }
 
     loadActions = {};
     loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
     loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
     loadActions.mClearDepth.depth = 0.0f;
 
-    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-    cmdSetViewport(pCmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
-    cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+    cmdBindRenderTargets(pCmd, 1, &pSceneRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdSetViewport(pCmd, 0, 0, (float)pSceneRenderTarget->mWidth, (float)pSceneRenderTarget->mHeight, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, pSceneRenderTarget->mWidth, pSceneRenderTarget->mHeight);
 
     cmdBindPipeline(pCmd, pPlObjects);
 
@@ -741,10 +771,19 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
+
+    {
+        RenderTargetBarrier barriers[] = {
+            {pSceneRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_SHADER_RESOURCE},
+            {pDepthBuffer, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
+        };
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 2, barriers);
+    }
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
 {
+    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
     {
         RenderTargetBarrier barriers[] = {
             {pRtShadowBuffer, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
