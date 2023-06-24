@@ -77,9 +77,6 @@ namespace Demo2Scene
 
     RenderTarget *pRtShadowBuffer;
 
-    constexpr int renderTargetWidth = 1280;
-    constexpr int renderTargetHeight = 720;
-
     RenderTarget *pSceneRenderTarget;
 
     float3 cameraPosition;
@@ -470,8 +467,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc.mDepth = 1;
         desc.mFlags = TEXTURE_CREATION_FLAG_VR_MULTIVIEW | TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT;
         desc.mFormat = TinyImageFormat_R8G8B8A8_UNORM;
-        desc.mWidth = renderTargetWidth;
-        desc.mHeight = renderTargetHeight;
+        desc.mWidth = pRenderTarget->mWidth;
+        desc.mHeight = pRenderTarget->mHeight;
         desc.mSampleCount = SAMPLE_COUNT_1;
         desc.mSampleQuality = 0;
         desc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
@@ -486,8 +483,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc.mDepth = 1;
         desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
         desc.mFormat = TinyImageFormat_D32_SFLOAT;
-        desc.mWidth = renderTargetWidth;
-        desc.mHeight = renderTargetHeight;
+        desc.mWidth = pRenderTarget->mWidth;
+        desc.mHeight = pRenderTarget->mHeight;
         desc.mSampleCount = SAMPLE_COUNT_1;
         desc.mSampleQuality = 0;
         desc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;

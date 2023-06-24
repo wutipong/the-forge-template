@@ -44,7 +44,10 @@ namespace SMAA
         {{1.0f, 1.0f}, {1.0f, 0.0f}},
     };
 
+    float2 dimension{};
+
     Buffer *pVertexBuffer{nullptr};
+    Buffer *pUniformBuffer{nullptr};
 
     Texture *CreateTexture(const uint32_t &width, const uint32_t &height, const TinyImageFormat &format,
                            const char *name, const unsigned char *data, SyncToken *token = nullptr)
@@ -135,6 +138,16 @@ namespace SMAA
         vbDesc.pData = quads;
         vbDesc.ppBuffer = &pVertexBuffer;
         addResource(&vbDesc, token);
+
+        BufferLoadDesc desc = {};
+        desc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        desc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
+        desc.mDesc.mSize = sizeof(float2);
+        desc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
+        desc.pData = nullptr;
+
+        desc.ppBuffer = &pUniformBuffer;
+        addResource(&desc, token);
     }
 
     void Exit()
@@ -142,6 +155,7 @@ namespace SMAA
         removeResource(areaTexture);
         removeResource(searchTexture);
         removeResource(pVertexBuffer);
+        removeResource(pUniformBuffer);
     }
 
     void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture)
@@ -187,6 +201,11 @@ namespace SMAA
                 desc.pName = "blendTex";
                 addRenderTarget(pRenderer, &desc, &blendRenderTarget);
             }
+
+            dimension = float2{
+                pRenderTarget->mWidth,
+                pRenderTarget->mHeight,
+            };
         }
 
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
@@ -258,15 +277,18 @@ namespace SMAA
         }
 
         {
-            std::array<DescriptorData, 1> params = {};
+            std::array<DescriptorData, 2> params = {};
             params[0].pName = "colorTex";
             params[0].ppTextures = &pTexture;
 
+            params[1].pName = "uniformBlock";
+            params[1].ppBuffers = &pUniformBuffer;
+            
             updateDescriptorSet(pRenderer, 0, pDsEdges, params.size(), params.data());
         }
 
         {
-            std::array<DescriptorData, 3> params = {};
+            std::array<DescriptorData, 4> params = {};
             params[0].pName = "areaTex";
             params[0].ppTextures = &areaTexture;
 
@@ -276,18 +298,31 @@ namespace SMAA
             params[2].pName = "edgesTex";
             params[2].ppTextures = &edgesRenderTarget->pTexture;
 
+            params[3].pName = "uniformBlock";
+            params[3].ppBuffers = &pUniformBuffer;
+
             updateDescriptorSet(pRenderer, 0, pDsBlendingWeight, params.size(), params.data());
         }
 
         {
-            std::array<DescriptorData, 2> params = {};
+            std::array<DescriptorData, 3> params = {};
             params[0].pName = "colorTex";
             params[0].ppTextures = &pTexture;
 
             params[1].pName = "blendTex";
             params[1].ppTextures = &blendRenderTarget->pTexture;
 
+            params[2].pName = "uniformBlock";
+            params[2].ppBuffers = &pUniformBuffer;
+
             updateDescriptorSet(pRenderer, 0, pDsNeighborhoodBlend, params.size(), params.data());
+        }
+
+        {
+            BufferUpdateDesc updateDesc = {pUniformBuffer};
+            beginUpdateResource(&updateDesc);
+            *static_cast<float2 *>(updateDesc.pMappedData) = dimension;
+            endUpdateResource(&updateDesc, nullptr);
         }
     }
 
