@@ -33,3 +33,28 @@
 #vert quad.vert
 #include "quad.vert.fsl"
 #end
+
+
+#vert smaa-edges.vert
+#include "smaa-edges.vert.fsl"
+#end
+
+#frag smaa-edges.frag
+#include "smaa-edges.frag.fsl"
+#end
+
+#vert smaa-blendingweight.vert
+#include "smaa-blendingweight.vert.fsl"
+#end
+
+#frag smaa-blendingweight.frag
+#include "smaa-blendingweight.frag.fsl"
+#end
+
+#vert smaa-neighborhoodblend.vert
+#include "smaa-neighborhoodblend.vert.fsl"
+#end
+
+#frag smaa-neighborhoodblend.frag
+#include "smaa-neighborhoodblend.frag.fsl"
+#end

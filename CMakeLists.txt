@@ -9,6 +9,7 @@ add_executable(main
     "DrawShape.cpp" "DrawShape.h"
     "Drawquad.cpp" "DrawQuad.h"
     "QuadDemoScene.cpp" "QuadDemoScene.h"
+    "SMAA.cpp"  "SMAA.h"
     "The-Forge/Common_3/Application/CameraController.cpp"
     "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
     "The-Forge/Common_3/Application/Fonts/stbtt.cpp"

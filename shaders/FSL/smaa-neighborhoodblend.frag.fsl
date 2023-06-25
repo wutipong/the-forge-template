@@ -1,0 +1,15 @@
+#define SMAA_INCLUDE_VS 0
+#define SMAA_INCLUDE_PS 1
+
+#include "smaa-include.h.fsl"
+
+float4 PS_MAIN(VSOutput In)
+{
+    INIT_MAIN;
+    float4 offsets[3] = {In.Offset0, In.Offset1, In.Offset2};
+    float4 subsampleIndices = {0, 0, 0, 0};
+
+    float4 Out = SMAANeighborhoodBlendingPS(In.Texcoord, In.Offset0, colorTex, blendTex);
+
+    RETURN(Out);
+}

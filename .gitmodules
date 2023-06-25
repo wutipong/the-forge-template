@@ -1,3 +1,6 @@
 [submodule "The-Forge"]
 	path = The-Forge
 	url = https://github.com/ConfettiFX/The-Forge.git
+[submodule "ThirdParty/smaa"]
+	path = ThirdParty/smaa
+	url = https://github.com/iryoku/smaa
