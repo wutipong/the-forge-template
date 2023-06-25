@@ -161,8 +161,7 @@ bool Demo2Scene::Init()
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
-    SMAA::Init(nullptr);
-
+    SMAA::Init();
 
     InputActionDesc desc{
         DefaultInputActions::ROTATE_CAMERA,

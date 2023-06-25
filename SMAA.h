@@ -5,7 +5,7 @@
 
 namespace SMAA
 {
-    void Init(SyncToken *token);
+    void Init(SyncToken *token = nullptr);
     void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture);
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
     void Exit();
