@@ -11,6 +11,7 @@ add_executable(main
     "QuadDemoScene.cpp" "QuadDemoScene.h"
     "SMAA.cpp"  "SMAA.h"
     "ColorGrading.cpp" "ColorGrading.h"
+    "PostProcessing.cpp" "PostProcessing.h"
     "The-Forge/Common_3/Application/CameraController.cpp"
     "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
     "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
