@@ -94,7 +94,7 @@ namespace ColorGrading
 
         {
             std::array<DescriptorData, 1> params = {};
-            params[0].pName = "lookupTexture";
+            params[0].pName = "texture";
             params[0].ppTextures = &pTexture;
 
             updateDescriptorSet(pRenderer, 0, pDescriptorSet, params.size(), params.data());
