@@ -12,8 +12,7 @@
 #include <stb_ds.h>
 
 #include "DrawShape.h"
-#include "SMAA.h"
-#include "ColorGrading.h"
+#include "PostProcessing.h"
 #include "Settings.h"
 
 namespace Demo2Scene
@@ -162,8 +161,12 @@ bool Demo2Scene::Init()
 
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
-    SMAA::Init();
-    ColorGrading::Init();
+    {
+        PostProcessing::Desc desc{};
+        desc.mEnableSMAA = true;
+
+        PostProcessing::Init(desc);
+    }
 
     InputActionDesc desc{
         DefaultInputActions::ROTATE_CAMERA,
@@ -382,8 +385,7 @@ void Demo2Scene::Exit()
 {
     uiDestroyComponent(pObjectWindow);
 
-    SMAA::Exit();
-    ColorGrading::Exit();
+    PostProcessing::Exit();
 
     for (auto &p : pUbObjects)
     {
@@ -604,8 +606,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         }
     }
 
-    SMAA::Load(pReloadDesc, pRenderer, pRenderTarget, pSceneRenderTarget->pTexture);
-    ColorGrading::Load(pReloadDesc, pRenderer, pRenderTarget, pSceneRenderTarget->pTexture);
+    PostProcessing::Load(pReloadDesc, pRenderer, pRenderTarget, pSceneRenderTarget->pTexture);
 
     for (int i = 0; i < IMAGE_COUNT * OBJECT_COUNT; i++)
     {
@@ -669,8 +670,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeRenderTarget(pRenderer, pSceneRenderTarget);
     }
 
-    SMAA::Unload(pReloadDesc, pRenderer);
-    ColorGrading::Unload(pReloadDesc, pRenderer);
+    PostProcessing::Unload(pReloadDesc, pRenderer);
 }
 
 void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
@@ -781,8 +781,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 2, barriers);
     }
 
-    SMAA::Draw(pCmd, pRenderer, pRenderTarget);
-    ColorGrading::Draw(pCmd, pRenderer, pRenderTarget);
+    PostProcessing::Draw(pCmd, pRenderer, pRenderTarget);
 }
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
