@@ -56,7 +56,7 @@ namespace PostProcessing
                 desc.mClearValue.b = 0.0f;
                 desc.mClearValue.a = 0.0f;
                 desc.mDescriptors = DESCRIPTOR_TYPE_TEXTURE;
-                desc.mFormat = TinyImageFormat_R8G8_UNORM;
+                desc.mFormat = TinyImageFormat_R8G8B8A8_UNORM;
                 desc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
                 desc.mHeight = pRenderTarget->mHeight;
                 desc.mWidth = pRenderTarget->mWidth;
