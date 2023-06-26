@@ -1,10 +1,18 @@
-#include "quad.h.fsl"
+#include "color_grading.h.fsl"
+
+#define CELL_COUNT 16.0
+
+#define CELL_SIZE float2(1.0/CELL_COUNT, 1.0/CELL_COUNT)
 
 float4 PS_MAIN(VSOutput In)
 {
     INIT_MAIN;
 
-    float4 Out = SampleTex2D(Get(texture), Get(textureSampler), In.Texcoord);
+    float4 InColor = SampleTex2D(Get(texture), Get(textureSampler), In.Texcoord);
 
+    float blue = InColor.b * 255;
+    float2 coord = (float2(floor(fmod(blue, CELL_COUNT)), floor(blue/CELL_COUNT)) + InColor.rg) * CELL_SIZE;
+
+    float4 Out = SampleTex2D(Get(lut), Get(textureSampler), coord);
     RETURN(Out);    
 }

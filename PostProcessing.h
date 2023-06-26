@@ -10,6 +10,8 @@ namespace PostProcessing
     {
         bool mEnableSMAA;
         bool mEnableColorGrading;
+
+        Texture *pColorGradingLUT;
     };
 
     bool Init(const Desc &desc, SyncToken *token = nullptr);

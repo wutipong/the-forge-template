@@ -21,6 +21,8 @@ namespace PostProcessing
     std::array<Stage, STAGE_COUNT> stages = {Stage::None};
     std::array<RenderTarget *, STAGE_COUNT> pStageRenderTargets{nullptr};
 
+    Texture *pColorGradingLUT{nullptr};
+
     bool Init(const PostProcessing::Desc &desc, SyncToken *token)
     {
         activeStageCount = 0;
@@ -36,6 +38,7 @@ namespace PostProcessing
         {
             ColorGrading::Init(token);
             stages[activeStageCount] = Stage::ColorGrading;
+            pColorGradingLUT = desc.pColorGradingLUT;
             activeStageCount++;
         }
 
@@ -81,7 +84,7 @@ namespace PostProcessing
                 break;
 
             case Stage::ColorGrading:
-                ColorGrading::Load(pReloadDesc, pRenderer, pOutput, pInput);
+                ColorGrading::Load(pReloadDesc, pRenderer, pOutput, pInput, pColorGradingLUT);
                 break;
             }
         }

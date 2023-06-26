@@ -39,7 +39,7 @@ namespace ColorGrading
         removeResource(pVertexBuffer);
     }
 
-    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture)
+    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture, Texture* pLUT)
     {
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
         {
@@ -93,9 +93,12 @@ namespace ColorGrading
         }
 
         {
-            std::array<DescriptorData, 1> params = {};
+            std::array<DescriptorData, 2> params = {};
             params[0].pName = "texture";
             params[0].ppTextures = &pTexture;
+
+            params[1].pName = "lut";
+            params[1].ppTextures = &pLUT;
 
             updateDescriptorSet(pRenderer, 0, pDescriptorSet, params.size(), params.data());
         }

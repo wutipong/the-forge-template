@@ -202,6 +202,9 @@ add_custom_target(CopyTexture ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Textures/"
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad0.dds" "$<TARGET_FILE_DIR:main>/Textures/"
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad1.dds" "$<TARGET_FILE_DIR:main>/Textures/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_0.dds" "$<TARGET_FILE_DIR:main>/Textures/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_1.dds" "$<TARGET_FILE_DIR:main>/Textures/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_2.dds" "$<TARGET_FILE_DIR:main>/Textures/"
 )
 
 if(WIN32)

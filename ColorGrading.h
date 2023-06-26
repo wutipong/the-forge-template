@@ -7,7 +7,7 @@
 namespace ColorGrading
 {
     void Init(SyncToken *token = nullptr);
-    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture);
+    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture, Texture* pLUT);
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
     void Exit();
 

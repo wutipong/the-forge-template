@@ -1,7 +1,8 @@
 #ifndef COLOR_GRADING_H
 #define COLOR_GRADING_H
 
-RES(Tex2D(float4), texture, UPDATE_FREQ_NONE, t0, binding = 2);
+RES(Tex2D(float4), texture, UPDATE_FREQ_NONE, t0, binding = 1);
+RES(Tex2D(float4), lut, UPDATE_FREQ_NONE, t1, binding = 2);
 RES(SamplerState, textureSampler, UPDATE_FREQ_NONE, s0, binding = 3);
 
 STRUCT(VSInput)

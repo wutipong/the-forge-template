@@ -93,11 +93,14 @@ namespace Demo2Scene
     float shadowNear = -10;
     float shadowFar = 20;
 
+    Texture *pLutTexture;
+
     void ResetLightSettings();
     void DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex);
 
     bool InitUI();
     bool OnInputAction(InputActionContext *ctx);
+
 
 } // namespace Demo2Scene
 
@@ -162,9 +165,21 @@ bool Demo2Scene::Init()
     pCameraController = initFpsCameraController({0, 0.0f, -5.0f}, {0, 0, 0});
 
     {
+        SyncToken token = {};
+        TextureLoadDesc desc{};
+        desc.ppTexture = &pLutTexture;
+        desc.pFileName = "LUT_0";
+
+        addResource(&desc, &token);
+
+        waitForToken(&token);
+    }
+
+    {
         PostProcessing::Desc desc{};
         desc.mEnableSMAA = true;
         desc.mEnableColorGrading = true;
+        desc.pColorGradingLUT = pLutTexture;
 
         PostProcessing::Init(desc);
     }
@@ -402,6 +417,8 @@ void Demo2Scene::Exit()
     {
         removeResource(p);
     }
+
+    removeResource(pLutTexture);
 
     exitCameraController(pCameraController);
 
