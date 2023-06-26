@@ -1,10 +1,5 @@
-#ifndef QUAD_H
-#define QUAD_H
-
-CBUFFER(uniformBlock, UPDATE_FREQ_PER_FRAME, b0, binding = 0)
-{
-    DATA(float4x4, Transform, None);
-};
+#ifndef COLOR_GRADING_H
+#define COLOR_GRADING_H
 
 RES(Tex2D(float4), texture, UPDATE_FREQ_NONE, t0, binding = 2);
 RES(SamplerState, textureSampler, UPDATE_FREQ_NONE, s0, binding = 3);

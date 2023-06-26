@@ -114,12 +114,6 @@ namespace ColorGrading
 
 
     void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget) {
-        cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
-        {
-            RenderTargetBarrier barriers[] = {
-                {pRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_RENDER_TARGET}};
-            cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
-        }
         LoadActionsDesc loadActions = {};
         loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
 

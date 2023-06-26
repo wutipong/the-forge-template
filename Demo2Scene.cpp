@@ -164,6 +164,7 @@ bool Demo2Scene::Init()
     {
         PostProcessing::Desc desc{};
         desc.mEnableSMAA = true;
+        // desc.mEnableColorGrading = true;
 
         PostProcessing::Init(desc);
     }

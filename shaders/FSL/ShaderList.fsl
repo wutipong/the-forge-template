@@ -58,10 +58,10 @@
 #include "smaa-neighborhoodblend.frag.fsl"
 #end
 
-#frag color_grading.frag
-#include "color_grading.frag.fsl"
-#end
-
 #vert color_grading.vert
 #include "color_grading.vert.fsl"
+#end
+
+#frag color_grading.frag
+#include "color_grading.frag.fsl"
 #end
