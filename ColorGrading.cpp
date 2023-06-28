@@ -22,6 +22,7 @@ namespace ColorGrading
     Pipeline *pPipeline{nullptr};
     DescriptorSet *pDescriptorSet{nullptr};
     RootSignature *pRootSignature{nullptr};
+    Sampler *pSampler;
 
     void Init(SyncToken *token)
     {
@@ -49,9 +50,22 @@ namespace ColorGrading
 
             addShader(pRenderer, &shaderLoadDesc, &pShader);
 
+            SamplerDesc samplerDesc {};
+            samplerDesc.mAddressU = ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerDesc.mAddressV = ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerDesc.mMagFilter = FILTER_NEAREST;
+            samplerDesc.mMinFilter = FILTER_NEAREST;
+
+            addSampler(pRenderer, &samplerDesc, &pSampler);
+
+            auto samplerName = "textureSampler";
+
             RootSignatureDesc rootDesc = {};
             rootDesc.mShaderCount = 1;
             rootDesc.ppShaders = &pShader;
+            rootDesc.mStaticSamplerCount =1;
+            rootDesc.ppStaticSamplers = &pSampler;
+            rootDesc.ppStaticSamplerNames = &samplerName;
 
             addRootSignature(pRenderer, &rootDesc, &pRootSignature);
 
@@ -110,6 +124,7 @@ namespace ColorGrading
         {
             removePipeline(pRenderer, pPipeline);
             removeShader(pRenderer, pShader);
+            removeSampler(pRenderer, pSampler);
             removeDescriptorSet(pRenderer, pDescriptorSet);
             removeRootSignature(pRenderer, pRootSignature);
         }
