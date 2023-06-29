@@ -1,0 +1,19 @@
+#include "color_grading.h.fsl"
+
+#define CELL_COUNT_PER_DIMENSION 16.0
+#define COLOR_VALUE_COUNT (CELL_COUNT_PER_DIMENSION * CELL_COUNT_PER_DIMENSION)
+#define MAX_COLOR_VALUE (COLOR_VALUE_COUNT - 1.0)
+#define DIMENSION_SIZE (1.0 / (CELL_COUNT_PER_DIMENSION * COLOR_VALUE_COUNT))
+
+float4 PS_MAIN(VSOutput In)
+{
+    INIT_MAIN;
+
+    float4 InColor = SampleTex2D(Get(texture), Get(textureSampler), In.Texcoord) * MAX_COLOR_VALUE;
+    float2 cell = float2(floor(fmod(InColor.b, CELL_COUNT_PER_DIMENSION)), floor(InColor.b / CELL_COUNT_PER_DIMENSION));
+
+    float2 coord = ((cell * COLOR_VALUE_COUNT) + InColor.rg) * DIMENSION_SIZE;
+
+    float4 Out = SampleTex2D(Get(lut), Get(textureSampler), coord);
+    RETURN(Out);
+}

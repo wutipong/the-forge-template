@@ -1,0 +1,12 @@
+#include "color_grading.h.fsl"
+
+VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
+{
+    INIT_MAIN;
+    VSOutput Out;
+
+    Out.Position = float4(In.Position.xy, 1.0f, 1.0f);
+    Out.Texcoord = In.Texcoord;
+
+    RETURN(Out);
+}
