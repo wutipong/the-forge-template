@@ -47,7 +47,7 @@ namespace PostProcessing
 
     bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture)
     {
-        if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
+        if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
         {
             for (int i = 0; i < activeStageCount - 1; i++)
             {
@@ -94,7 +94,7 @@ namespace PostProcessing
 
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
-        if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
+        if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
         {
             for (int i = 0; i < activeStageCount - 1; i++)
             {

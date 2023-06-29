@@ -10,10 +10,7 @@ float4 PS_MAIN(VSOutput In)
     INIT_MAIN;
 
     float4 InColor = SampleTex2D(Get(texture), Get(textureSampler), In.Texcoord) * MAX_COLOR_VALUE;
-    float2 cell = float2(
-        floor(fmod(InColor.b, CELL_COUNT_PER_DIMENSION)),
-        floor(InColor.b / CELL_COUNT_PER_DIMENSION)
-        );
+    float2 cell = float2(floor(fmod(InColor.b, CELL_COUNT_PER_DIMENSION)), floor(InColor.b / CELL_COUNT_PER_DIMENSION));
 
     float2 coord = ((cell * COLOR_VALUE_COUNT) + InColor.rg) * DIMENSION_SIZE;
 

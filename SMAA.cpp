@@ -160,7 +160,7 @@ namespace SMAA
 
     void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture)
     {
-        if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
+        if (pReloadDesc->mType & (RELOAD_TYPE_RENDERTARGET | RELOAD_TYPE_RESIZE))
         {
             {
                 RenderTargetDesc desc = {};
@@ -348,7 +348,7 @@ namespace SMAA
             removeRootSignature(pRenderer, pRootSignature);
         }
 
-        if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
+        if (pReloadDesc->mType & (RELOAD_TYPE_RENDERTARGET | RELOAD_TYPE_RESIZE))
         {
             removeRenderTarget(pRenderer, blendRenderTarget);
             removeRenderTarget(pRenderer, edgesRenderTarget);
