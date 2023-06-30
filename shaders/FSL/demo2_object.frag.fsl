@@ -49,7 +49,7 @@ float4 PS_MAIN(VSOutput In)
     if (In.ShadowMapCoord.x >= 0 && In.ShadowMapCoord.y >= 0 && In.ShadowMapCoord.x <= 1.0 &&
         In.ShadowMapCoord.y <= 1.0)
     {
-        float litdepth = SampleTex2D(Get(shadowMap), Get(bilinearSampler), In.ShadowMapCoord).x;
+        float litdepth = SampleTex2D(Get(shadowMap), Get(linearSampler), In.ShadowMapCoord).x;
         bool isDirectlyLit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
 
         if (isDirectlyLit && litdepth != 0 && (litdepth - In.ShadowMapPos.z) > 0.01)

@@ -71,6 +71,9 @@ namespace Demo2Scene
     Pipeline *pPlShadow{};
     Pipeline *pPlLightSources{};
 
+    Sampler *linearSampler{nullptr};
+    Sampler *pointSampler{nullptr};
+
     UIComponent *pObjectWindow{};
 
     constexpr float SHADOW_MAP_DIMENSION = 1024;
@@ -451,11 +454,37 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addShader(pRenderer, &shaderLoadDesc, &pShLightSources);
         ASSERT(pShLightSources);
 
+        SamplerDesc samplerDesc = {
+            FILTER_LINEAR,
+            FILTER_LINEAR,
+            MIPMAP_MODE_LINEAR,
+            ADDRESS_MODE_CLAMP_TO_EDGE,
+            ADDRESS_MODE_CLAMP_TO_EDGE,
+            ADDRESS_MODE_CLAMP_TO_EDGE,
+        };
+
+        addSampler(pRenderer, &samplerDesc, &linearSampler);
+
+        samplerDesc = {
+            FILTER_NEAREST,
+            FILTER_NEAREST,
+            MIPMAP_MODE_NEAREST,
+            ADDRESS_MODE_CLAMP_TO_EDGE,
+            ADDRESS_MODE_CLAMP_TO_EDGE,
+            ADDRESS_MODE_CLAMP_TO_EDGE,
+        };
+        addSampler(pRenderer, &samplerDesc, &pointSampler);
+
         Shader *pShaders[]{pShObjects, pShShadow, pShLightSources};
+        Sampler* pSamplers[]{linearSampler, pointSampler};
+        const char* samplerNames[]{"linearSampler", "pointSampler"};
 
         RootSignatureDesc rootDesc = {};
         rootDesc.mShaderCount = 3;
         rootDesc.ppShaders = pShaders;
+        rootDesc.mStaticSamplerCount = 2;
+        rootDesc.ppStaticSamplers= pSamplers;
+        rootDesc.ppStaticSamplerNames = samplerNames;
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
