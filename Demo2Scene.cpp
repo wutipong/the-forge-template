@@ -476,14 +476,14 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         addSampler(pRenderer, &samplerDesc, &pointSampler);
 
         Shader *pShaders[]{pShObjects, pShShadow, pShLightSources};
-        Sampler* pSamplers[]{linearSampler, pointSampler};
-        const char* samplerNames[]{"linearSampler", "pointSampler"};
+        Sampler *pSamplers[]{linearSampler, pointSampler};
+        const char *samplerNames[]{"linearSampler", "pointSampler"};
 
         RootSignatureDesc rootDesc = {};
         rootDesc.mShaderCount = 3;
         rootDesc.ppShaders = pShaders;
         rootDesc.mStaticSamplerCount = 2;
-        rootDesc.ppStaticSamplers= pSamplers;
+        rootDesc.ppStaticSamplers = pSamplers;
         rootDesc.ppStaticSamplerNames = samplerNames;
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
