@@ -14,13 +14,7 @@ STRUCT(VSOutput)
     DATA(float4, Normal,   NORMAL);
     DATA(float4, ShadowMapPos, POSITION1);
     DATA(float2, ShadowMapCoord, TEXCOORD0);
-    DATA(float4, ShadowMapCoordOffset1, TEXCOORD1);
-    DATA(float4, ShadowMapCoordOffset2, TEXCOORD2);
-    DATA(float4, ShadowMapCoordOffset3, TEXCOORD3);
-    DATA(float4, ShadowMapCoordOffset4, TEXCOORD4);
 };
-
-STATIC const float2 ShadowMapOffset = float2(1/1024, 1/1024);
 
 VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
 {
@@ -42,11 +36,6 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
     Out.Color = Get(color);
 
     Out.ShadowMapCoord = (1.0 + float2(Out.ShadowMapPos.x, -Out.ShadowMapPos.y))/2.0;
-
-    Out.ShadowMapCoordOffset1 = mad(ShadowMapOffset.xyxy, float4(1.0, 0.0, -1.0, 0.0), Out.ShadowMapCoord.xyxy);
-    Out.ShadowMapCoordOffset2 = mad(ShadowMapOffset.xyxy, float4(0.0, 1.0, 0.0, -1.0), Out.ShadowMapCoord.xyxy);
-    Out.ShadowMapCoordOffset3 = mad(ShadowMapOffset.xyxy, float4(1.0, 1.0, -1.0, -1.0), Out.ShadowMapCoord.xyxy);
-    Out.ShadowMapCoordOffset4 = mad(ShadowMapOffset.xyxy, float4(-1.0, 1.0, 1.0, -1.0), Out.ShadowMapCoord.xyxy);
 
     RETURN(Out);
 }

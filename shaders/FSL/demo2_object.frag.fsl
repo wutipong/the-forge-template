@@ -8,10 +8,6 @@ STRUCT(VSOutput)
     DATA(float4, Normal, NORMAL);
     DATA(float4, ShadowMapPos, POSITION1);
     DATA(float2, ShadowMapCoord, TEXCOORD0);
-    DATA(float4, ShadowMapCoordOffset1, TEXCOORD1);
-    DATA(float4, ShadowMapCoordOffset2, TEXCOORD2);
-    DATA(float4, ShadowMapCoordOffset3, TEXCOORD3);
-    DATA(float4, ShadowMapCoordOffset4, TEXCOORD4);
 };
 
 float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirection, float4 lightColor,
@@ -31,22 +27,30 @@ float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirect
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
 }
 
-float calculateDepth(VSOutput In)
+// source: https://www.shadertoy.com/view/4sfGzS
+float hash(float3 p)
 {
-    float3x3 values;
-    values[0][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.xy).x * 1 / 16;
-    values[0][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.xy).x * 1 / 8;
-    values[0][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.xy).x * 1 / 16;
-    values[1][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.xy).x * 1 / 8;
-    values[1][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoord).x * 1 / 4;
-    values[1][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.zw).x * 1 / 8;
-    values[2][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.zw).x * 1 / 16;
-    values[2][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.zw).x * 1 / 8;
-    values[2][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.zw).x * 1 / 16;
-
-    return (values[0][0] + values[0][1] + values[0][2]) + (values[1][0] + values[1][1] + values[1][2]) +
-        (values[2][0] + values[2][1] + values[2][2]);
+	p = frac(p*0.3183099 + .1);
+	p *= 17.0;
+	return frac(p.x*p.y*p.z*(p.x + p.y + p.z));
 }
+
+float noise(in(float3) x)
+{
+	float3 p = floor(x);
+	float3 f = frac(x);
+	f = f * f*(3.0 - 2.0*f);
+
+	return lerp(lerp(lerp(hash(p + float3(0, 0, 0)),
+		hash(p + float3(1, 0, 0)), f.x),
+		lerp(hash(p + float3(0, 1, 0)),
+		hash(p + float3(1, 1, 0)), f.x), f.y),
+		lerp(lerp(hash(p + float3(0, 0, 1)),
+		hash(p + float3(1, 0, 1)), f.x),
+		lerp(hash(p + float3(0, 1, 1)),
+		hash(p + float3(1, 1, 1)), f.x), f.y), f.z);
+}
+
 
 float4 PS_MAIN(VSOutput In)
 {
@@ -70,10 +74,12 @@ float4 PS_MAIN(VSOutput In)
     if (In.ShadowMapCoord.x >= 0 && In.ShadowMapCoord.y >= 0 && In.ShadowMapCoord.x <= 1.0 &&
         In.ShadowMapCoord.y <= 1.0)
     {
-        float litdepth = calculateDepth(In);
-        bool isDirectlyLit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
+        float2 samplingLoc = In.ShadowMapCoord + noise(In.Position.xyz * 10) * float2(3/1024.0, 3/1024.0);
 
-        if (isDirectlyLit && litdepth != 0 && (litdepth - In.ShadowMapPos.z) > 0.01)
+        float litdepth = SampleTex2D(Get(shadowMap), Get(pointSampler), samplingLoc).x;
+        bool isDirectionalHit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
+
+        if (isDirectionalHit && (litdepth - max(In.ShadowMapPos.z, 0.0)) > 0.01)
         {
             Out.rgb = ambientColor;
         }
