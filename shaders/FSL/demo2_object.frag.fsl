@@ -31,26 +31,18 @@ float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirect
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
 }
 
-STATIC const float3x3 weights = {
-    {1 / 16, 1 / 8, 1 / 16},
-    {1 / 8, 1 / 4, 1 / 8},
-    {1 / 16, 1 / 8, 1 / 16},
-};
-
 float calculateDepth(VSOutput In)
 {
     float3x3 values;
-    values[0][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.xy).x;
-    values[0][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.xy).x;
-    values[0][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.xy).x;
-    values[1][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.xy).x;
-    values[1][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoord).x;
-    values[1][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.zw).x;
-    values[2][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.zw).x;
-    values[2][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.zw).x;
-    values[2][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.zw).x;
-
-    values = values * weights;
+    values[0][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.xy).x * 1 / 16;
+    values[0][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.xy).x * 1 / 8;
+    values[0][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.xy).x * 1 / 16;
+    values[1][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.xy).x * 1 / 8;
+    values[1][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoord).x * 1 / 4;
+    values[1][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.zw).x * 1 / 8;
+    values[2][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.zw).x * 1 / 16;
+    values[2][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.zw).x * 1 / 8;
+    values[2][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.zw).x * 1 / 16;
 
     return (values[0][0] + values[0][1] + values[0][2]) + (values[1][0] + values[1][1] + values[1][2]) +
         (values[2][0] + values[2][1] + values[2][2]);
