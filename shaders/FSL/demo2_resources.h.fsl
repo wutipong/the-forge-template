@@ -30,7 +30,7 @@ CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b5, binding = 1)
     DATA(float, lightAmbient[LIGHT_COUNT], None);
     DATA(float, lightIntensity[LIGHT_COUNT], None);
 
-    //Shadow
+    // Shadow
     DATA(float4x4, shadowMVP, None);
 };
 

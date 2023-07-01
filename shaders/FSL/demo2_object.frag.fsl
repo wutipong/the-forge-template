@@ -30,27 +30,25 @@ float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirect
 // source: https://www.shadertoy.com/view/4sfGzS
 float hash(float3 p)
 {
-	p = frac(p*0.3183099 + .1);
-	p *= 17.0;
-	return frac(p.x*p.y*p.z*(p.x + p.y + p.z));
+    p = frac(p * 0.3183099 + .1);
+    p *= 17.0;
+    return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
 
-float noise(in(float3) x)
+float noise(in(float3)x)
 {
-	float3 p = floor(x);
-	float3 f = frac(x);
-	f = f * f*(3.0 - 2.0*f);
+    float3 p = floor(x);
+    float3 f = frac(x);
+    f = f * f * (3.0 - 2.0 * f);
 
-	return lerp(lerp(lerp(hash(p + float3(0, 0, 0)),
-		hash(p + float3(1, 0, 0)), f.x),
-		lerp(hash(p + float3(0, 1, 0)),
-		hash(p + float3(1, 1, 0)), f.x), f.y),
-		lerp(lerp(hash(p + float3(0, 0, 1)),
-		hash(p + float3(1, 0, 1)), f.x),
-		lerp(hash(p + float3(0, 1, 1)),
-		hash(p + float3(1, 1, 1)), f.x), f.y), f.z);
+    return lerp(lerp(lerp(hash(p + float3(0, 0, 0)), hash(p + float3(1, 0, 0)), f.x),
+                     lerp(hash(p + float3(0, 1, 0)), hash(p + float3(1, 1, 0)), f.x), f.y),
+                lerp(lerp(hash(p + float3(0, 0, 1)), hash(p + float3(1, 0, 1)), f.x),
+                     lerp(hash(p + float3(0, 1, 1)), hash(p + float3(1, 1, 1)), f.x), f.y),
+                f.z);
 }
 
+#define SHADOW_SAMPLING_AREA float2(3 / 1024.0, 3 / 1024.0)
 
 float4 PS_MAIN(VSOutput In)
 {
@@ -69,12 +67,10 @@ float4 PS_MAIN(VSOutput In)
                                       Get(lightIntensity[i]), Get(lightAmbient[i]), Get(color).a);
     }
 
-    float2 shadowMapCoord = In.ShadowMapCoord;
-
     if (In.ShadowMapCoord.x >= 0 && In.ShadowMapCoord.y >= 0 && In.ShadowMapCoord.x <= 1.0 &&
         In.ShadowMapCoord.y <= 1.0)
     {
-        float2 samplingLoc = In.ShadowMapCoord + noise(In.Position.xyz * 10) * float2(3/1024.0, 3/1024.0);
+        float2 samplingLoc = In.ShadowMapCoord + noise(In.Position.xyz * 10) * SHADOW_SAMPLING_AREA;
 
         float litdepth = SampleTex2D(Get(shadowMap), Get(pointSampler), samplingLoc).x;
         bool isDirectionalHit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
