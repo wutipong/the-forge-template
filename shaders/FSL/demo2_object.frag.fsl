@@ -7,7 +7,11 @@ STRUCT(VSOutput)
     DATA(float4, Color, COLOR);
     DATA(float4, Normal, NORMAL);
     DATA(float4, ShadowMapPos, POSITION1);
-    DATA(float2, ShadowMapCoord, TEXCOORD);
+    DATA(float2, ShadowMapCoord, TEXCOORD0);
+    DATA(float4, ShadowMapCoordOffset1, TEXCOORD1);
+    DATA(float4, ShadowMapCoordOffset2, TEXCOORD2);
+    DATA(float4, ShadowMapCoordOffset3, TEXCOORD3);
+    DATA(float4, ShadowMapCoordOffset4, TEXCOORD4);
 };
 
 float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirection, float4 lightColor,
@@ -27,6 +31,31 @@ float3 doDirectionalLight(VSOutput In, float4 cameraPosition, float4 lightDirect
     return litColor * (diffuseFactor + ambientFactor + specularFactor);
 }
 
+STATIC const float3x3 weights = {
+    {1 / 16, 1 / 8, 1 / 16},
+    {1 / 8, 1 / 4, 1 / 8},
+    {1 / 16, 1 / 8, 1 / 16},
+};
+
+float calculateDepth(VSOutput In)
+{
+    float3x3 values;
+    values[0][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.xy).x;
+    values[0][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.xy).x;
+    values[0][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.xy).x;
+    values[1][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.xy).x;
+    values[1][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoord).x;
+    values[1][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset1.zw).x;
+    values[2][0] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset4.zw).x;
+    values[2][1] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset2.zw).x;
+    values[2][2] = SampleTex2D(Get(shadowMap), Get(pointSampler), In.ShadowMapCoordOffset3.zw).x;
+
+    values = values * weights;
+
+    return (values[0][0] + values[0][1] + values[0][2]) + (values[1][0] + values[1][1] + values[1][2]) +
+        (values[2][0] + values[2][1] + values[2][2]);
+}
+
 float4 PS_MAIN(VSOutput In)
 {
     INIT_MAIN;
@@ -34,7 +63,7 @@ float4 PS_MAIN(VSOutput In)
 
     int i = 0;
     float3 ambientColor = {0, 0, 0};
-    
+
     for (i = 0; i < LIGHT_COUNT; i++)
     {
         float3 baseColor = Get(lightColor[i]).rgb * In.Color.rgb;
@@ -49,14 +78,14 @@ float4 PS_MAIN(VSOutput In)
     if (In.ShadowMapCoord.x >= 0 && In.ShadowMapCoord.y >= 0 && In.ShadowMapCoord.x <= 1.0 &&
         In.ShadowMapCoord.y <= 1.0)
     {
-        float litdepth = SampleTex2D(Get(shadowMap), Get(linearSampler), In.ShadowMapCoord).x;
+        float litdepth = calculateDepth(In);
         bool isDirectlyLit = dot(normalize(In.Normal.xyz), -normalize(Get(lightDirection[0]).xyz)) > 0;
 
         if (isDirectlyLit && litdepth != 0 && (litdepth - In.ShadowMapPos.z) > 0.01)
         {
             Out.rgb = ambientColor;
         }
-    } 
+    }
 
     RETURN(Out);
 }

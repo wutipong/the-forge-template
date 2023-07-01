@@ -34,7 +34,7 @@ CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b5, binding = 1)
     DATA(float4x4, shadowMVP, None);
 };
 
-RES(Tex2D(float4), shadowMap, UPDATE_FREQ_NONE, t0, binding = 0);
+RES(Tex2D(float4), shadowMap, UPDATE_FREQ_NONE, t0, binding = 1);
 RES(SamplerState, linearSampler, UPDATE_FREQ_NONE, s0, binding = 1);
 RES(SamplerState, pointSampler, UPDATE_FREQ_NONE, s1, binding = 2);
 #endif
