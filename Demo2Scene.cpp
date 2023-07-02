@@ -706,6 +706,10 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
         removeDescriptorSet(pRenderer, pDsLightSourcesUniform);
 
         removeRootSignature(pRenderer, pRootSignature);
+
+        removeSampler(pRenderer, linearSampler);
+        removeSampler(pRenderer, pointSampler);
+        
         removeShader(pRenderer, pShObjects);
         removeShader(pRenderer, pShShadow);
         removeShader(pRenderer, pShLightSources);
