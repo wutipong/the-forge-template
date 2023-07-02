@@ -8,12 +8,14 @@
 #include <IResourceLoader.h>
 #include <IUI.h>
 #include <cstdlib>
+#include "ChessScene.h"
 #include "Demo2Scene.h"
 #include "DemoScene.h"
 #include "QuadDemoScene.h"
 #include "Settings.h"
 
-namespace Scene = Demo2Scene;
+
+namespace Scene = ChessScene;
 
 extern RendererApi gSelectedRendererApi;
 
@@ -46,6 +48,7 @@ bool MainApp::Init()
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_BINARIES, "CompiledShaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_GPU_CONFIG, "GPUCfg");
+    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_MESHES, "Meshes");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_TEXTURES, "Textures");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");

@@ -12,6 +12,7 @@ add_executable(main
     "SMAA.cpp"  "SMAA.h"
     "ColorGrading.cpp" "ColorGrading.h"
     "PostProcessing.cpp" "PostProcessing.h"
+    "ChessScene.cpp" "ChessScene.h"
     "The-Forge/Common_3/Application/CameraController.cpp"
     "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
     "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
@@ -180,33 +181,6 @@ target_link_libraries(main PRIVATE
     dxcompiler
 )
 
-add_custom_target(CopyDlls ALL      
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/"      
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll" "$<TARGET_FILE_DIR:main>/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll" "$<TARGET_FILE_DIR:main>/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll" "$<TARGET_FILE_DIR:main>/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxil.dll" "$<TARGET_FILE_DIR:main>/"
-)
-
-add_custom_target(CopyGpuCfg ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/GPUCfg/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/GPUCfg/gpu.cfg" "$<TARGET_FILE_DIR:main>/GPUCfg/"
-)
-
-add_custom_target(CopyFonts ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
-)
-
-add_custom_target(CopyTexture ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad0.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad1.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_0.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_1.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_2.dds" "$<TARGET_FILE_DIR:main>/Textures/"
-)
-
 if(WIN32)
     set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
 endif()
@@ -227,6 +201,92 @@ function(compile_shaders)
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:main>"
 )
 endfunction()
+
+function(copy_files)
+    set(oneValueArgs TARGET)
+    set(oneValueArgs DESTINATION)
+    set(multiValueArgs SOURCES)
+
+    cmake_parse_arguments(COPY_FILES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    add_custom_target(${COPY_FILES_TARGET} ALL      
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/${COPY_FILES_DESTINATION}"      
+        COMMAND ${CMAKE_COMMAND} -E copy ${temp} "$<TARGET_FILE_DIR:main>/${COPY_FILES_DESTINATION}"
+    )
+endfunction()
+
+add_custom_target(CopyMeshes ALL      
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Meshes"      
+    COMMAND ${CMAKE_COMMAND} -E copy 
+        "${CMAKE_CURRENT_SOURCE_DIR}/Meshes/Chess.gltf" 
+        "${CMAKE_CURRENT_SOURCE_DIR}/Meshes/Chess.bin"
+
+        "$<TARGET_FILE_DIR:main>/Meshes"
+)
+
+add_custom_target(CopyDlls ALL      
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/"      
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll" "$<TARGET_FILE_DIR:main>/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll" "$<TARGET_FILE_DIR:main>/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll" "$<TARGET_FILE_DIR:main>/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxil.dll" "$<TARGET_FILE_DIR:main>/"
+)
+
+add_custom_target(CopyGpuCfg ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/GPUCfg/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/GPUCfg/gpu.cfg" "$<TARGET_FILE_DIR:main>/GPUCfg/"
+)
+
+add_custom_target(CopyFonts ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
+)
+
+add_custom_target(CopyTexture ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Textures/"
+    COMMAND ${CMAKE_COMMAND} -E copy 
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/bishop_black_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/bishop_black_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Bishop_black_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/bishop_white_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/bishop_white_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Bishop_white_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/castle_black_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Castle_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Castle_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/castle_white_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/chessboard_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/chessboard_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Chessboard_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/king_black_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/King_black_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/King_black_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/king_white_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/King_white_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/King_white_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/knight_black_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Knight_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Knight_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/knight_white_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_0.dds"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_1.dds"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/LUT_2.dds"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/pawn_black_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Pawn_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Pawn_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/pawn_white_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad0.dds"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Quad1.dds"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/queen_black_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Queen_black_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Queen_black_ORM.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/queen_white_base_color.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Queen_white_normal.DDS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Textures/Queen_white_ORM.DDS" 
+        
+        
+        "$<TARGET_FILE_DIR:main>/Textures/"
+)
 
 compile_shaders(
     TARGET UiShader
