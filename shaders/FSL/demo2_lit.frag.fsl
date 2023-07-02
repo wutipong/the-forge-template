@@ -4,12 +4,12 @@ STRUCT(VSOutput)
 {
     DATA(float4, Position, SV_POSITION);
     DATA(float4, WorldPos, POSITION0);
-    DATA(float4, Color,    COLOR);
-    DATA(float4, Normal,   NORMAL);
+    DATA(float4, Color, COLOR);
+    DATA(float4, Normal, NORMAL);
     DATA(float4, ShadowMapPos, POSITION1);
 };
 
-float4 PS_MAIN( VSOutput In )
+float4 PS_MAIN(VSOutput In)
 {
     INIT_MAIN;
 
