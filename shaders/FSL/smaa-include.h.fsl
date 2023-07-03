@@ -7,7 +7,7 @@ RES(Tex2D(float4), searchTex, UPDATE_FREQ_NONE, t4, binding = 4);
 RES(SamplerState, LinearSampler, UPDATE_FREQ_NONE, s0, binding = 5);
 RES(SamplerState, PointSampler, UPDATE_FREQ_NONE, s1, binding = 6);
 
-CBUFFER(uniformBlock, UPDATE_FREQ_NONE, b0, binding = 0)
+CBUFFER(uniformBlock, UPDATE_FREQ_NONE, b0, binding = 7)
 {
     DATA(float2, Dimension, None);
 };
