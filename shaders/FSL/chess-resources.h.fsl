@@ -1,0 +1,31 @@
+#ifndef CHESS_RESOURCES_H
+#define CHESS_RESOURCES_H
+
+CBUFFER(uniformObjectBlock, UPDATE_FREQ_PER_DRAW, b0, binding = 0)
+{
+    DATA(float4x4, toWorld, None);
+};
+
+CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b5, binding = 1)
+{
+     DATA(float4x4, mViewProjection, None);
+};
+
+RES(SamplerState, linearSampler, UPDATE_FREQ_NONE, s0, binding = 1);
+RES(SamplerState, pointSampler, UPDATE_FREQ_NONE, s1, binding = 2);
+
+STRUCT(VSInput)
+{
+    DATA(float4, Position, POSITION);
+    DATA(float2, TexCoord, TEXCOORD);
+    DATA(float2, Normal, NORMAL);
+};
+
+STRUCT(VSOutput)
+{
+    DATA(float4, Position, SV_POSITION);
+    DATA(float4, TexCoord, TEXCOORD);
+    DATA(float2, Normal, NORMAL);
+};
+
+#endif

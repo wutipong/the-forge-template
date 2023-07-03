@@ -16,6 +16,11 @@ namespace ChessScene
 
     Texture *pTextures[2];
 
+    struct Object {
+        int vertexBufferIndex;
+        int indexBufferIndex;
+    };
+
     bool Init()
     {
         SyncToken token = {};
@@ -43,6 +48,7 @@ namespace ChessScene
         
         addResource(&loadDesc, &token);
 
+        waitForToken(&token);
         waitForAllResourceLoads();
 
         return true;
@@ -50,7 +56,10 @@ namespace ChessScene
 
     void Exit() { removeResource(pGeometry); }
 
-    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget) { return true; }
+    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget) { 
+
+        return true; 
+    }
 
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) {}
 
