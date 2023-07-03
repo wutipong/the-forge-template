@@ -532,7 +532,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
         desc.mClearValue.depth = 0.0f;
         desc.mClearValue.stencil = 0;
         desc.mDepth = 1;
-        desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
+        desc.mFlags = TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
         desc.mFormat = TinyImageFormat_D32_SFLOAT;
         desc.mWidth = pRenderTarget->mWidth;
         desc.mHeight = pRenderTarget->mHeight;
@@ -641,7 +641,7 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
             pipelineSettings.pDepthState = &depthStateDesc;
             pipelineSettings.mSampleCount = pRtShadowBuffer->mSampleCount;
             pipelineSettings.mSampleQuality = pRtShadowBuffer->mSampleQuality;
-            pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
+            pipelineSettings.mDepthStencilFormat = pRtShadowBuffer->mFormat;
             pipelineSettings.pRootSignature = pRootSignature;
             pipelineSettings.pShaderProgram = pShShadow;
             pipelineSettings.pVertexLayout = &vertexLayout;
@@ -709,7 +709,7 @@ void Demo2Scene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 
         removeSampler(pRenderer, linearSampler);
         removeSampler(pRenderer, pointSampler);
-        
+
         removeShader(pRenderer, pShObjects);
         removeShader(pRenderer, pShShadow);
         removeShader(pRenderer, pShLightSources);
@@ -824,6 +824,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
 
+    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
     {
         RenderTargetBarrier barriers[] = {
             {pSceneRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_SHADER_RESOURCE},
