@@ -14,12 +14,34 @@ namespace ChessScene
     const char *pFileName = "Chess.gltf";
     Geometry *pGeometry{nullptr};
 
-    Texture *pTextures[2];
-
-    struct Object {
-        int vertexBufferIndex;
-        int indexBufferIndex;
+    struct ObjectUniform
+    {
+        mat4 mWorld = mat4::identity();
     };
+
+    struct ObjectResources
+    {
+        DescriptorSet *pDescriptorSets{nullptr};
+        Buffer *pVertexBuffer;
+        Buffer *pIndexBuffer;
+    };
+
+    struct SceneUniform
+    {
+        mat4 mViewProjection{mat4::identity()};
+    };
+
+    constexpr int OBJECT_COUNT = 1;
+
+    ObjectUniform objects[OBJECT_COUNT]{};
+    ObjectResources objectResources[OBJECT_COUNT]{};
+
+    SceneUniform scene{};
+    DescriptorSet *pSceneDS{nullptr};
+
+    RootSignature *pRootSignature{nullptr};
+    Sampler *pLinearSampler{nullptr};
+    Sampler *pPointSampler{nullptr};
 
     bool Init()
     {
@@ -45,23 +67,97 @@ namespace ChessScene
         loadDesc.ppGeometry = &pGeometry;
         loadDesc.pVertexLayout = &vertexLayout;
         loadDesc.mFlags = GEOMETRY_LOAD_FLAG_SHADOWED;
-        
+
         addResource(&loadDesc, &token);
 
         waitForToken(&token);
-        waitForAllResourceLoads();
+        waitForAllResourceLoads();    
 
         return true;
     }
 
     void Exit() { removeResource(pGeometry); }
 
-    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget) { 
+    bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget)
+    {
+        if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
+        {
+            {
+                SamplerDesc samplerDesc = {
+                    FILTER_LINEAR,
+                    FILTER_LINEAR,
+                    MIPMAP_MODE_LINEAR,
+                    ADDRESS_MODE_CLAMP_TO_EDGE,
+                    ADDRESS_MODE_CLAMP_TO_EDGE,
+                    ADDRESS_MODE_CLAMP_TO_EDGE,
+                };
 
-        return true; 
+                addSampler(pRenderer, &samplerDesc, &pLinearSampler);
+
+                samplerDesc = {
+                    FILTER_NEAREST,
+                    FILTER_NEAREST,
+                    MIPMAP_MODE_NEAREST,
+                    ADDRESS_MODE_CLAMP_TO_EDGE,
+                    ADDRESS_MODE_CLAMP_TO_EDGE,
+                    ADDRESS_MODE_CLAMP_TO_EDGE,
+                };
+                addSampler(pRenderer, &samplerDesc, &pPointSampler);
+            }
+            {
+                const char *samplerNames[]{"linearSampler", "pointSampler"};
+                Sampler *pSamplers[]{pLinearSampler, pPointSampler};
+
+                RootSignatureDesc desc{};
+                desc.mShaderCount = 0;
+                // desc.ppShaders = pShaders;
+                desc.mStaticSamplerCount = 2;
+                desc.ppStaticSamplers = pSamplers;
+                desc.ppStaticSamplerNames = samplerNames;
+
+                addRootSignature(pRenderer, &desc, &pRootSignature);
+                ASSERT(pRootSignature);
+            }
+
+            {
+                DescriptorSetDesc desc{
+                    pRootSignature,
+                    DESCRIPTOR_UPDATE_FREQ_PER_FRAME,
+                    IMAGE_COUNT,
+                };
+                addDescriptorSet(pRenderer, &desc, &pSceneDS);
+
+                for (auto &r : objectResources)
+                {
+                    desc = {
+                        pRootSignature,
+                        DESCRIPTOR_UPDATE_FREQ_PER_FRAME,
+                        IMAGE_COUNT,
+                    };
+
+                    addDescriptorSet(pRenderer, &desc, &r.pDescriptorSets);
+                }
+            }
+        }
+        return true;
     }
 
-    void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer) {}
+    void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
+    {
+        if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
+        {
+            removeSampler(pRenderer, pLinearSampler);
+            removeSampler(pRenderer, pPointSampler);
+
+            removeRootSignature(pRenderer, pRootSignature);
+            removeDescriptorSet(pRenderer, pSceneDS);
+
+            for (auto &r : objectResources)
+            {
+                removeDescriptorSet(pRenderer, r.pDescriptorSets);
+            }
+        }
+    }
 
     void Update(float deltaTime, uint32_t width, uint32_t height) {}
 
