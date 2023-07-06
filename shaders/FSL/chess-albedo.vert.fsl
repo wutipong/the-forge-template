@@ -1,27 +1,22 @@
-#include "demo2_resources.h.fsl"
+#include "chess-resources.h.fsl"
 
-
-
-VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
+VSOutput VS_MAIN(SV_InstanceID(uint) InstanceID)
 {
     INIT_MAIN;
     VSOutput Out;
 
-#if VR_MULTIVIEW_ENABLED
-    float4x4 tempMat = mul(Get(mvp)[VR_VIEW_ID], Get(toWorld));
-#else
-    float4x4 mWVP = mul(Get(mvp), Get(toWorld));
-#endif
-    Out.Position = mul(mWVP, float4(In.Position.xyz, 1.0f));
+    uint posIndex = InstanceID * 12;
+    uint texIndex = InstanceID * 8;
+    uint normalIndex = InstanceID * 8;
 
-    float4x4 mShadowWVP = mul(Get(shadowMVP), Get(toWorld));
-    Out.ShadowMapPos = mul(mShadowWVP, float4(In.Position.xyz, 1.0f));
+    float4x4 mWVP = mul(Get(mViewProjection), Get(mWorld));
+    float4 inPosition = asfloat(LoadByte4(Get(vertexPos), posIndex));
+    float4 inTexCoord = asfloat(LoadByte4(Get(vertexTexCoord), texIndex));
+    float4 inNormal = asfloat(LoadByte4(Get(vertexNormal), normalIndex));
 
-    Out.Normal = normalize(mul(Get(toWorld), float4(In.Normal.xyz, 0.0f))); // Assume uniform scaling
-    Out.WorldPos = mul(Get(toWorld), float4(In.Position.xyz, 1.0f));
-    Out.Color = Get(color);
-
-    Out.ShadowMapCoord = (1.0 + float2(Out.ShadowMapPos.x, -Out.ShadowMapPos.y)) / 2.0;
+    Out.Position = mul(mWVP, float4(inPosition.xyz, 1.0f));
+    Out.Normal = normalize(mul(Get(mWorld), float4(inNormal.xy, 1.0, 0.0)));
+    Out.TexCoord = inTexCoord.xy;
 
     RETURN(Out);
 }

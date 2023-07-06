@@ -65,3 +65,11 @@
 #frag color_grading.frag
 #include "color_grading.frag.fsl"
 #end
+
+#vert chess-albedo.vert
+#include "chess-albedo.vert.fsl"
+#end
+
+#frag chess-albedo.frag
+#include "chess-albedo.frag.fsl"
+#end
