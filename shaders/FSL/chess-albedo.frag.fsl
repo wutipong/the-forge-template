@@ -1,0 +1,9 @@
+#include "chess-resources.h.fsl"
+
+float4 PS_MAIN(VSOutput In)
+{
+    INIT_MAIN;
+
+    float4 Out = SampleTex2D(Get(texture), Get(linearSampler), In.TexCoord);
+    RETURN(Out);
+}

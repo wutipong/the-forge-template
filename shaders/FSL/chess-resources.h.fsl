@@ -11,11 +11,14 @@ CBUFFER(uniformSceneBlock, UPDATE_FREQ_PER_FRAME, b1, binding = 1)
     DATA(float4x4, mViewProjection, None); 
 };
 
-RES(ByteBuffer, vertexPos, UPDATE_FREQ_NONE, t0, binding = 0);
-RES(ByteBuffer, vertexTexCoord, UPDATE_FREQ_NONE, t1, binding = 1);
-RES(ByteBuffer, vertexNormal, UPDATE_FREQ_NONE, t2, binding = 2);
-RES(SamplerState, linearSampler, UPDATE_FREQ_NONE, s0, binding = 1);
-RES(SamplerState, pointSampler, UPDATE_FREQ_NONE, s1, binding = 2);
+RES(Buffer(float3), vertexPos, UPDATE_FREQ_NONE, t0, binding = 2);
+RES(Buffer(float2), vertexTexCoord, UPDATE_FREQ_NONE, t1, binding = 3);
+RES(Buffer(float2), vertexNormal, UPDATE_FREQ_NONE, t2, binding = 4);
+
+RES(Tex2D(float4), texture, UPDATE_FREQ_NONE, t3, binding = 5);
+
+RES(SamplerState, linearSampler, UPDATE_FREQ_NONE, s0, binding = 6);
+RES(SamplerState, pointSampler, UPDATE_FREQ_NONE, s1, binding = 7);
 
 STRUCT(VSInput)
 {

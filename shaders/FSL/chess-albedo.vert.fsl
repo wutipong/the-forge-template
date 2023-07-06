@@ -1,18 +1,14 @@
 #include "chess-resources.h.fsl"
 
-VSOutput VS_MAIN(SV_InstanceID(uint) InstanceID)
+VSOutput VS_MAIN(SV_VertexID(uint) VertexID)
 {
     INIT_MAIN;
     VSOutput Out;
 
-    uint posIndex = InstanceID * 12;
-    uint texIndex = InstanceID * 8;
-    uint normalIndex = InstanceID * 8;
-
     float4x4 mWVP = mul(Get(mViewProjection), Get(mWorld));
-    float4 inPosition = asfloat(LoadByte4(Get(vertexPos), posIndex));
-    float4 inTexCoord = asfloat(LoadByte4(Get(vertexTexCoord), texIndex));
-    float4 inNormal = asfloat(LoadByte4(Get(vertexNormal), normalIndex));
+    float3 inPosition = Get(vertexPos)[VertexID];
+    float2 inTexCoord = Get(vertexTexCoord)[VertexID];
+    float2 inNormal = Get(vertexNormal)[VertexID];
 
     Out.Position = mul(mWVP, float4(inPosition.xyz, 1.0f));
     Out.Normal = normalize(mul(Get(mWorld), float4(inNormal.xy, 1.0, 0.0)));
