@@ -74,11 +74,14 @@ namespace ChessScene
     Sampler *pLinearSampler{nullptr};
     Sampler *pPointSampler{nullptr};
     Shader *pAlbedoShader{nullptr};
+    Pipeline *pAlbedoPipeline{nullptr};
+    RenderTarget *pDepthBuffer{nullptr};
 
     Buffer *pPositionBuffer{nullptr};
     Buffer *pTexCoordBuffer{nullptr};
     Buffer *pNormalBuffer{nullptr};
     Buffer *pIndexBuffer{nullptr};
+
 
     bool Init()
     {
@@ -245,6 +248,55 @@ namespace ChessScene
                 }
             }
         }
+        if (pReloadDesc->mType & (RELOAD_TYPE_RENDERTARGET | RELOAD_TYPE_RESIZE))
+        {
+            RenderTargetDesc desc = {};
+            desc.mArraySize = 1;
+            desc.mClearValue.depth = 0.0f;
+            desc.mClearValue.stencil = 0;
+            desc.mDepth = 1;
+            desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
+            desc.mFormat = TinyImageFormat_D32_SFLOAT;
+            desc.mWidth = pRenderTarget->mWidth;
+            desc.mHeight = pRenderTarget->mHeight;
+            desc.mSampleCount = SAMPLE_COUNT_1;
+            desc.mSampleQuality = 0;
+            desc.mStartState = RESOURCE_STATE_SHADER_RESOURCE;
+            addRenderTarget(pRenderer, &desc, &pDepthBuffer);
+
+            ASSERT(pDepthBuffer);
+        }
+        if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
+        {
+            RasterizerStateDesc rasterizerStateDesc = {};
+            rasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
+            {
+                DepthStateDesc depthStateDesc = {};
+                depthStateDesc.mDepthTest = true;
+                depthStateDesc.mDepthWrite = true;
+                depthStateDesc.mDepthFunc = CMP_GEQUAL;
+
+                PipelineDesc pipelineDesc = {};
+                pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
+                GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
+                pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
+                pipelineSettings.mRenderTargetCount = 1;
+                pipelineSettings.pDepthState = &depthStateDesc;
+                pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
+                pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
+                pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
+                pipelineSettings.mDepthStencilFormat = pDepthBuffer->mFormat;
+                pipelineSettings.pRootSignature = pRootSignature;
+                pipelineSettings.pShaderProgram = pAlbedoShader;
+                pipelineSettings.pVertexLayout = nullptr;
+                pipelineSettings.pRasterizerState = &rasterizerStateDesc;
+                pipelineSettings.mVRFoveatedRendering = true;
+                addPipeline(pRenderer, &pipelineDesc, &pAlbedoPipeline);
+
+                ASSERT(pAlbedoPipeline);
+            }
+        }
+
         return true;
     }
 
@@ -265,11 +317,54 @@ namespace ChessScene
                 removeDescriptorSet(pRenderer, r.pDescriptorSet);
             }
         }
+
+        if (pReloadDesc->mType & (RELOAD_TYPE_RENDERTARGET | RELOAD_TYPE_RESIZE))
+        {
+            removeRenderTarget(pRenderer, pDepthBuffer);
+        }
+        if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
+        {
+            removePipeline(pRenderer, pAlbedoPipeline);
+        }
     }
 
     void Update(float deltaTime, uint32_t width, uint32_t height) {}
 
-    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex) {}
+    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
+    {
+        cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+        {
+            std::array<RenderTargetBarrier, 1> barriers = {
+                {
+                    pDepthBuffer,
+                    RESOURCE_STATE_SHADER_RESOURCE,
+                    RESOURCE_STATE_DEPTH_WRITE,
+                },
+            };
+            cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
+        }
+
+        LoadActionsDesc loadActions = {};
+        loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
+        loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
+        loadActions.mClearDepth.depth = 0.0f;
+
+        cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+        cmdSetViewport(pCmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
+        cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
+
+        cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+        {
+            std::array<RenderTargetBarrier, 1> barriers = {
+                {
+                    pDepthBuffer,
+                    RESOURCE_STATE_DEPTH_WRITE,
+                    RESOURCE_STATE_SHADER_RESOURCE,
+                },
+            };
+            cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
+        }
+    }
 
     void PreDraw(uint32_t imageIndex) {}
 } // namespace ChessScene
