@@ -11,7 +11,6 @@
 #include <string>
 #include "Settings.h"
 
-
 namespace ChessScene
 {
     std::string geomFileName = "Chess.gltf";
@@ -49,6 +48,8 @@ namespace ChessScene
     struct ObjectResources
     {
         DescriptorSet *pDescriptorSet{nullptr};
+        std::array<Buffer *, IMAGE_COUNT> pUniformBuffers{nullptr};
+
         Texture *pColorTexture{nullptr};
         Texture *pNormalTexture{nullptr};
         Texture *pOrmTexture{nullptr};
@@ -64,11 +65,12 @@ namespace ChessScene
 
     constexpr int OBJECT_COUNT = 1;
 
-    std::array<ObjectUniform, OBJECT_COUNT> objectsUniform{};
+    std::array<ObjectUniform, OBJECT_COUNT> objectsUniforms{};
     std::array<ObjectResources, OBJECT_COUNT> objectResources{};
 
     SceneUniform scene{};
     DescriptorSet *pSceneDS{nullptr};
+    std::array<Buffer *, IMAGE_COUNT> pSceneBuffers;
 
     RootSignature *pRootSignature{nullptr};
     Sampler *pLinearSampler{nullptr};
@@ -81,7 +83,6 @@ namespace ChessScene
     Buffer *pTexCoordBuffer{nullptr};
     Buffer *pNormalBuffer{nullptr};
     Buffer *pIndexBuffer{nullptr};
-
 
     bool Init()
     {
@@ -139,6 +140,39 @@ namespace ChessScene
             addResource(&desc, &token);
         }
 
+        {
+            BufferLoadDesc ubDesc = {};
+            ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
+            ubDesc.mDesc.mSize = sizeof(SceneUniform);
+            ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
+            ubDesc.pData = nullptr;
+
+            for (auto &pSceneBuffer : pSceneBuffers)
+            {
+                ubDesc.ppBuffer = &pSceneBuffer;
+                addResource(&ubDesc, &token);
+            }
+        }
+
+        {
+            BufferLoadDesc ubDesc = {};
+            ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
+            ubDesc.mDesc.mSize = sizeof(ObjectUniform);
+            ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
+            ubDesc.pData = nullptr;
+
+            for (auto &o : objectResources)
+            {
+                for (auto &b : o.pUniformBuffers)
+                {
+                    ubDesc.ppBuffer = &b;
+                    addResource(&ubDesc, &token);
+                }
+            }
+        }
+
         waitForToken(&token);
         waitForAllResourceLoads();
 
@@ -173,6 +207,19 @@ namespace ChessScene
         for (auto &t : ormTextures)
         {
             removeResource(t.second);
+        }
+
+        for (auto &b : pSceneBuffers)
+        {
+            removeResource(b);
+        }
+
+        for (auto &o : objectResources)
+        {
+            for (auto &b : o.pUniformBuffers)
+            {
+                removeResource(b);
+            }
         }
     }
 
@@ -297,6 +344,24 @@ namespace ChessScene
             }
         }
 
+        for (int i = 0; i < IMAGE_COUNT; i++)
+        {
+            DescriptorData params = {};
+            params.pName = "uniformSceneBlock";
+            params.ppBuffers = &pSceneBuffers[i];
+
+            updateDescriptorSet(pRenderer, i, pSceneDS, 1, &params);
+
+            params = {};
+            params.pName = "uniformObjectBlock";
+
+            for (auto &o : objectResources)
+            {
+                params.ppBuffers = &o.pUniformBuffers[i];
+                updateDescriptorSet(pRenderer, i, o.pDescriptorSet, 1, &params);
+            }
+        }
+
         return true;
     }
 
@@ -353,6 +418,16 @@ namespace ChessScene
         cmdSetViewport(pCmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
         cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
+        cmdBindPipeline(pCmd, pAlbedoPipeline);
+        cmdBindDescriptorSet(pCmd, 0, pSceneDS);
+
+        for (auto &objectResource : objectResources)
+        {
+            cmdBindIndexBuffer(pCmd, pIndexBuffer, INDEX_TYPE_UINT16, 0);
+            cmdBindDescriptorSet(pCmd, imageIndex, objectResource.pDescriptorSet);
+            cmdDrawIndexed(pCmd, objectResource.mIndexCount, objectResource.mStartIndex, 0);
+        }
+
         cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
         {
             std::array<RenderTargetBarrier, 1> barriers = {
@@ -366,5 +441,21 @@ namespace ChessScene
         }
     }
 
-    void PreDraw(uint32_t imageIndex) {}
+    void PreDraw(uint32_t imageIndex)
+    {
+        {
+            BufferUpdateDesc updateDesc = {pSceneBuffers[imageIndex]};
+            beginUpdateResource(&updateDesc);
+            *static_cast<SceneUniform *>(updateDesc.pMappedData) = scene;
+            endUpdateResource(&updateDesc, nullptr);
+        }
+
+        for (int i = 0; i < objectResources.size(); i++)
+        {
+            BufferUpdateDesc updateDesc = {objectResources[i].pUniformBuffers[imageIndex]};
+            beginUpdateResource(&updateDesc);
+            *static_cast<ObjectUniform *>(updateDesc.pMappedData) = objectsUniforms[i];
+            endUpdateResource(&updateDesc, nullptr);
+        }
+    }
 } // namespace ChessScene
