@@ -218,7 +218,7 @@ add_custom_target(CopyDlls ALL
 
 add_custom_target(CopyGpuCfg ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/GPUCfg/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/GPUCfg/gpu.cfg" "$<TARGET_FILE_DIR:main>/GPUCfg/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/src/01_Transformations/GPUCfg/gpu.cfg" "$<TARGET_FILE_DIR:main>/GPUCfg/"
 )
 
 add_custom_target(CopyFonts ALL
