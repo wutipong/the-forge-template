@@ -171,7 +171,7 @@ bool Demo2Scene::Init()
         SyncToken token = {};
         TextureLoadDesc desc{};
         desc.ppTexture = &pLutTexture;
-        desc.pFileName = "LUT_0";
+        desc.pFileName = "LUT_0.dds";
 
         addResource(&desc, &token);
 
@@ -180,7 +180,7 @@ bool Demo2Scene::Init()
 
     {
         PostProcessing::Desc desc{};
-        desc.mEnableSMAA = true;
+        // desc.mEnableSMAA = true;
         desc.mEnableColorGrading = true;
         desc.pColorGradingLUT = pLutTexture;
 

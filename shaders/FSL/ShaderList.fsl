@@ -34,6 +34,7 @@
 #include "quad.vert.fsl"
 #end
 
+/*
 #vert smaa-edges.vert
 #include "smaa-edges.vert.fsl"
 #end
@@ -57,6 +58,7 @@
 #frag smaa-neighborhoodblend.frag
 #include "smaa-neighborhoodblend.frag.fsl"
 #end
+*/
 
 #vert color_grading.vert
 #include "color_grading.vert.fsl"

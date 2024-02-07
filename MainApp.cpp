@@ -56,6 +56,7 @@ bool MainApp::Init()
     RendererDesc settings{};
     settings.mD3D11Supported = false;
     settings.mGLESSupported = false;
+    settings.mDisableShaderServer = true;
     // settings.mEnableGPUBasedValidation = true;
 
     initRenderer(GetName(), &settings, &pRenderer);

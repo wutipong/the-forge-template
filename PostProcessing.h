@@ -8,7 +8,7 @@ namespace PostProcessing
 {
     struct Desc
     {
-        bool mEnableSMAA;
+        // bool mEnableSMAA;
         bool mEnableColorGrading;
 
         Texture *pColorGradingLUT;

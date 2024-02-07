@@ -1,7 +1,7 @@
 #include "PostProcessing.h"
 #include <array>
 #include "ColorGrading.h"
-#include "SMAA.h"
+// #include "SMAA.h"
 
 namespace PostProcessing
 {
@@ -27,12 +27,12 @@ namespace PostProcessing
     {
         activeStageCount = 0;
 
-        if (desc.mEnableSMAA)
+        /* if (desc.mEnableSMAA)
         {
             SMAA::Init(token);
             stages[activeStageCount] = Stage::SMAA;
             activeStageCount++;
-        }
+        }*/
 
         if (desc.mEnableColorGrading)
         {
@@ -79,10 +79,11 @@ namespace PostProcessing
 
             switch (stages[i])
             {
+            /*
             case Stage::SMAA:
                 SMAA::Load(pReloadDesc, pRenderer, pOutput, pInput);
                 break;
-
+            */
             case Stage::ColorGrading:
                 ColorGrading::Load(pReloadDesc, pRenderer, pOutput, pInput, pColorGradingLUT);
                 break;
@@ -106,10 +107,11 @@ namespace PostProcessing
         {
             switch (stages[i])
             {
+            /* 
             case Stage::SMAA:
                 SMAA::Unload(pReloadDesc, pRenderer);
                 break;
-
+            */
             case Stage::ColorGrading:
                 ColorGrading::Unload(pReloadDesc, pRenderer);
                 break;
@@ -122,10 +124,11 @@ namespace PostProcessing
         {
             switch (stages[i])
             {
+            /*
             case Stage::SMAA:
                 SMAA::Exit();
                 break;
-
+            */
             case Stage::ColorGrading:
                 ColorGrading::Exit();
                 break;
@@ -152,10 +155,11 @@ namespace PostProcessing
 
             switch (stages[i])
             {
+            /*
             case Stage::SMAA:
                 SMAA::Draw(pCmd, pRenderer, pOutput);
                 break;
-
+            */
             case Stage::ColorGrading:
                 ColorGrading::Draw(pCmd, pRenderer, pOutput);
                 break;
