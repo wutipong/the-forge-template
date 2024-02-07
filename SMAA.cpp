@@ -74,13 +74,15 @@ namespace SMAA
         updateDesc.pTexture = texture;
 
         beginUpdateResource(&updateDesc);
-        for (int r = 0; r < updateDesc.mRowCount; r++)
+        TextureSubresourceUpdate subresource = updateDesc.getSubresourceUpdateDesc(0, 0);
+       
+        for (int r = 0; r < subresource.mRowCount; r++)
         {
-            std::memcpy(updateDesc.pMappedData + r * updateDesc.mDstRowStride, data + r * updateDesc.mSrcRowStride,
-                        updateDesc.mSrcRowStride);
+            std::memcpy(subresource.pMappedData + r * subresource.mDstRowStride, data + r * subresource.mSrcRowStride,
+                        subresource.mSrcRowStride);
         }
 
-        endUpdateResource(&updateDesc, token);
+        endUpdateResource(&updateDesc);
         return texture;
     }
 
@@ -322,7 +324,7 @@ namespace SMAA
             BufferUpdateDesc updateDesc = {pUniformBuffer};
             beginUpdateResource(&updateDesc);
             *static_cast<float2 *>(updateDesc.pMappedData) = dimension;
-            endUpdateResource(&updateDesc, nullptr);
+            endUpdateResource(&updateDesc);
         }
     }
 

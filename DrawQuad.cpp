@@ -72,7 +72,7 @@ namespace DrawQuad
             blendStateDesc.mDstFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
             blendStateDesc.mSrcAlphaFactors[0] = BC_SRC_ALPHA;
             blendStateDesc.mDstAlphaFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
-            blendStateDesc.mMasks[0] = ALL;
+            //blendStateDesc.mMasks[0] = ALL;
             blendStateDesc.mRenderTargetMask = BLEND_STATE_TARGET_ALL;
             blendStateDesc.mIndependentBlend = false;
 
@@ -180,7 +180,7 @@ namespace DrawQuad
         BufferUpdateDesc updateDesc = {_pUniformBuffer[imageIndex]};
         beginUpdateResource(&updateDesc);
         *static_cast<mat4 *>(updateDesc.pMappedData) = transform;
-        endUpdateResource(&updateDesc, nullptr);
+        endUpdateResource(&updateDesc);
     }
 
     void Quad::Draw(Cmd *pCmd, Renderer *pRenderer, const uint32_t &imageIndex)

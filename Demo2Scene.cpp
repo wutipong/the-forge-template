@@ -433,9 +433,8 @@ bool Demo2Scene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
         ShaderLoadDesc shaderLoadDesc = {};
-        shaderLoadDesc.mStages[0] = {"demo2_object.vert", nullptr, 0, nullptr,
-                                     SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
-        shaderLoadDesc.mStages[1] = {"demo2_object.frag", nullptr, 0};
+        shaderLoadDesc.mStages[0] = {"demo2_object.vert"};
+        shaderLoadDesc.mStages[1] = {"demo2_object.frag"};
 
         addShader(pRenderer, &shaderLoadDesc, &pShObjects);
         ASSERT(pShObjects);
@@ -743,10 +742,10 @@ void Demo2Scene::Update(float deltaTime, uint32_t width, uint32_t height)
     scene.ProjectView = mProjectView;
 
     lightPosition = -scene.LightDirection[0].getXYZ() * lightDistant;
-    auto lightView = mat4::lookAt(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
+    auto lightView = mat4::lookAtLH(Point3(f3Tov3(lightPosition)), {0, 0, 0}, {0, 1, 0});
 
     scene.ShadowTransform =
-        mat4::orthographic(shadowLeft, shadowRight, shadowBottom, shadowTop, shadowNear, shadowFar) * lightView;
+        mat4::orthographicLH(shadowLeft, shadowRight, shadowBottom, shadowTop, shadowNear, shadowFar) * lightView;
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
     {
@@ -761,7 +760,7 @@ void Demo2Scene::PreDraw(uint32_t imageIndex)
         BufferUpdateDesc updateDesc = {pUbScene[imageIndex]};
         beginUpdateResource(&updateDesc);
         *static_cast<SceneUniformBlock *>(updateDesc.pMappedData) = scene;
-        endUpdateResource(&updateDesc, nullptr);
+        endUpdateResource(&updateDesc);
     }
 
     for (int i = 0; i < OBJECT_COUNT; i++)
@@ -769,7 +768,7 @@ void Demo2Scene::PreDraw(uint32_t imageIndex)
         BufferUpdateDesc updateDesc = {pUbObjects[imageIndex * OBJECT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = objects[i];
-        endUpdateResource(&updateDesc, nullptr);
+        endUpdateResource(&updateDesc);
     }
 
     for (int i = 0; i < DIRECTIONAL_LIGHT_COUNT; i++)
@@ -777,7 +776,7 @@ void Demo2Scene::PreDraw(uint32_t imageIndex)
         BufferUpdateDesc updateDesc = {pUbLightSources[imageIndex * DIRECTIONAL_LIGHT_COUNT + i]};
         beginUpdateResource(&updateDesc);
         *static_cast<ObjectUniformBlock *>(updateDesc.pMappedData) = lightSources[i];
-        endUpdateResource(&updateDesc, nullptr);
+        endUpdateResource(&updateDesc);
     }
 }
 

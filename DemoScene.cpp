@@ -104,7 +104,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
         ShaderLoadDesc basicShader = {};
-        basicShader.mStages[0] = {"basic.vert", nullptr, 0, nullptr, SHADER_STAGE_LOAD_FLAG_ENABLE_VR_MULTIVIEW};
+        basicShader.mStages[0] = {"basic.vert"};
         basicShader.mStages[1] = {"basic.frag"};
 
         addShader(pRenderer, &basicShader, &pShader);
@@ -271,5 +271,5 @@ void DemoScene::PreDraw(uint32_t imageIndex)
     BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffers[imageIndex]};
     beginUpdateResource(&viewProjCbv);
     *(UniformBlock *)viewProjCbv.pMappedData = uniform;
-    endUpdateResource(&viewProjCbv, nullptr);
+    endUpdateResource(&viewProjCbv);
 }

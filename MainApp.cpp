@@ -43,7 +43,7 @@ bool MainApp::Init()
     // gSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
 
     // FILE PATHS
-    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
+    // fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_BINARIES, "CompiledShaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_GPU_CONFIG, "GPUCfg");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_TEXTURES, "Textures");
@@ -56,7 +56,7 @@ bool MainApp::Init()
     RendererDesc settings{};
     settings.mD3D11Supported = false;
     settings.mGLESSupported = false;
-    settings.mEnableGPUBasedValidation = true;
+    // settings.mEnableGPUBasedValidation = true;
 
     initRenderer(GetName(), &settings, &pRenderer);
     // check for init success
@@ -193,8 +193,8 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
         swapChainDesc.ppPresentQueues = &pGraphicsQueue;
         swapChainDesc.mWidth = mSettings.mWidth;
         swapChainDesc.mHeight = mSettings.mHeight;
-        swapChainDesc.mImageCount = IMAGE_COUNT;
-        swapChainDesc.mColorFormat = getRecommendedSwapchainFormat(true, true);
+        swapChainDesc.mImageCount = getRecommendedSwapchainImageCount(pRenderer, &pWindow->handle);
+        swapChainDesc.mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB);
         swapChainDesc.mEnableVsync = mSettings.mVSyncEnabled;
         swapChainDesc.mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR;
         addSwapChain(pRenderer, &swapChainDesc, &pSwapChain);
