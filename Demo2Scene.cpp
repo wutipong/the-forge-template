@@ -784,7 +784,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 {
     DrawShadowRT(pCmd, imageIndex);
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, nullptr);
     {
         RenderTargetBarrier barriers[] = {
             {pSceneRenderTarget, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_RENDER_TARGET},
@@ -793,12 +793,16 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 2, barriers);
     }
 
-    LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
-    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
+    BindRenderTargetsDesc bindRenderTargets = {};
+    bindRenderTargets.mRenderTargetCount = 1;
+    bindRenderTargets.mRenderTargets[0] = {pSceneRenderTarget, LOAD_ACTION_CLEAR};
+    bindRenderTargets.mDepthStencil = {
+        .pDepthStencil = pDepthBuffer,
+        .mLoadAction = LOAD_ACTION_CLEAR,
+        .mClearValue = 0.0f,
+    };
 
-    cmdBindRenderTargets(pCmd, 1, &pSceneRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, &bindRenderTargets);
     cmdSetViewport(pCmd, 0, 0, (float)pSceneRenderTarget->mWidth, (float)pSceneRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pSceneRenderTarget->mWidth, pSceneRenderTarget->mHeight);
 
@@ -823,7 +827,7 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
         DrawShape::Draw(pCmd, DrawShape::Shape::Cube);
     }
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, nullptr);
     {
         RenderTargetBarrier barriers[] = {
             {pSceneRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_SHADER_RESOURCE},
@@ -837,20 +841,22 @@ void Demo2Scene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarge
 
 void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
 {
-    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, nullptr);
     {
         RenderTargetBarrier barriers[] = {
             {pRtShadowBuffer, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE}};
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
 
-    LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_DONTCARE;
-    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = pRtShadowBuffer->mClearValue.depth;
-    loadActions.mClearDepth.stencil = pRtShadowBuffer->mClearValue.stencil;
+    BindRenderTargetsDesc bindRenderTargets = {};
+    bindRenderTargets.mRenderTargetCount = 0;
+    bindRenderTargets.mDepthStencil = {
+        .pDepthStencil = pRtShadowBuffer,
+        .mLoadAction = LOAD_ACTION_CLEAR,
+        .mClearValue = pRtShadowBuffer->mClearValue,
+    };
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, pRtShadowBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, &bindRenderTargets);
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRtShadowBuffer->mWidth, (float)pRtShadowBuffer->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRtShadowBuffer->mWidth, pRtShadowBuffer->mHeight);
     cmdBindPipeline(pCmd, pPlShadow);
@@ -863,7 +869,7 @@ void Demo2Scene::DrawShadowRT(Cmd *&pCmd, uint32_t imageIndex)
         DrawShape::Draw(pCmd, objectTypes[i]);
     }
 
-    cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(pCmd, nullptr);
 
     {
         RenderTargetBarrier barriers[] = {

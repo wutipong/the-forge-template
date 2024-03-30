@@ -56,7 +56,6 @@ bool MainApp::Init()
     RendererDesc settings{};
     settings.mD3D11Supported = false;
     settings.mGLESSupported = false;
-    settings.mDisableShaderServer = true;
     // settings.mEnableGPUBasedValidation = true;
 
     initRenderer(GetName(), &settings, &pRenderer);
@@ -286,9 +285,11 @@ void MainApp::Draw()
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
-    cmdBindRenderTargets(cmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
+    BindRenderTargetsDesc bindRenderTargets = {};
+    bindRenderTargets.mRenderTargetCount = 1;
+    bindRenderTargets.mRenderTargets[0] = {pRenderTarget, LOAD_ACTION_LOAD};
+
+    cmdBindRenderTargets(cmd, &bindRenderTargets);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
 
@@ -302,7 +303,7 @@ void MainApp::Draw()
 
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
-    cmdBindRenderTargets(cmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+    cmdBindRenderTargets(cmd, nullptr);
     barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};
     cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
 

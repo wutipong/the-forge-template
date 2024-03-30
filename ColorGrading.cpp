@@ -8,8 +8,8 @@ namespace ColorGrading
     {
         float2 position;
         float2 texcoord;
-    }; 
-    
+    };
+
     std::array<screenVertex, 4> quad{
         screenVertex{{-1.0f, -1.0f}, {0.0f, 1.0f}},
         screenVertex{{1.0f, -1.0f}, {1.0f, 1.0f}},
@@ -35,12 +35,10 @@ namespace ColorGrading
         addResource(&vbDesc, token);
     }
 
-    void Exit()
-    {
-        removeResource(pVertexBuffer);
-    }
+    void Exit() { removeResource(pVertexBuffer); }
 
-    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture, Texture* pLUT)
+    void Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget, Texture *pTexture,
+              Texture *pLUT)
     {
         if (pReloadDesc->mType & (RELOAD_TYPE_SHADER))
         {
@@ -50,7 +48,7 @@ namespace ColorGrading
 
             addShader(pRenderer, &shaderLoadDesc, &pShader);
 
-            SamplerDesc samplerDesc {};
+            SamplerDesc samplerDesc{};
             samplerDesc.mAddressU = ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerDesc.mAddressV = ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerDesc.mMagFilter = FILTER_NEAREST;
@@ -63,7 +61,7 @@ namespace ColorGrading
             RootSignatureDesc rootDesc = {};
             rootDesc.mShaderCount = 1;
             rootDesc.ppShaders = &pShader;
-            rootDesc.mStaticSamplerCount =1;
+            rootDesc.mStaticSamplerCount = 1;
             rootDesc.ppStaticSamplers = &pSampler;
             rootDesc.ppStaticSamplerNames = &samplerName;
 
@@ -131,11 +129,13 @@ namespace ColorGrading
     }
 
 
-    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget) {
-        LoadActionsDesc loadActions = {};
-        loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
+    void Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
+    {
+        BindRenderTargetsDesc bindRenderTargets = {};
+        bindRenderTargets.mRenderTargetCount = 1;
+        bindRenderTargets.mRenderTargets[0] = {pRenderTarget, LOAD_ACTION_CLEAR};
 
-        cmdBindRenderTargets(pCmd, 1, &pRenderTarget, nullptr, &loadActions, nullptr, nullptr, -1, -1);
+        cmdBindRenderTargets(pCmd, &bindRenderTargets);
         cmdSetViewport(pCmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
         cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 

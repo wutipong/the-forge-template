@@ -2,23 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 
 project(the-forge-template)
 
-add_executable(main
-    "MainApp.cpp"
-    "DemoScene.cpp" "DemoScene.h"
-    "Demo2Scene.cpp" "Demo2Scene.h" 
-    "DrawShape.cpp" "DrawShape.h"
-    "Drawquad.cpp" "DrawQuad.h"
-    "QuadDemoScene.cpp" "QuadDemoScene.h"
-    # "SMAA.cpp"  "SMAA.h"
-    "ColorGrading.cpp" "ColorGrading.h"
-    "PostProcessing.cpp" "PostProcessing.h"
-    "The-Forge/Common_3/Application/CameraController.cpp"
-    "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
-    "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
-    "The-Forge/Common_3/Application/InputSystem.cpp"
-    "The-Forge/Common_3/Application/Profiler/GpuProfiler.cpp"
-    "The-Forge/Common_3/Application/Profiler/ProfilerBase.cpp"
-    "The-Forge/Common_3/Application/RemoteControl.cpp"
+add_library(gainput 
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/gainput.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/GainputAllocator.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/GainputInputDeltaState.cpp"
@@ -42,6 +26,25 @@ add_executable(main
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/pad/GainputInputDevicePad.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/touch/GainputInputDeviceTouch.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/hidapi/windows/hid.c"
+)
+
+if (MSVC)
+    target_compile_definitions (gainput PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+endif ()
+
+target_include_directories(gainput PUBLIC
+    "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
+)
+
+add_library(the-forge
+    "The-Forge/Common_3/Application/CameraController.cpp"
+    "The-Forge/Common_3/Application/Fonts/FontSystem.cpp"
+    "The-Forge/Common_3/Application/Fonts/stbtt.cpp"
+    "The-Forge/Common_3/Application/InputSystem.cpp"
+    "The-Forge/Common_3/Application/Profiler/GpuProfiler.cpp"
+    "The-Forge/Common_3/Application/Profiler/ProfilerBase.cpp"
+    "The-Forge/Common_3/Application/RemoteControl.cpp"
+    "The-Forge/Common_3/Application/Screenshot.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/imgui/imgui_demo.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/imgui/imgui_draw.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/imgui/imgui_tables.cpp"
@@ -127,7 +130,6 @@ add_executable(main
     "The-Forge/Common_3/Utilities/Math/Algorithms.c"
     "The-Forge/Common_3/Utilities/Math/StbDs.c"
     "The-Forge/Common_3/Utilities/MemoryTracking/MemoryTracking.c"
-    "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/basis_universal/transcoder/basisu_transcoder.cpp"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/bstrlib/bstrlib.c"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/lz4/lz4.c"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/lz4/lz4.h"
@@ -167,6 +169,58 @@ add_executable(main
     "The-Forge/Common_3/Utilities/Timer.c"
 )
 
+if (MSVC)
+    target_compile_definitions (the-forge PRIVATE -D_UNICODE -DUNICODE)
+    target_compile_definitions (the-forge PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+endif ()
+
+add_executable(main
+    "MainApp.cpp"
+    "DemoScene.cpp" "DemoScene.h"
+    "Demo2Scene.cpp" "Demo2Scene.h" 
+    "DrawShape.cpp" "DrawShape.h"
+    "Drawquad.cpp" "DrawQuad.h"
+    "QuadDemoScene.cpp" "QuadDemoScene.h"
+    # "SMAA.cpp"  "SMAA.h"
+    "ColorGrading.cpp" "ColorGrading.h"
+    "PostProcessing.cpp" "PostProcessing.h"
+)
+
+target_include_directories(main PRIVATE
+    "The-Forge/Common_3/Application/Interfaces"
+    "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
+    "The-Forge/Common_3/Graphics/Interfaces"
+    "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/inc"
+    "The-Forge/Common_3/OS/Interfaces"
+    "The-Forge/Common_3/Resources/ResourceLoader/Interfaces"
+    "The-Forge/Common_3/Utilities"
+    "The-Forge/Common_3/Utilities/Interfaces"
+    "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/Nothings/"
+)
+
+target_link_libraries(main PRIVATE  
+    the-forge
+    gainput
+)
+
+if (WIN32)
+    target_link_libraries(main PRIVATE 
+        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/nvapi/amd64/nvapi64.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/lib/x64/dxcompiler.lib"
+        XInput 
+    )
+
+    add_custom_target(CopyDlls ALL      
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/"      
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll" "$<TARGET_FILE_DIR:main>/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll" "$<TARGET_FILE_DIR:main>/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll" "$<TARGET_FILE_DIR:main>/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxil.dll" "$<TARGET_FILE_DIR:main>/"
+    )
+endif ()
+
 # find_package(Vulkan REQUIRED)
 
 target_compile_features(main PRIVATE cxx_std_20)
@@ -176,7 +230,7 @@ set_property(TARGET main PROPERTY CXX_STANDARD_REQUIRED ON)
 if (MSVC)
     # set_property(TARGET main PROPERTY WIN32_EXECUTABLE ON)
     target_compile_options(main PRIVATE /Zc:__cplusplus)
-    target_compile_definitions (main PRIVATE -D_UNICODE -DUNICODE)
+    # target_compile_definitions (main PRIVATE -D_UNICODE -DUNICODE)
 endif ()
 
 target_include_directories(main PRIVATE
@@ -201,19 +255,10 @@ target_link_directories(main PRIVATE
 
 target_link_libraries(main PRIVATE 
     XInput 
-#    Vulkan::Vulkan 
     WinPixEventRuntime 
     amd_ags_x64 
     nvapi64
     dxcompiler
-)
-
-add_custom_target(CopyDlls ALL      
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/"      
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin/WinPixEventRuntime.dll" "$<TARGET_FILE_DIR:main>/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll" "$<TARGET_FILE_DIR:main>/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll" "$<TARGET_FILE_DIR:main>/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxil.dll" "$<TARGET_FILE_DIR:main>/"
 )
 
 add_custom_target(CopyGpuCfg ALL

@@ -242,21 +242,15 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
 {
-    // simply record the screen cleaning command
-    LoadActionsDesc loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_CLEAR;
-    loadActions.mLoadActionDepth = LOAD_ACTION_CLEAR;
-    loadActions.mClearDepth.depth = 0.0f;
-    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
+    BindRenderTargetsDesc bindRenderTargets = {};
+        bindRenderTargets.mRenderTargetCount = 1;
+        bindRenderTargets.mRenderTargets[0] = { pRenderTarget, LOAD_ACTION_CLEAR };
+        bindRenderTargets.mDepthStencil = { pDepthBuffer, LOAD_ACTION_CLEAR };
+
+    cmdBindRenderTargets(pCmd, &bindRenderTargets);
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
-
-    loadActions = {};
-    loadActions.mLoadActionsColor[0] = LOAD_ACTION_LOAD;
-    loadActions.mLoadActionDepth = LOAD_ACTION_LOAD;
-    loadActions.mClearDepth.depth = 0.0f;
-    cmdBindRenderTargets(pCmd, 1, &pRenderTarget, pDepthBuffer, &loadActions, nullptr, nullptr, -1, -1);
-
+    
     cmdBindPipeline(pCmd, pSpherePipeline);
     cmdBindDescriptorSet(pCmd, imageIndex, pDescriptorSetUniforms);
 

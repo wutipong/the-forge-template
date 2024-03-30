@@ -146,7 +146,7 @@ namespace PostProcessing
 
             if (pOutput != pRenderTarget)
             {
-                cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+                cmdBindRenderTargets(pCmd, nullptr);
                 std::array<RenderTargetBarrier, 1> barriers = {
                     RenderTargetBarrier{pOutput, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_RENDER_TARGET},
                 };
@@ -167,7 +167,7 @@ namespace PostProcessing
 
             if (pOutput != pRenderTarget)
             {
-                cmdBindRenderTargets(pCmd, 0, nullptr, nullptr, nullptr, nullptr, nullptr, -1, -1);
+                cmdBindRenderTargets(pCmd, nullptr);
 
                 std::array<RenderTargetBarrier, 1> barriers = {
                     RenderTargetBarrier{pOutput, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_SHADER_RESOURCE},
