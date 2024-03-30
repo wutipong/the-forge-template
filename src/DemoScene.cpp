@@ -158,6 +158,11 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         vertexLayout.mAttribs[1].mLocation = 1;
         vertexLayout.mAttribs[1].mOffset = 3 * sizeof(float);
 
+        vertexLayout.mBindingCount = 1;
+        vertexLayout.mBindings[0] = {
+            .mStride = sizeof(float) * 6,
+        };
+
         RasterizerStateDesc sphereRasterizerStateDesc = {};
         sphereRasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
 
@@ -243,14 +248,14 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
 {
     BindRenderTargetsDesc bindRenderTargets = {};
-        bindRenderTargets.mRenderTargetCount = 1;
-        bindRenderTargets.mRenderTargets[0] = { pRenderTarget, LOAD_ACTION_CLEAR };
-        bindRenderTargets.mDepthStencil = { pDepthBuffer, LOAD_ACTION_CLEAR };
+    bindRenderTargets.mRenderTargetCount = 1;
+    bindRenderTargets.mRenderTargets[0] = {pRenderTarget, LOAD_ACTION_CLEAR};
+    bindRenderTargets.mDepthStencil = {pDepthBuffer, LOAD_ACTION_CLEAR};
 
     cmdBindRenderTargets(pCmd, &bindRenderTargets);
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
-    
+
     cmdBindPipeline(pCmd, pSpherePipeline);
     cmdBindDescriptorSet(pCmd, imageIndex, pDescriptorSetUniforms);
 
