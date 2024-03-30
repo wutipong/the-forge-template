@@ -68,6 +68,7 @@ VertexLayout DrawShape::GetVertexLayout()
     // layout and pipeline for sphere draw
     VertexLayout vertexLayout = {};
     vertexLayout.mAttribCount = 2;
+    
     vertexLayout.mAttribs[0].mSemantic = SEMANTIC_POSITION;
     vertexLayout.mAttribs[0].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
     vertexLayout.mAttribs[0].mBinding = 0;
@@ -79,6 +80,9 @@ VertexLayout DrawShape::GetVertexLayout()
     vertexLayout.mAttribs[1].mBinding = 0;
     vertexLayout.mAttribs[1].mLocation = 1;
     vertexLayout.mAttribs[1].mOffset = 3 * sizeof(float);
+
+    vertexLayout.mBindingCount = 1;
+    vertexLayout.mBindings[0].mStride = sizeof(float) * 6;
 
     return vertexLayout;
 }

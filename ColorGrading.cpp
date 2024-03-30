@@ -84,6 +84,9 @@ namespace ColorGrading
             vertexLayout.mAttribs[1].mLocation = 1;
             vertexLayout.mAttribs[1].mOffset = 2 * sizeof(float);
 
+            vertexLayout.mBindingCount = 1;
+            vertexLayout.mBindings[0].mStride = 4 * sizeof(float);
+
             PipelineDesc pipelineDesc = {};
             pipelineDesc.mType = PIPELINE_TYPE_GRAPHICS;
             GraphicsPipelineDesc &pipelineSettings = pipelineDesc.mGraphicsDesc;
@@ -106,10 +109,10 @@ namespace ColorGrading
 
         {
             std::array<DescriptorData, 2> params = {};
-            params[0].pName = "texture";
+            params[0].pName = "colorTex";
             params[0].ppTextures = &pTexture;
 
-            params[1].pName = "lut";
+            params[1].pName = "lutTex";
             params[1].ppTextures = &pLUT;
 
             updateDescriptorSet(pRenderer, 0, pDescriptorSet, params.size(), params.data());
