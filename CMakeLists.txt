@@ -175,15 +175,21 @@ if (MSVC)
 endif ()
 
 add_executable(main
-    "MainApp.cpp"
-    "DemoScene.cpp" "DemoScene.h"
-    "Demo2Scene.cpp" "Demo2Scene.h" 
-    "DrawShape.cpp" "DrawShape.h"
-    "Drawquad.cpp" "DrawQuad.h"
-    "QuadDemoScene.cpp" "QuadDemoScene.h"
-    # "SMAA.cpp"  "SMAA.h"
-    "ColorGrading.cpp" "ColorGrading.h"
-    "PostProcessing.cpp" "PostProcessing.h"
+    "src/ColorGrading.cpp" 
+    "src/ColorGrading.h"
+    "src/Demo2Scene.cpp" 
+    "src/Demo2Scene.h" 
+    "src/DemoScene.cpp" 
+    "src/DemoScene.h"
+    "src/Drawquad.cpp" 
+    "src/DrawQuad.h"
+    "src/DrawShape.cpp" 
+    "src/DrawShape.h"
+    "src/MainApp.cpp"
+    "src/PostProcessing.cpp" 
+    "src/PostProcessing.h"
+    "src/QuadDemoScene.cpp" 
+    "src/QuadDemoScene.h"
 )
 
 target_include_directories(main PRIVATE
