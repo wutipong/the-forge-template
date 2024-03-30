@@ -24,13 +24,13 @@ bool QuadDemoScene::Init()
     SyncToken token = {};
     TextureLoadDesc desc{};
     desc.ppTexture = &pTextures[0];
-    desc.pFileName = "Quad0";
+    desc.pFileName = "Quad0.dds";
 
     addResource(&desc, &token);
 
     desc = {};
     desc.ppTexture = &pTextures[1];
-    desc.pFileName = "Quad1";
+    desc.pFileName = "Quad1.dds";
 
     addResource(&desc, &token);
 

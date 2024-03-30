@@ -67,12 +67,17 @@ namespace DrawQuad
             vertexLayout.mAttribs[1].mLocation = 1;
             vertexLayout.mAttribs[1].mOffset = sizeof(float2);
 
+            vertexLayout.mBindingCount = 1;
+            vertexLayout.mBindings[0] = {
+                .mStride = sizeof(float) * 4,
+            };
+
             BlendStateDesc blendStateDesc = {};
             blendStateDesc.mSrcFactors[0] = BC_SRC_ALPHA;
             blendStateDesc.mDstFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
             blendStateDesc.mSrcAlphaFactors[0] = BC_SRC_ALPHA;
             blendStateDesc.mDstAlphaFactors[0] = BC_ONE_MINUS_SRC_ALPHA;
-            //blendStateDesc.mMasks[0] = ALL;
+            // blendStateDesc.mMasks[0] = ALL;
             blendStateDesc.mRenderTargetMask = BLEND_STATE_TARGET_ALL;
             blendStateDesc.mIndependentBlend = false;
 
@@ -149,7 +154,7 @@ namespace DrawQuad
 
         {
             DescriptorData params = {};
-            params.pName = "texture";
+            params.pName = "colorTex";
             params.ppTextures = &pTexture;
 
             updateDescriptorSet(pRenderer, 0, _pDSTexture, 1, &params);

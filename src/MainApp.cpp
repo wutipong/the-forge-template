@@ -13,7 +13,7 @@
 #include "QuadDemoScene.h"
 #include "Settings.h"
 
-namespace Scene = DemoScene;
+namespace Scene = QuadDemoScene;
 
 extern RendererApi gSelectedRendererApi;
 
