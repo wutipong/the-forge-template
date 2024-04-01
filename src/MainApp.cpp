@@ -8,9 +8,7 @@
 #include <IResourceLoader.h>
 #include <IUI.h>
 #include <cstdlib>
-#include "Demo2Scene.h"
 #include "DemoScene.h"
-#include "QuadDemoScene.h"
 #include "Settings.h"
 
 namespace Scene = DemoScene;
