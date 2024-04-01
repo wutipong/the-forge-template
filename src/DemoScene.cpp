@@ -112,7 +112,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
 
-        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, IMAGE_COUNT};
+        DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, 1};
         addDescriptorSet(pRenderer, &desc, &pDSUniform);
 
         ASSERT(pDSUniform);
@@ -241,7 +241,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     uniform.mLightPosition = lightPosition;
 }
 
-void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget, uint32_t imageIndex)
+void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
     BindRenderTargetsDesc bindRenderTargets = {};
     bindRenderTargets.mRenderTargetCount = 1;
@@ -261,7 +261,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdDrawInstanced(pCmd, vertexCount / 6, 0, MAX_STARS, 0);
 }
 
-void DemoScene::PreDraw(uint32_t imageIndex)
+void DemoScene::PreDraw()
 {
     BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffer};
     beginUpdateResource(&viewProjCbv);

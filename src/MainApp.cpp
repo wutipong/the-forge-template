@@ -12,7 +12,6 @@
 #include "DemoScene.h"
 #include "Settings.h"
 
-
 namespace Scene = DemoScene;
 
 extern RendererApi gSelectedRendererApi;
@@ -27,7 +26,6 @@ namespace
     uint32_t gFontID = 0;
     GpuCmdRing gGraphicsCmdRing = {};
 
-    uint32_t gimageIndex = 0;
     Semaphore *pImageAcquiredSemaphore = nullptr;
 
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
@@ -239,7 +237,7 @@ void MainApp::Draw()
         waitForFences(pRenderer, 1, &elem.pFence);
     }
 
-    Scene::PreDraw(gimageIndex);
+    Scene::PreDraw();
 
     // Reset cmd pool for this frame
     resetCmdPool(pRenderer, elem.pCmdPool);
@@ -255,7 +253,7 @@ void MainApp::Draw()
     cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw Scene");
-    Scene::Draw(cmd, pRenderer, pRenderTarget, gimageIndex);
+    Scene::Draw(cmd, pRenderer, pRenderTarget);
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
@@ -305,8 +303,6 @@ void MainApp::Draw()
 
     queuePresent(pGraphicsQueue, &presentDesc);
     flipProfiler();
-
-    gimageIndex = (gimageIndex + 1) % IMAGE_COUNT;
 }
 
 DEFINE_APPLICATION_MAIN(MainApp);
