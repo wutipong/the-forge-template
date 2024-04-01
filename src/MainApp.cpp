@@ -7,9 +7,11 @@
 #include <IProfiler.h>
 #include <IResourceLoader.h>
 #include <IUI.h>
+#include <RingBuffer.h>
 #include <cstdlib>
 #include "DemoScene.h"
 #include "Settings.h"
+
 
 namespace Scene = DemoScene;
 
@@ -23,16 +25,16 @@ namespace
     UIComponent *pGuiWindow = nullptr;
     Queue *pGraphicsQueue = nullptr;
     uint32_t gFontID = 0;
-    Cmd *pCmds[IMAGE_COUNT]{nullptr};
-    CmdPool *pCmdPools[IMAGE_COUNT]{nullptr};
+    GpuCmdRing gGraphicsCmdRing = {};
+
     uint32_t gimageIndex = 0;
-    Fence *pRenderCompleteFences[IMAGE_COUNT]{nullptr};
-    Semaphore *pRenderCompleteSemaphores[IMAGE_COUNT] = {nullptr};
     Semaphore *pImageAcquiredSemaphore = nullptr;
 
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
     FontDrawDesc gFrameTimeDraw;
 } // namespace
+
+const char *MainApp::GetName() { return "The Forge Template"; }
 
 bool MainApp::Init()
 {
@@ -66,19 +68,13 @@ bool MainApp::Init()
     queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
     addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
 
-    for (uint32_t i = 0; i < IMAGE_COUNT; ++i)
-    {
-        CmdPoolDesc cmdPoolDesc = {};
-        cmdPoolDesc.pQueue = pGraphicsQueue;
-        addCmdPool(pRenderer, &cmdPoolDesc, &pCmdPools[i]);
+    GpuCmdRingDesc cmdRingDesc = {};
+    cmdRingDesc.pQueue = pGraphicsQueue;
+    cmdRingDesc.mPoolCount = gDataBufferCount;
+    cmdRingDesc.mCmdPerPoolCount = 1;
+    cmdRingDesc.mAddSyncPrimitives = true;
+    addGpuCmdRing(pRenderer, &cmdRingDesc, &gGraphicsCmdRing);
 
-        CmdDesc cmdDesc = {};
-        cmdDesc.pPool = pCmdPools[i];
-        addCmd(pRenderer, &cmdDesc, &pCmds[i]);
-
-        addFence(pRenderer, &pRenderCompleteFences[i]);
-        addSemaphore(pRenderer, &pRenderCompleteSemaphores[i]);
-    }
     addSemaphore(pRenderer, &pImageAcquiredSemaphore);
 
     initResourceLoaderInterface(pRenderer);
@@ -153,27 +149,8 @@ void MainApp::Exit()
 
     exitProfiler();
 
-    for (auto &f : pRenderCompleteFences)
-    {
-        removeFence(pRenderer, f);
-    }
-
-    for (auto &s : pRenderCompleteSemaphores)
-    {
-        removeSemaphore(pRenderer, s);
-    }
-
-    for (auto &c : pCmds)
-    {
-        removeCmd(pRenderer, c);
-    }
-
-    for (auto &p : pCmdPools)
-    {
-        removeCmdPool(pRenderer, p);
-    }
-
     removeSemaphore(pRenderer, pImageAcquiredSemaphore);
+    removeGpuCmdRing(pRenderer, &gGraphicsCmdRing);
 
     exitResourceLoaderInterface(pRenderer);
     removeQueue(pRenderer, pGraphicsQueue);
@@ -252,21 +229,22 @@ void MainApp::Draw()
     acquireNextImage(pRenderer, pSwapChain, pImageAcquiredSemaphore, nullptr, &swapchainImageIndex);
 
     RenderTarget *pRenderTarget = pSwapChain->ppRenderTargets[swapchainImageIndex];
-    Semaphore *pRenderCompleteSemaphore = pRenderCompleteSemaphores[gimageIndex];
-    Fence *pRenderCompleteFence = pRenderCompleteFences[gimageIndex];
+    GpuCmdRingElement elem = getNextGpuCmdRingElement(&gGraphicsCmdRing, true, 1);
 
     // Stall if CPU is running "Swap Chain Buffer Count" frames ahead of GPU
     FenceStatus fenceStatus;
-    getFenceStatus(pRenderer, pRenderCompleteFence, &fenceStatus);
+    getFenceStatus(pRenderer, elem.pFence, &fenceStatus);
     if (fenceStatus == FENCE_STATUS_INCOMPLETE)
-        waitForFences(pRenderer, 1, &pRenderCompleteFence);
+    {
+        waitForFences(pRenderer, 1, &elem.pFence);
+    }
 
     Scene::PreDraw(gimageIndex);
 
     // Reset cmd pool for this frame
-    resetCmdPool(pRenderer, pCmdPools[gimageIndex]);
+    resetCmdPool(pRenderer, elem.pCmdPool);
 
-    Cmd *cmd = pCmds[gimageIndex];
+    Cmd* cmd = elem.pCmds[0];
     beginCmd(cmd);
 
     cmdBeginGpuFrameProfile(cmd, gGpuProfileToken);
@@ -313,16 +291,16 @@ void MainApp::Draw()
     submitDesc.mSignalSemaphoreCount = 1;
     submitDesc.mWaitSemaphoreCount = 1;
     submitDesc.ppCmds = &cmd;
-    submitDesc.ppSignalSemaphores = &pRenderCompleteSemaphore;
+    submitDesc.ppSignalSemaphores = &elem.pSemaphore;
     submitDesc.ppWaitSemaphores = &pImageAcquiredSemaphore;
-    submitDesc.pSignalFence = pRenderCompleteFence;
+    submitDesc.pSignalFence = elem.pFence;
     queueSubmit(pGraphicsQueue, &submitDesc);
 
     QueuePresentDesc presentDesc = {};
     presentDesc.mIndex = swapchainImageIndex;
     presentDesc.mWaitSemaphoreCount = 1;
     presentDesc.pSwapChain = pSwapChain;
-    presentDesc.ppWaitSemaphores = &pRenderCompleteSemaphore;
+    presentDesc.ppWaitSemaphores = &elem.pSemaphore;
     presentDesc.mSubmitDone = true;
 
     queuePresent(pGraphicsQueue, &presentDesc);
@@ -330,7 +308,5 @@ void MainApp::Draw()
 
     gimageIndex = (gimageIndex + 1) % IMAGE_COUNT;
 }
-
-const char *MainApp::GetName() { return "The Forge Template"; }
 
 DEFINE_APPLICATION_MAIN(MainApp);

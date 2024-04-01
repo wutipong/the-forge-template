@@ -31,10 +31,10 @@ namespace DemoScene
 
     Shader *pShader{nullptr};
     RootSignature *pRootSignature{nullptr};
-    DescriptorSet *pDescriptorSetUniforms{nullptr};
-    std::array<Buffer *, IMAGE_COUNT> pProjViewUniformBuffers{nullptr};
+    DescriptorSet *pDSUniform{nullptr};
+    Buffer *pProjViewUniformBuffer{nullptr};
     Buffer *pSphereVertexBuffer{nullptr};
-    Pipeline *pSpherePipeline{nullptr};
+    Pipeline *pPLSphere{nullptr};
 
     ICameraController *pCameraController{nullptr};
 
@@ -64,12 +64,8 @@ bool DemoScene::Init()
     ubDesc.mDesc.mSize = sizeof(UniformBlock);
     ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     ubDesc.pData = nullptr;
-
-    for (auto &buffer : pProjViewUniformBuffers)
-    {
-        ubDesc.ppBuffer = &buffer;
-        addResource(&ubDesc, &token);
-    }
+    ubDesc.ppBuffer = &pProjViewUniformBuffer;
+    addResource(&ubDesc, &token);
 
     for (size_t i = 0; i < MAX_STARS; i++)
     {
@@ -92,11 +88,7 @@ bool DemoScene::Init()
 
 void DemoScene::Exit()
 {
-    for (auto &buffer : pProjViewUniformBuffers)
-    {
-        removeResource(buffer);
-    }
-
+    removeResource(pProjViewUniformBuffer);
     removeResource(pSphereVertexBuffer);
 
     exitCameraController(pCameraController);
@@ -121,9 +113,9 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         ASSERT(pRootSignature);
 
         DescriptorSetDesc desc = {pRootSignature, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, IMAGE_COUNT};
-        addDescriptorSet(pRenderer, &desc, &pDescriptorSetUniforms);
+        addDescriptorSet(pRenderer, &desc, &pDSUniform);
 
-        ASSERT(pDescriptorSetUniforms);
+        ASSERT(pDSUniform);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
@@ -189,18 +181,15 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         pipelineSettings.pVertexLayout = &vertexLayout;
         pipelineSettings.pRasterizerState = &sphereRasterizerStateDesc;
         pipelineSettings.mVRFoveatedRendering = true;
-        addPipeline(pRenderer, &desc, &pSpherePipeline);
-        ASSERT(pSpherePipeline);
+        addPipeline(pRenderer, &desc, &pPLSphere);
+        ASSERT(pPLSphere);
     }
 
-    for (uint32_t i = 0; i < pProjViewUniformBuffers.size(); ++i)
-    {
-        DescriptorData params = {};
-        params.pName = "uniformBlock";
-        params.ppBuffers = &pProjViewUniformBuffers[i];
+    DescriptorData params = {};
+    params.pName = "uniformBlock";
+    params.ppBuffers = &pProjViewUniformBuffer;
 
-        updateDescriptorSet(pRenderer, i, pDescriptorSetUniforms, 1, &params);
-    }
+    updateDescriptorSet(pRenderer, 0, pDSUniform, 1, &params);
 
     return true;
 }
@@ -209,12 +198,12 @@ void DemoScene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 {
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
-        removePipeline(pRenderer, pSpherePipeline);
+        removePipeline(pRenderer, pPLSphere);
     }
 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
-        removeDescriptorSet(pRenderer, pDescriptorSetUniforms);
+        removeDescriptorSet(pRenderer, pDSUniform);
         removeRootSignature(pRenderer, pRootSignature);
         removeShader(pRenderer, pShader);
     }
@@ -263,8 +252,8 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(pCmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    cmdBindPipeline(pCmd, pSpherePipeline);
-    cmdBindDescriptorSet(pCmd, imageIndex, pDescriptorSetUniforms);
+    cmdBindPipeline(pCmd, pPLSphere);
+    cmdBindDescriptorSet(pCmd, 0, pDSUniform);
 
     constexpr uint32_t sphereVbStride = sizeof(float) * 6;
     cmdBindVertexBuffer(pCmd, 1, &pSphereVertexBuffer, &sphereVbStride, nullptr);
@@ -274,7 +263,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
 
 void DemoScene::PreDraw(uint32_t imageIndex)
 {
-    BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffers[imageIndex]};
+    BufferUpdateDesc viewProjCbv = {pProjViewUniformBuffer};
     beginUpdateResource(&viewProjCbv);
     *(UniformBlock *)viewProjCbv.pMappedData = uniform;
     endUpdateResource(&viewProjCbv);
