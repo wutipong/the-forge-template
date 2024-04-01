@@ -28,7 +28,6 @@ namespace
     Semaphore *pImageAcquiredSemaphore = nullptr;
 
     ProfileToken gGpuProfileToken = PROFILE_INVALID_TOKEN;
-    FontDrawDesc gFrameTimeDraw;
 } // namespace
 
 const char *MainApp::GetName() { return "The Forge Template"; }
@@ -91,10 +90,11 @@ bool MainApp::Init()
     initResourceLoaderInterface(pRenderer);
 
     // Initialize micro profiler and its UI.
-    ProfilerDesc profiler = {};
-    profiler.pRenderer = pRenderer;
-    profiler.mWidthUI = mSettings.mWidth;
-    profiler.mHeightUI = mSettings.mHeight;
+    ProfilerDesc profiler = {
+        .pRenderer = pRenderer,
+        .mWidthUI = static_cast<uint32_t>(mSettings.mWidth),
+        .mHeightUI = static_cast<uint32_t>(mSettings.mHeight),
+    };
     initProfiler(&profiler);
 
     // Gpu profiler can only be added after initProfile.
@@ -119,8 +119,9 @@ bool MainApp::Init()
     };
     initUserInterface(&uiRenderDesc);
 
-    UIComponentDesc guiDesc = {};
-    guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f);
+    UIComponentDesc guiDesc = {
+        .mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f),
+    };
     uiCreateComponent(GetName(), &guiDesc, &pGuiWindow);
 
     // Take a screenshot with a button.
@@ -129,9 +130,10 @@ bool MainApp::Init()
 
     waitForAllResourceLoads();
 
-    InputSystemDesc inputDesc{};
-    inputDesc.pRenderer = pRenderer;
-    inputDesc.pWindow = pWindow;
+    InputSystemDesc inputDesc{
+        .pRenderer = pRenderer,
+        .pWindow = pWindow,
+    };
     if (!initInputSystem(&inputDesc))
     {
         return false;
@@ -183,7 +185,7 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
             .ppPresentQueues = &pGraphicsQueue,
             .mPresentQueueCount = 1,
             .mImageCount = getRecommendedSwapchainImageCount(pRenderer, &pWindow->handle),
-            .mWidth =  static_cast<uint32_t>(mSettings.mWidth),
+            .mWidth = static_cast<uint32_t>(mSettings.mWidth),
             .mHeight = static_cast<uint32_t>(mSettings.mHeight),
             .mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB),
             .mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR,
@@ -280,17 +282,20 @@ void MainApp::Draw()
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    BindRenderTargetsDesc bindRenderTargets = {};
-    bindRenderTargets.mRenderTargetCount = 1;
-    bindRenderTargets.mRenderTargets[0] = {pRenderTarget, LOAD_ACTION_LOAD};
+    BindRenderTargetsDesc bindRenderTargets = {
+        .mRenderTargetCount = 1,
+        .mRenderTargets = {{pRenderTarget, LOAD_ACTION_LOAD}},
+    };
 
     cmdBindRenderTargets(cmd, &bindRenderTargets);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
 
-    gFrameTimeDraw.mFontColor = 0xff00ffff;
-    gFrameTimeDraw.mFontSize = 18.0f;
-    gFrameTimeDraw.mFontID = gFontID;
+    FontDrawDesc gFrameTimeDraw{
+        .mFontID = gFontID,
+        .mFontColor = 0xff00ffff,
+        .mFontSize = 18.0f,
+    };
     float2 txtSizePx = cmdDrawCpuProfile(cmd, float2(8.f, 15.f), &gFrameTimeDraw);
     cmdDrawGpuProfile(cmd, float2(8.f, txtSizePx.y + 75.f), gGpuProfileToken, &gFrameTimeDraw);
 
