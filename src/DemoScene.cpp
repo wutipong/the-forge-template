@@ -14,16 +14,16 @@ namespace DemoScene
     int vertexCount{};
 
     constexpr size_t MAX_STARS = 768;
-    vec3 position[MAX_STARS]{};
-    vec4 color[MAX_STARS]{};
+    std::array<vec3, MAX_STARS> position{};
+    std::array<vec4, MAX_STARS> color{};
     vec3 lightPosition{1.0f, 0, 0};
     vec3 lightColor{0.9f, 0.9f, 0.7f};
 
     struct UniformBlock
     {
         CameraMatrix mProjectView;
-        mat4 mToWorldMat[MAX_STARS];
-        vec4 mColor[MAX_STARS];
+        std::array<mat4, MAX_STARS> mToWorldMat;
+        std::array<vec4, MAX_STARS> mColor;
 
         vec3 mLightPosition;
         vec3 mLightColor;
@@ -239,7 +239,11 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
         position[i].setZ(position[i].getZ() + deltaTime * 100.0f);
         if (position[i].getZ() > 100)
         {
+            position[i].setX(randomFloat(-100, 100));
+            position[i].setY(randomFloat(-100, 100));
             position[i].setZ(randomFloat(-100, 100));
+
+            color[i] = {randomFloat01(), randomFloat01(), randomFloat01(), 1.0};
         }
         uniform.mColor[i] = color[i];
         uniform.mToWorldMat[i] = mat4(0).identity().translation(position[i]);
