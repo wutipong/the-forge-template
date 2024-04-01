@@ -9,12 +9,11 @@
 #include <IUI.h>
 #include <RingBuffer.h>
 #include <cstdlib>
+#include <string>
 #include "DemoScene.h"
 #include "Settings.h"
 
 namespace Scene = DemoScene;
-
-extern RendererApi gSelectedRendererApi;
 
 namespace
 {
@@ -37,40 +36,54 @@ const char *MainApp::GetName() { return "The Forge Template"; }
 bool MainApp::Init()
 {
     srand(time(NULL));
+    extern PlatformParameters gPlatformParameters;
 
-    // gSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
+    for (int i = 0; i < IApp::argc; i++)
+    {
+        std::string arg(IApp::argv[i]);
+        if (arg == "--vulkan")
+        {
+            gPlatformParameters.mSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
+        }
+
+        if (arg == "--directx12")
+        {
+            gPlatformParameters.mSelectedRendererApi = RendererApi::RENDERER_API_D3D12;
+        }
+    }
 
     // FILE PATHS
-    // fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_SOURCES, "Shaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_BINARIES, "CompiledShaders");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_GPU_CONFIG, "GPUCfg");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_TEXTURES, "Textures");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
     fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SCRIPTS, "Scripts");
-    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_OTHER_FILES, "Noesis");
 
     // window and renderer setup
-    RendererDesc settings{};
-    settings.mD3D11Supported = false;
-    settings.mGLESSupported = false;
-    // settings.mEnableGPUBasedValidation = true;
+    RendererDesc settings{
+        .mD3D11Supported = false,
+        .mGLESSupported = false,
+    };
 
     initRenderer(GetName(), &settings, &pRenderer);
-    // check for init success
     if (!pRenderer)
+    {
         return false;
+    }
 
-    QueueDesc queueDesc = {};
-    queueDesc.mType = QUEUE_TYPE_GRAPHICS;
-    queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
+    QueueDesc queueDesc = {
+        .mType = QUEUE_TYPE_GRAPHICS,
+        .mFlag = QUEUE_FLAG_INIT_MICROPROFILE,
+    };
     addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
 
-    GpuCmdRingDesc cmdRingDesc = {};
-    cmdRingDesc.pQueue = pGraphicsQueue;
-    cmdRingDesc.mPoolCount = gDataBufferCount;
-    cmdRingDesc.mCmdPerPoolCount = 1;
-    cmdRingDesc.mAddSyncPrimitives = true;
+    GpuCmdRingDesc cmdRingDesc = {
+        .pQueue = pGraphicsQueue,
+        .mPoolCount = gDataBufferCount,
+        .mCmdPerPoolCount = 1,
+        .mAddSyncPrimitives = true,
+    };
     addGpuCmdRing(pRenderer, &cmdRingDesc, &gGraphicsCmdRing);
 
     addSemaphore(pRenderer, &pImageAcquiredSemaphore);
@@ -88,19 +101,22 @@ bool MainApp::Init()
     gGpuProfileToken = addGpuProfiler(pRenderer, pGraphicsQueue, "Graphics");
 
     // Load fonts
-    FontDesc font = {};
-    font.pFontPath = "TitilliumText/TitilliumText-Bold.otf";
+    FontDesc font = {
+        .pFontPath = "TitilliumText/TitilliumText-Bold.otf",
+    };
     fntDefineFonts(&font, 1, &gFontID);
 
-    FontSystemDesc fontRenderDesc = {};
-    fontRenderDesc.pRenderer = pRenderer;
+    FontSystemDesc fontRenderDesc = {
+        .pRenderer = pRenderer,
+    };
     if (!initFontSystem(&fontRenderDesc))
     {
         return false;
     }
 
-    UserInterfaceDesc uiRenderDesc = {};
-    uiRenderDesc.pRenderer = pRenderer;
+    UserInterfaceDesc uiRenderDesc = {
+        .pRenderer = pRenderer,
+    };
     initUserInterface(&uiRenderDesc);
 
     UIComponentDesc guiDesc = {};
@@ -117,7 +133,9 @@ bool MainApp::Init()
     inputDesc.pRenderer = pRenderer;
     inputDesc.pWindow = pWindow;
     if (!initInputSystem(&inputDesc))
+    {
         return false;
+    }
 
     InputActionCallback onAnyInput = [](InputActionContext *ctx)
     {
@@ -160,16 +178,17 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
 {
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
-        SwapChainDesc swapChainDesc = {};
-        swapChainDesc.mWindowHandle = pWindow->handle;
-        swapChainDesc.mPresentQueueCount = 1;
-        swapChainDesc.ppPresentQueues = &pGraphicsQueue;
-        swapChainDesc.mWidth = mSettings.mWidth;
-        swapChainDesc.mHeight = mSettings.mHeight;
-        swapChainDesc.mImageCount = getRecommendedSwapchainImageCount(pRenderer, &pWindow->handle);
-        swapChainDesc.mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB);
-        swapChainDesc.mEnableVsync = mSettings.mVSyncEnabled;
-        swapChainDesc.mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR;
+        SwapChainDesc swapChainDesc = {
+            .mWindowHandle = pWindow->handle,
+            .ppPresentQueues = &pGraphicsQueue,
+            .mPresentQueueCount = 1,
+            .mImageCount = getRecommendedSwapchainImageCount(pRenderer, &pWindow->handle),
+            .mWidth =  static_cast<uint32_t>(mSettings.mWidth),
+            .mHeight = static_cast<uint32_t>(mSettings.mHeight),
+            .mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB),
+            .mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR,
+            .mEnableVsync = mSettings.mVSyncEnabled,
+        };
         addSwapChain(pRenderer, &swapChainDesc, &pSwapChain);
 
         if (pSwapChain == nullptr)
@@ -178,18 +197,20 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
         }
     }
 
-    UserInterfaceLoadDesc uiLoad = {};
-    uiLoad.mColorFormat = pSwapChain->ppRenderTargets[0]->mFormat;
-    uiLoad.mHeight = mSettings.mHeight;
-    uiLoad.mWidth = mSettings.mWidth;
-    uiLoad.mLoadType = pReloadDesc->mType;
+    UserInterfaceLoadDesc uiLoad = {
+        .mLoadType = static_cast<uint32_t>(pReloadDesc->mType),
+        .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
+        .mWidth = static_cast<uint32_t>(mSettings.mWidth),
+        .mHeight = static_cast<uint32_t>(mSettings.mHeight),
+    };
     loadUserInterface(&uiLoad);
 
-    FontSystemLoadDesc fontLoad = {};
-    fontLoad.mColorFormat = pSwapChain->ppRenderTargets[0]->mFormat;
-    fontLoad.mHeight = mSettings.mHeight;
-    fontLoad.mWidth = mSettings.mWidth;
-    fontLoad.mLoadType = pReloadDesc->mType;
+    FontSystemLoadDesc fontLoad = {
+        .mLoadType = pReloadDesc->mType,
+        .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
+        .mWidth = static_cast<uint32_t>(mSettings.mWidth),
+        .mHeight = static_cast<uint32_t>(mSettings.mHeight),
+    };
     loadFontSystem(&fontLoad);
 
     if (!Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0]))
@@ -242,7 +263,7 @@ void MainApp::Draw()
     // Reset cmd pool for this frame
     resetCmdPool(pRenderer, elem.pCmdPool);
 
-    Cmd* cmd = elem.pCmds[0];
+    Cmd *cmd = elem.pCmds[0];
     beginCmd(cmd);
 
     cmdBeginGpuFrameProfile(cmd, gGpuProfileToken);
