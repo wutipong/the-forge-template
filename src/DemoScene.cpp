@@ -47,6 +47,8 @@ bool DemoScene::Init()
     float *vertices{};
     generateSpherePoints(&vertices, &vertexCount, 24, 1.0f);
 
+    SyncToken token{};
+
     uint64_t sphereDataSize = vertexCount * sizeof(float);
     BufferLoadDesc sphereVbDesc = {};
     sphereVbDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
@@ -54,9 +56,7 @@ bool DemoScene::Init()
     sphereVbDesc.mDesc.mSize = sphereDataSize;
     sphereVbDesc.pData = vertices;
     sphereVbDesc.ppBuffer = &pSphereVertexBuffer;
-    addResource(&sphereVbDesc, nullptr);
-
-    tf_free(vertices);
+    addResource(&sphereVbDesc, &token);
 
     BufferLoadDesc ubDesc = {};
     ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -68,7 +68,7 @@ bool DemoScene::Init()
     for (auto &buffer : pProjViewUniformBuffers)
     {
         ubDesc.ppBuffer = &buffer;
-        addResource(&ubDesc, nullptr);
+        addResource(&ubDesc, &token);
     }
 
     for (size_t i = 0; i < MAX_STARS; i++)
@@ -83,6 +83,9 @@ bool DemoScene::Init()
 
     pCameraController = initFpsCameraController(camPos, lookAt);
     pCameraController->setMotionParameters(cmp);
+
+    waitForToken(&token);
+    tf_free(vertices);
 
     return true;
 }
