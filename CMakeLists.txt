@@ -1,6 +1,20 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(the-forge-template)
+set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+enable_language(ASM)
+
+# add_compile_definitions(
+#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LLVM_ENABLE_RUNTIMES=libunwind>
+#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LIBCXX_USE_COMPILER_RT=YES>
+#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LIBCXXABI_USE_COMPILER_RT=YES>
+#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LIBUNWIND_USE_COMPILER_RT=YES>
+# )
+# 
+# add_link_options(
+#     $<$<LINK_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
+#     $<$<LINK_LANG_AND_ID:CXX,Clang>:-rtlib=compiler-rt>
+# )
 
 add_library(gainput 
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/gainput.cpp"
@@ -27,6 +41,9 @@ add_library(gainput
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/touch/GainputInputDeviceTouch.cpp"
     $<$<PLATFORM_ID:Windows>:
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/hidapi/windows/hid.c"
+    >
+    $<$<PLATFORM_ID:Linux>:
+    "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/hidapi/linux/hid.c"
     >
 )
 
@@ -113,9 +130,10 @@ add_library(the-forge
     "The-Forge/Common_3/Graphics/Vulkan/VulkanRaytracing.cpp"
     "The-Forge/Common_3/Graphics/Vulkan/VulkanShaderReflection.cpp"
     "The-Forge/Common_3/OS/CPUConfig.cpp"
-    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_windows.c"
+    "The-Forge/Common_3/OS/WindowSystem/WindowSystem.cpp"
 
     $<$<PLATFORM_ID:Windows>:
+    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_windows.c"
     "The-Forge/Common_3/OS/Windows/WindowsBase.cpp"
     "The-Forge/Common_3/OS/Windows/WindowsFileSystem.cpp"
     "The-Forge/Common_3/OS/Windows/WindowsLog.c"
@@ -124,9 +142,10 @@ add_library(the-forge
     "The-Forge/Common_3/OS/Windows/WindowsTime.c"
     "The-Forge/Common_3/OS/Windows/WindowsToolsFileSystem.cpp"
     "The-Forge/Common_3/OS/Windows/WindowsWindow.cpp"
-    "The-Forge/Common_3/OS/WindowSystem/WindowSystem.cpp"
+   
     >
     $<$<PLATFORM_ID:Linux>:
+    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_linux_or_android.c"
     "The-Forge/Common_3/OS/Linux/LinuxBase.cpp"
     "The-Forge/Common_3/OS/Linux/LinuxFileSystem.c"
     "The-Forge/Common_3/OS/Linux/LinuxLog.c"
@@ -134,6 +153,7 @@ add_library(the-forge
     "The-Forge/Common_3/OS/Linux/LinuxTime.c"
     "The-Forge/Common_3/OS/Linux/LinuxToolsFileSystem.c"
     "The-Forge/Common_3/OS/Linux/LinuxWindow.cpp"
+    "The-Forge/Common_3/Utilities/FileSystem/UnixFileSystem.c"
     >
 
     "The-Forge/Common_3/Resources/ResourceLoader/ResourceLoader.cpp"
@@ -174,6 +194,7 @@ add_library(the-forge
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/common/zstd_deps.h"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/common/zstd_internal.h"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/common/zstd_trace.h"
+    "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/decompress/huf_decompress_amd64.S"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/decompress/huf_decompress.c"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/decompress/zstd_ddict.c"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/decompress/zstd_ddict.h"
@@ -188,6 +209,30 @@ if (MSVC)
     target_compile_definitions (the-forge PRIVATE -D_UNICODE -DUNICODE)
     target_compile_definitions (the-forge PRIVATE -D_CRT_SECURE_NO_WARNINGS)
 endif ()
+
+if(LINUX)
+    find_package(PkgConfig REQUIRED)
+    find_package(X11 REQUIRED)
+
+    pkg_check_modules(GTK REQUIRED gtk+-3.0 ) 
+    pkg_check_modules(UDEV REQUIRED libudev)
+    include_directories ( ${GTK_INCLUDE_DIRS} )
+
+    target_include_directories(the-forge PRIVATE 
+        ${GTK_INCLUDE_DIRS}
+        ${X11_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(the-forge PRIVATE 
+        ${GTK_LIBRARIES}
+        ${X11_LIBRARIES}
+        ${X11_Xrandr_LIB}
+    )
+
+    target_link_libraries(gainput PRIVATE
+        ${UDEV_LIBRARIES}
+    )
+endif()
 
 add_executable(main
     "src/DemoScene.cpp" 
@@ -239,7 +284,6 @@ set_property(TARGET main PROPERTY CXX_STANDARD_REQUIRED ON)
 if (MSVC)
     # set_property(TARGET main PROPERTY WIN32_EXECUTABLE ON)
     target_compile_options(main PRIVATE /Zc:__cplusplus)
-    # target_compile_definitions (main PRIVATE -D_UNICODE -DUNICODE)
 endif ()
 
 target_include_directories(main PRIVATE
@@ -260,14 +304,6 @@ target_link_directories(main PRIVATE
     "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/lib/x64"
     "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/nvapi/amd64"
     "The-Forge/Common_3/OS/ThirdParty/OpenSource/winpixeventruntime/bin"
-)
-
-target_link_libraries(main PRIVATE 
-    XInput 
-    WinPixEventRuntime 
-    amd_ags_x64 
-    nvapi64
-    dxcompiler
 )
 
 add_custom_target(CopyGpuCfg ALL
@@ -299,7 +335,7 @@ function(compile_shaders)
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/CompiledShaders"
         COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Tools/ForgeShadingLanguage/fsl.py"
-            "-dShaders" "-bCompiledShaders" "-l DIRECT3D12 VULKAN" --compile --verbose
+            "-dShaders" "-bCompiledShaders" "-l $<$<PLATFORM_ID:Windows>:DIRECT3D12> VULKAN" --compile --verbose
             ${COMPILE_SHADERS_SHADER_LIST}
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:main>"
 )
