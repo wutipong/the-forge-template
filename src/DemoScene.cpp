@@ -50,21 +50,26 @@ bool DemoScene::Init()
     SyncToken token{};
 
     uint64_t sphereDataSize = vertexCount * sizeof(float);
-    BufferLoadDesc sphereVbDesc = {};
-    sphereVbDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
-    sphereVbDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
-    sphereVbDesc.mDesc.mSize = sphereDataSize;
-    sphereVbDesc.pData = vertices;
-    sphereVbDesc.ppBuffer = &pSphereVertexBuffer;
+    BufferLoadDesc sphereVbDesc{
+        .ppBuffer = &pSphereVertexBuffer,
+        .pData = vertices,
+        .mDesc{
+            .mSize = sphereDataSize,
+            .mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY,
+            .mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER,
+        },
+    };
     addResource(&sphereVbDesc, &token);
 
-    BufferLoadDesc ubDesc = {};
-    ubDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    ubDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
-    ubDesc.mDesc.mSize = sizeof(UniformBlock);
-    ubDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
-    ubDesc.pData = nullptr;
-    ubDesc.ppBuffer = &pProjViewUniformBuffer;
+    BufferLoadDesc ubDesc = {
+        .ppBuffer = &pProjViewUniformBuffer,
+        .mDesc{
+            .mSize = sizeof(UniformBlock),
+            .mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU,
+            .mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT,
+            .mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        },
+    };
     addResource(&ubDesc, &token);
 
     for (size_t i = 0; i < MAX_STARS; i++)
@@ -98,16 +103,24 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 {
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
     {
-        ShaderLoadDesc basicShader = {};
-        basicShader.mStages[0] = {"basic.vert"};
-        basicShader.mStages[1] = {"basic.frag"};
+        ShaderLoadDesc basicShader{
+            .mStages{
+                {
+                    .pFileName = "basic.vert",
+                },
+                {
+                    .pFileName = "basic.frag",
+                },
+            },
+        };
 
         addShader(pRenderer, &basicShader, &pShader);
         ASSERT(pShader);
 
-        RootSignatureDesc rootDesc = {};
-        rootDesc.mShaderCount = 1;
-        rootDesc.ppShaders = &pShader;
+        RootSignatureDesc rootDesc{
+            .ppShaders = &pShader,
+            .mShaderCount = 1,
+        };
 
         addRootSignature(pRenderer, &rootDesc, &pRootSignature);
         ASSERT(pRootSignature);
@@ -120,18 +133,18 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
-        RenderTargetDesc desc = {};
-        desc.mArraySize = 1;
-        desc.mClearValue.depth = 0.0f;
-        desc.mClearValue.stencil = 0;
-        desc.mDepth = 1;
-        desc.mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW;
-        desc.mFormat = depthBufferFormat;
-        desc.mWidth = pRenderTarget->mWidth;
-        desc.mHeight = pRenderTarget->mHeight;
-        desc.mSampleCount = SAMPLE_COUNT_1;
-        desc.mSampleQuality = 0;
-        desc.mStartState = RESOURCE_STATE_DEPTH_WRITE;
+        RenderTargetDesc desc{
+            .mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_VR_MULTIVIEW,
+            .mWidth = pRenderTarget->mWidth,
+            .mHeight = pRenderTarget->mHeight,
+            .mDepth = 1,
+            .mArraySize = 1,
+            .mSampleCount = SAMPLE_COUNT_1,
+            .mFormat = depthBufferFormat,
+            .mStartState = RESOURCE_STATE_DEPTH_WRITE,
+            .mClearValue = {},
+            .mSampleQuality = 0,
+        };
         addRenderTarget(pRenderer, &desc, &pDepthBuffer);
         ASSERT(pDepthBuffer);
     }
@@ -139,55 +152,69 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
         // layout and pipeline for sphere draw
-        VertexLayout vertexLayout = {};
-        vertexLayout.mAttribCount = 2;
-        vertexLayout.mAttribs[0].mSemantic = SEMANTIC_POSITION;
-        vertexLayout.mAttribs[0].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
-        vertexLayout.mAttribs[0].mBinding = 0;
-        vertexLayout.mAttribs[0].mLocation = 0;
-        vertexLayout.mAttribs[0].mOffset = 0;
-
-        vertexLayout.mAttribs[1].mSemantic = SEMANTIC_NORMAL;
-        vertexLayout.mAttribs[1].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
-        vertexLayout.mAttribs[1].mBinding = 0;
-        vertexLayout.mAttribs[1].mLocation = 1;
-        vertexLayout.mAttribs[1].mOffset = 3 * sizeof(float);
-
-        vertexLayout.mBindingCount = 1;
-        vertexLayout.mBindings[0] = {
-            .mStride = sizeof(float) * 6,
+        VertexLayout vertexLayout = {
+            .mBindings{
+                {
+                    .mStride = sizeof(float) * 6,
+                },
+            },
+            .mAttribs{
+                {
+                    .mSemantic = SEMANTIC_POSITION,
+                    .mFormat = TinyImageFormat_R32G32B32_SFLOAT,
+                    .mBinding = 0,
+                    .mLocation = 0,
+                    .mOffset = 0,
+                },
+                {
+                    .mSemantic = SEMANTIC_NORMAL,
+                    .mFormat = TinyImageFormat_R32G32B32_SFLOAT,
+                    .mBinding = 0,
+                    .mLocation = 1,
+                    .mOffset = 3 * sizeof(float),
+                },
+            },
+            .mBindingCount = 1,
+            .mAttribCount = 2,
         };
 
         RasterizerStateDesc sphereRasterizerStateDesc = {};
         sphereRasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
 
-        DepthStateDesc depthStateDesc = {};
-        depthStateDesc.mDepthTest = true;
-        depthStateDesc.mDepthWrite = true;
-        depthStateDesc.mDepthFunc = CMP_GEQUAL;
+        DepthStateDesc depthStateDesc{
+            .mDepthTest = true,
+            .mDepthWrite = true,
+            .mDepthFunc = CMP_GEQUAL,
+        };
 
-        PipelineDesc desc = {};
-        desc.mType = PIPELINE_TYPE_GRAPHICS;
+        PipelineDesc desc = {
+            .mGraphicsDesc{
+                .pShaderProgram = pShader,
+                .pRootSignature = pRootSignature,
+                .pVertexLayout = &vertexLayout,
+                .pDepthState = &depthStateDesc,
+                .pRasterizerState = &sphereRasterizerStateDesc,
+                .pColorFormats = &pRenderTarget->mFormat,
+                .mRenderTargetCount = 1,
+                .mSampleCount = pRenderTarget->mSampleCount,
+                .mSampleQuality = pRenderTarget->mSampleQuality,
+                .mDepthStencilFormat = depthBufferFormat,
+                .mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST,
+                .mVRFoveatedRendering = true,
+            },
+            .mType = PIPELINE_TYPE_GRAPHICS,
+        };
+
         GraphicsPipelineDesc &pipelineSettings = desc.mGraphicsDesc;
-        pipelineSettings.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
-        pipelineSettings.mRenderTargetCount = 1;
-        pipelineSettings.pDepthState = &depthStateDesc;
-        pipelineSettings.pColorFormats = &pRenderTarget->mFormat;
-        pipelineSettings.mSampleCount = pRenderTarget->mSampleCount;
-        pipelineSettings.mSampleQuality = pRenderTarget->mSampleQuality;
-        pipelineSettings.mDepthStencilFormat = depthBufferFormat;
-        pipelineSettings.pRootSignature = pRootSignature;
-        pipelineSettings.pShaderProgram = pShader;
-        pipelineSettings.pVertexLayout = &vertexLayout;
-        pipelineSettings.pRasterizerState = &sphereRasterizerStateDesc;
-        pipelineSettings.mVRFoveatedRendering = true;
+
         addPipeline(pRenderer, &desc, &pPLSphere);
         ASSERT(pPLSphere);
     }
 
-    DescriptorData params = {};
-    params.pName = "uniformBlock";
-    params.ppBuffers = &pProjViewUniformBuffer;
+    DescriptorData params = {
+        .pName = "uniformBlock",
+        .ppBuffers = &pProjViewUniformBuffer,
+    };
 
     updateDescriptorSet(pRenderer, 0, pDSUniform, 1, &params);
 
@@ -243,10 +270,14 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
-    BindRenderTargetsDesc bindRenderTargets = {};
-    bindRenderTargets.mRenderTargetCount = 1;
-    bindRenderTargets.mRenderTargets[0] = {pRenderTarget, LOAD_ACTION_CLEAR};
-    bindRenderTargets.mDepthStencil = {pDepthBuffer, LOAD_ACTION_CLEAR};
+    BindRenderTargetsDesc bindRenderTargets = {
+        .mRenderTargetCount = 1,
+        .mRenderTargets =
+            {
+                {pRenderTarget, LOAD_ACTION_CLEAR},
+            },
+        .mDepthStencil = {pDepthBuffer, LOAD_ACTION_CLEAR},
+    };
 
     cmdBindRenderTargets(pCmd, &bindRenderTargets);
     cmdSetViewport(pCmd, 0.0f, 0.0f, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
