@@ -14,7 +14,6 @@
 #include "DemoScene.h"
 #include "Settings.h"
 
-
 namespace Scene = DemoScene;
 
 namespace
@@ -319,36 +318,46 @@ void MainApp::Draw()
     cmdEndGpuTimestampQuery(cmd, gGpuProfileToken);
 
     cmdBindRenderTargets(cmd, nullptr);
-    barriers[0] = {pRenderTarget, RESOURCE_STATE_RENDER_TARGET, RESOURCE_STATE_PRESENT};
+    barriers[0] = {
+        pRenderTarget,
+        RESOURCE_STATE_RENDER_TARGET,
+        RESOURCE_STATE_PRESENT,
+    };
     cmdResourceBarrier(cmd, 0, nullptr, 0, nullptr, 1, barriers);
 
     cmdEndGpuFrameProfile(cmd, gGpuProfileToken);
     endCmd(cmd);
 
-    FlushResourceUpdateDesc flushUpdateDesc = {};
-    flushUpdateDesc.mNodeIndex = 0;
+    FlushResourceUpdateDesc flushUpdateDesc = {
+        .mNodeIndex = 0,
+    };
     flushResourceUpdates(&flushUpdateDesc);
-    Semaphore *waitSemaphores[2] = {flushUpdateDesc.pOutSubmittedSemaphore, pImageAcquiredSemaphore};
 
+    Semaphore *waitSemaphores[2] = {
+        flushUpdateDesc.pOutSubmittedSemaphore,
+        pImageAcquiredSemaphore,
+    };
 
-    QueueSubmitDesc submitDesc = {};
-    submitDesc.mCmdCount = 1;
-    submitDesc.mSignalSemaphoreCount = 1;
-    submitDesc.mWaitSemaphoreCount = 2;
-    submitDesc.ppCmds = &cmd;
-    submitDesc.ppSignalSemaphores = &elem.pSemaphore;
-    submitDesc.ppWaitSemaphores = waitSemaphores;
-    submitDesc.pSignalFence = elem.pFence;
+    QueueSubmitDesc submitDesc = {
+        .ppCmds = &cmd,
+        .pSignalFence = elem.pFence,
+        .ppWaitSemaphores = waitSemaphores,
+        .ppSignalSemaphores = &elem.pSemaphore,
+        .mCmdCount = 1,
+        .mWaitSemaphoreCount = 2,
+        .mSignalSemaphoreCount = 1,
+    };
     queueSubmit(pGraphicsQueue, &submitDesc);
 
-    QueuePresentDesc presentDesc = {};
-    presentDesc.mIndex = swapchainImageIndex;
-    presentDesc.mWaitSemaphoreCount = 2;
-    presentDesc.pSwapChain = pSwapChain;
-    presentDesc.ppWaitSemaphores = waitSemaphores;
-    presentDesc.mSubmitDone = true;
-
+    QueuePresentDesc presentDesc = {
+        .pSwapChain = pSwapChain,
+        .ppWaitSemaphores = waitSemaphores,
+        .mWaitSemaphoreCount = 2,
+        .mIndex = static_cast<uint8_t>(swapchainImageIndex),
+        .mSubmitDone = true,
+    };
     queuePresent(pGraphicsQueue, &presentDesc);
+    
     flipProfiler();
 }
 
