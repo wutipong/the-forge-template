@@ -6,12 +6,14 @@
 #include <IInput.h>
 #include <IProfiler.h>
 #include <IResourceLoader.h>
+#include <IScreenshot.h>
 #include <IUI.h>
 #include <RingBuffer.h>
 #include <cstdlib>
 #include <string>
 #include "DemoScene.h"
 #include "Settings.h"
+
 
 namespace Scene = DemoScene;
 
@@ -190,6 +192,7 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
             .mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB),
             .mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR,
             .mEnableVsync = mSettings.mVSyncEnabled,
+            .mColorSpace = COLOR_SPACE_SDR_SRGB,
         };
         addSwapChain(pRenderer, &swapChainDesc, &pSwapChain);
 
@@ -199,14 +202,6 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
         }
     }
 
-    UserInterfaceLoadDesc uiLoad = {
-        .mLoadType = static_cast<uint32_t>(pReloadDesc->mType),
-        .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
-        .mWidth = static_cast<uint32_t>(mSettings.mWidth),
-        .mHeight = static_cast<uint32_t>(mSettings.mHeight),
-    };
-    loadUserInterface(&uiLoad);
-
     FontSystemLoadDesc fontLoad = {
         .mLoadType = pReloadDesc->mType,
         .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
@@ -215,10 +210,22 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
     };
     loadFontSystem(&fontLoad);
 
+    UserInterfaceLoadDesc uiLoad = {
+        .mLoadType = static_cast<uint32_t>(pReloadDesc->mType),
+        .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
+        .mWidth = static_cast<uint32_t>(mSettings.mWidth),
+        .mHeight = static_cast<uint32_t>(mSettings.mHeight),
+    };
+    loadUserInterface(&uiLoad);
+
+    initScreenshotInterface(pRenderer, pGraphicsQueue);
+
     if (!Scene::Load(pReloadDesc, pRenderer, pSwapChain->ppRenderTargets[0]))
     {
         return false;
     };
+
+    waitForAllResourceLoads();
 
     return true;
 }
@@ -228,6 +235,7 @@ void MainApp::Unload(ReloadDesc *pReloadDesc)
     waitQueueIdle(pGraphicsQueue);
 
     Scene::Unload(pReloadDesc, pRenderer);
+
     unloadFontSystem(pReloadDesc->mType);
     unloadUserInterface(pReloadDesc->mType);
 
@@ -235,17 +243,24 @@ void MainApp::Unload(ReloadDesc *pReloadDesc)
     {
         removeSwapChain(pRenderer, pSwapChain);
     }
+
+    exitScreenshotInterface();
 }
 
 void MainApp::Update(float deltaTime)
 {
     updateInputSystem(deltaTime, mSettings.mWidth, mSettings.mHeight);
-
     Scene::Update(deltaTime, mSettings.mWidth, mSettings.mHeight);
 }
 
 void MainApp::Draw()
 {
+    if (pSwapChain->mEnableVsync != mSettings.mVSyncEnabled)
+    {
+        waitQueueIdle(pGraphicsQueue);
+        ::toggleVSync(pRenderer, &pSwapChain);
+    }
+
     uint32_t swapchainImageIndex;
     acquireNextImage(pRenderer, pSwapChain, pImageAcquiredSemaphore, nullptr, &swapchainImageIndex);
 
@@ -310,21 +325,27 @@ void MainApp::Draw()
     cmdEndGpuFrameProfile(cmd, gGpuProfileToken);
     endCmd(cmd);
 
+    FlushResourceUpdateDesc flushUpdateDesc = {};
+    flushUpdateDesc.mNodeIndex = 0;
+    flushResourceUpdates(&flushUpdateDesc);
+    Semaphore *waitSemaphores[2] = {flushUpdateDesc.pOutSubmittedSemaphore, pImageAcquiredSemaphore};
+
+
     QueueSubmitDesc submitDesc = {};
     submitDesc.mCmdCount = 1;
     submitDesc.mSignalSemaphoreCount = 1;
-    submitDesc.mWaitSemaphoreCount = 1;
+    submitDesc.mWaitSemaphoreCount = 2;
     submitDesc.ppCmds = &cmd;
     submitDesc.ppSignalSemaphores = &elem.pSemaphore;
-    submitDesc.ppWaitSemaphores = &pImageAcquiredSemaphore;
+    submitDesc.ppWaitSemaphores = waitSemaphores;
     submitDesc.pSignalFence = elem.pFence;
     queueSubmit(pGraphicsQueue, &submitDesc);
 
     QueuePresentDesc presentDesc = {};
     presentDesc.mIndex = swapchainImageIndex;
-    presentDesc.mWaitSemaphoreCount = 1;
+    presentDesc.mWaitSemaphoreCount = 2;
     presentDesc.pSwapChain = pSwapChain;
-    presentDesc.ppWaitSemaphores = &elem.pSemaphore;
+    presentDesc.ppWaitSemaphores = waitSemaphores;
     presentDesc.mSubmitDone = true;
 
     queuePresent(pGraphicsQueue, &presentDesc);
