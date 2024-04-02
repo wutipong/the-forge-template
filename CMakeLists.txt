@@ -25,7 +25,9 @@ add_library(gainput
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/mouse/GainputInputDeviceMouse.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/pad/GainputInputDevicePad.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/touch/GainputInputDeviceTouch.cpp"
+    $<$<PLATFORM_ID:Windows>:
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/hidapi/windows/hid.c"
+    >
 )
 
 if (MSVC)
@@ -112,6 +114,8 @@ add_library(the-forge
     "The-Forge/Common_3/Graphics/Vulkan/VulkanShaderReflection.cpp"
     "The-Forge/Common_3/OS/CPUConfig.cpp"
     "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_windows.c"
+
+    $<$<PLATFORM_ID:Windows>:
     "The-Forge/Common_3/OS/Windows/WindowsBase.cpp"
     "The-Forge/Common_3/OS/Windows/WindowsFileSystem.cpp"
     "The-Forge/Common_3/OS/Windows/WindowsLog.c"
@@ -121,6 +125,17 @@ add_library(the-forge
     "The-Forge/Common_3/OS/Windows/WindowsToolsFileSystem.cpp"
     "The-Forge/Common_3/OS/Windows/WindowsWindow.cpp"
     "The-Forge/Common_3/OS/WindowSystem/WindowSystem.cpp"
+    >
+    $<$<PLATFORM_ID:Linux>:
+    "The-Forge/Common_3/OS/Linux/LinuxBase.cpp"
+    "The-Forge/Common_3/OS/Linux/LinuxFileSystem.c"
+    "The-Forge/Common_3/OS/Linux/LinuxLog.c"
+    "The-Forge/Common_3/OS/Linux/LinuxThread.c"
+    "The-Forge/Common_3/OS/Linux/LinuxTime.c"
+    "The-Forge/Common_3/OS/Linux/LinuxToolsFileSystem.c"
+    "The-Forge/Common_3/OS/Linux/LinuxWindow.cpp"
+    >
+
     "The-Forge/Common_3/Resources/ResourceLoader/ResourceLoader.cpp"
     "The-Forge/Common_3/Tools/Network/Network.c"
     "The-Forge/Common_3/Tools/ReloadServer/ReloadClient.cpp"
@@ -267,6 +282,10 @@ add_custom_target(CopyFonts ALL
 
 if(WIN32)
     set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
+endif()
+
+if(LINUX)
+    set(Python3_EXECUTABLE "python3.6")
 endif()
 
 find_package(Python3 3.6 EXACT COMPONENTS Interpreter)
