@@ -8,18 +8,6 @@ endif()
 
 enable_language(ASM)
 
-# add_compile_definitions(
-#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LLVM_ENABLE_RUNTIMES=libunwind>
-#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LIBCXX_USE_COMPILER_RT=YES>
-#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LIBCXXABI_USE_COMPILER_RT=YES>
-#     $<$<COMPILE_LANG_AND_ID:CXX,Clang>:LIBUNWIND_USE_COMPILER_RT=YES>
-# )
-# 
-# add_link_options(
-#     $<$<LINK_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
-#     $<$<LINK_LANG_AND_ID:CXX,Clang>:-rtlib=compiler-rt>
-# )
-
 add_library(gainput 
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/gainput.cpp"
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source/gainput/GainputAllocator.cpp"
@@ -136,30 +124,6 @@ add_library(the-forge
     "The-Forge/Common_3/OS/CPUConfig.cpp"
     "The-Forge/Common_3/OS/WindowSystem/WindowSystem.cpp"
 
-    $<$<PLATFORM_ID:Windows>:
-    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_windows.c"
-    "The-Forge/Common_3/OS/Windows/WindowsBase.cpp"
-    "The-Forge/Common_3/OS/Windows/WindowsFileSystem.cpp"
-    "The-Forge/Common_3/OS/Windows/WindowsLog.c"
-    "The-Forge/Common_3/OS/Windows/WindowsStackTraceDump.cpp"
-    "The-Forge/Common_3/OS/Windows/WindowsThread.c"
-    "The-Forge/Common_3/OS/Windows/WindowsTime.c"
-    "The-Forge/Common_3/OS/Windows/WindowsToolsFileSystem.cpp"
-    "The-Forge/Common_3/OS/Windows/WindowsWindow.cpp"
-   
-    >
-    $<$<PLATFORM_ID:Linux>:
-    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_linux_or_android.c"
-    "The-Forge/Common_3/OS/Linux/LinuxBase.cpp"
-    "The-Forge/Common_3/OS/Linux/LinuxFileSystem.c"
-    "The-Forge/Common_3/OS/Linux/LinuxLog.c"
-    "The-Forge/Common_3/OS/Linux/LinuxThread.c"
-    "The-Forge/Common_3/OS/Linux/LinuxTime.c"
-    "The-Forge/Common_3/OS/Linux/LinuxToolsFileSystem.c"
-    "The-Forge/Common_3/OS/Linux/LinuxWindow.cpp"
-    "The-Forge/Common_3/Utilities/FileSystem/UnixFileSystem.c"
-    >
-
     "The-Forge/Common_3/Resources/ResourceLoader/ResourceLoader.cpp"
     "The-Forge/Common_3/Tools/Network/Network.c"
     "The-Forge/Common_3/Tools/ReloadServer/ReloadClient.cpp"
@@ -207,6 +171,30 @@ add_library(the-forge
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/decompress/zstd_decompress_internal.h"
     "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/zstd/decompress/zstd_decompress.c"
     "The-Forge/Common_3/Utilities/Timer.c"
+
+    $<$<PLATFORM_ID:Windows>:
+    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_windows.c"
+    "The-Forge/Common_3/OS/Windows/WindowsBase.cpp"
+    "The-Forge/Common_3/OS/Windows/WindowsFileSystem.cpp"
+    "The-Forge/Common_3/OS/Windows/WindowsLog.c"
+    "The-Forge/Common_3/OS/Windows/WindowsStackTraceDump.cpp"
+    "The-Forge/Common_3/OS/Windows/WindowsThread.c"
+    "The-Forge/Common_3/OS/Windows/WindowsTime.c"
+    "The-Forge/Common_3/OS/Windows/WindowsToolsFileSystem.cpp"
+    "The-Forge/Common_3/OS/Windows/WindowsWindow.cpp"
+    >
+
+    $<$<PLATFORM_ID:Linux>:
+    "The-Forge/Common_3/OS/ThirdParty/OpenSource/cpu_features/src/impl_x86_linux_or_android.c"
+    "The-Forge/Common_3/OS/Linux/LinuxBase.cpp"
+    "The-Forge/Common_3/OS/Linux/LinuxFileSystem.c"
+    "The-Forge/Common_3/OS/Linux/LinuxLog.c"
+    "The-Forge/Common_3/OS/Linux/LinuxThread.c"
+    "The-Forge/Common_3/OS/Linux/LinuxTime.c"
+    "The-Forge/Common_3/OS/Linux/LinuxToolsFileSystem.c"
+    "The-Forge/Common_3/OS/Linux/LinuxWindow.cpp"
+    "The-Forge/Common_3/Utilities/FileSystem/UnixFileSystem.c"
+    >
 )
 
 if (MSVC)
@@ -244,18 +232,6 @@ add_executable(main
     "src/MainApp.cpp"
 )
 
-target_include_directories(main PRIVATE
-    "The-Forge/Common_3/Application/Interfaces"
-    "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
-    "The-Forge/Common_3/Graphics/Interfaces"
-    "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/inc"
-    "The-Forge/Common_3/OS/Interfaces"
-    "The-Forge/Common_3/Resources/ResourceLoader/Interfaces"
-    "The-Forge/Common_3/Utilities"
-    "The-Forge/Common_3/Utilities/Interfaces"
-    "The-Forge/Common_3/Utilities/ThirdParty/OpenSource/Nothings/"
-)
-
 target_link_libraries(main PRIVATE  
     the-forge
     gainput
@@ -277,9 +253,12 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll" "$<TARGET_FILE_DIR:main>/"
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxil.dll" "$<TARGET_FILE_DIR:main>/"
     )
-endif ()
-
-# find_package(Vulkan REQUIRED)
+elseif (LINUX)
+    add_custom_target(CopyVulkan ALL
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/VkLayer_khronos_validation.json" "$<TARGET_FILE_DIR:main>"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/libVkLayer_khronos_validation.so" "$<TARGET_FILE_DIR:main>"
+    )
+endif()
 
 target_compile_features(main PRIVATE cxx_std_20)
 set_property(TARGET main PROPERTY CXX_STANDARD 20)
@@ -320,20 +299,9 @@ add_custom_target(CopyFonts ALL
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
 )
 
-if (LINUX)
-add_custom_target(CopyVulkan ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/lib"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/VkLayer_khronos_validation.json" "$<TARGET_FILE_DIR:main>"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/libVkLayer_khronos_validation.so" "$<TARGET_FILE_DIR:main>/lib/"
-    
-)
-endif()
-
 if(WIN32)
     set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
-endif()
-
-if(LINUX)
+elseif(LINUX)
     set(Python3_EXECUTABLE "python3.6")
 endif()
 
