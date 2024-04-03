@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(the-forge-template)
-set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+endif()
+
 enable_language(ASM)
 
 # add_compile_definitions(
