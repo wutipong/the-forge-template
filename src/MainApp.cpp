@@ -41,15 +41,20 @@ bool MainApp::Init()
     for (int i = 0; i < IApp::argc; i++)
     {
         std::string arg(IApp::argv[i]);
+
+#ifdef VULKAN
         if (arg == "--vulkan")
         {
             gPlatformParameters.mSelectedRendererApi = RendererApi::RENDERER_API_VULKAN;
         }
+#endif
 
-        if (arg == "--directx12")
+#ifdef DIRECT3D12
+        if (arg == "--direct3d12")
         {
             gPlatformParameters.mSelectedRendererApi = RendererApi::RENDERER_API_D3D12;
         }
+#endif
     }
 
     // FILE PATHS
