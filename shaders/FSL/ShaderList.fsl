@@ -5,39 +5,3 @@
 #vert VR_MULTIVIEW basic.vert
 #include "basic.vert.fsl"
 #end
-
-#frag demo2_object.frag
-#include "demo2_object.frag.fsl"
-#end
-
-#vert VR_MULTIVIEW demo2_object.vert
-#include "demo2_object.vert.fsl"
-#end
-
-#frag demo2_lit.frag
-#include "demo2_lit.frag.fsl"
-#end
-
-#frag demo2_shadow.frag
-#include "demo2_shadow.frag.fsl"
-#end
-
-#vert demo2_shadow.vert
-#include "demo2_shadow.vert.fsl"
-#end
-
-#frag quad.frag
-#include "quad.frag.fsl"
-#end
-
-#vert quad.vert
-#include "quad.vert.fsl"
-#end
-
-#vert color_grading.vert
-#include "color_grading.vert.fsl"
-#end
-
-#frag color_grading.frag
-#include "color_grading.frag.fsl"
-#end
