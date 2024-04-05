@@ -105,7 +105,7 @@ add_library(the-forge
     "The-Forge/Common_3/Graphics/Direct3D12/Direct3D12Hooks.cpp"
     "The-Forge/Common_3/Graphics/Direct3D12/Direct3D12Raytracing.cpp"
     "The-Forge/Common_3/Graphics/Direct3D12/Direct3D12ShaderReflection.cpp"
-    "The-Forge/Common_3/Graphics/GPUConfig.cpp"
+    "The-Forge/Common_3/Graphics/GraphicsConfig.cpp"
     "The-Forge/Common_3/Graphics/PickRenderingAPI.cpp"
     "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_cfg.cpp"
     "The-Forge/Common_3/Graphics/ThirdParty/OpenSource/SPIRV_Cross/spirv_cpp.cpp"
