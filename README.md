@@ -21,7 +21,7 @@ This template has C++20 flags enabled.
 
 * Clang 16.0.6 is tested
 * libc++ 16.0.6 is tested.
-* Python 3.6. This can be installed by installing the package `python36` from AUR repository.
+* Python 3. 3.6.9, 3.11.8 are tested.
 * pkg-config.
 
 **note:** libstdc++ which is the standard C++ library of GCC does not work with this project due to how The-Forge tries

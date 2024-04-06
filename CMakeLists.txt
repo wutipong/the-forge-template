@@ -301,11 +301,9 @@ add_custom_target(CopyFonts ALL
 
 if(WIN32)
     set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Tools/python-3.6.0-embed-amd64")
-elseif(LINUX)
-    set(Python3_EXECUTABLE "python3.6")
 endif()
 
-find_package(Python3 3.6 EXACT COMPONENTS Interpreter)
+find_package(Python3 COMPONENTS Interpreter)
 
 function(compile_shaders)
     set(oneValueArgs TARGET SHADER_LIST)
