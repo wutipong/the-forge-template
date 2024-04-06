@@ -40,10 +40,15 @@ On Windows, just following the common CMake workflow.
 On Linux, an extra step is required as one of the executable included are not atrributed correctly. We have to
 make the `glslangValidator` becomes executable by chmod it.
 
-For example:
-
 ```sh
 chmod +x "./The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/glslangValidator"
+```
+
+Also, specify the `libc++` as the C++ standard library. This can be done by specify `toolchain/linux.cmake` as
+the toolchain file when configuring the build directory.
+
+```sh
+cmake <project-directory> -DCMAKE_TOOLCHAIN_FILE=<project-directory>/toolchain/linux.cmake    
 ```
 
 ## How it works
