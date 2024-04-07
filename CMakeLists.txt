@@ -123,7 +123,6 @@ add_library(the-forge
     "The-Forge/Common_3/Graphics/Vulkan/VulkanShaderReflection.cpp"
     "The-Forge/Common_3/OS/CPUConfig.cpp"
     "The-Forge/Common_3/OS/WindowSystem/WindowSystem.cpp"
-
     "The-Forge/Common_3/Resources/ResourceLoader/ResourceLoader.cpp"
     "The-Forge/Common_3/Tools/Network/Network.c"
     "The-Forge/Common_3/Tools/ReloadServer/ReloadClient.cpp"
@@ -203,8 +202,10 @@ if (MSVC)
 endif ()
 
 if(LINUX)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(PkgConfig REQUIRED)
     find_package(X11 REQUIRED)
+    find_package(Threads REQUIRED)
 
     pkg_check_modules(GTK REQUIRED gtk+-3.0 ) 
     pkg_check_modules(UDEV REQUIRED libudev)
@@ -219,6 +220,8 @@ if(LINUX)
         ${GTK_LIBRARIES}
         ${X11_LIBRARIES}
         ${X11_Xrandr_LIB}
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
     )
 
     target_link_libraries(gainput PRIVATE

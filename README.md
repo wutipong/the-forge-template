@@ -26,15 +26,23 @@ This template has C++20 flags enabled.
 
 **note:** libstdc++ which is the standard C++ library of GCC does not work with this project due to how The-Forge tries
 to disable `delete` operator in some header files. Libstdc++ delete some constructor when the C++ standard flag is
-higher than a specific value thus this becomes problematic. 
+higher than a specific value thus this becomes problematic.
 
 libc++ is choosen here as a workaround as its standard library does not contain such deleted constructor.
+
+### Steam Runtime (experimental)
+
+Steam Runtime SDK is distributed in the form of OCI images. [SteamRT 3.0 (sniper)](https://gitlab.steamos.cloud/steamrt/sniper/sdk)
+is tested. I'm using [docker](https://www.docker.com/) to do the build. Any other Linux container software (eg. Podman)
+should work, but I haven't tested.
+
+Any OS that docker runs on should be able to perform the build, as it performs in the containerized environment.
 
 ## Building
 
 ### Windows
 
-On Windows, just following the common CMake workflow.  
+On Windows, just following the common CMake workflow. 
 
 ### Linux
 On Linux, an extra step is required as one of the executable included are not atrributed correctly. We have to
@@ -50,6 +58,17 @@ the toolchain file when configuring the build directory.
 ```sh
 cmake <project-directory> -DCMAKE_TOOLCHAIN_FILE=<project-directory>/toolchain/linux.cmake    
 ```
+
+### Steam Runtime (experimental)
+
+Firstly, run `bash` shell inside the sniper container. I'm using `docker run` command here as I want to simply run the command once.
+You could also tried create a container and run `bash` inside there as well.
+
+```sh
+docker run -it --rm --mount type=bind,source=$(pwd),target=/app registry.gitlab.steamos.cloud/steamrt/sniper/sdk bash
+```
+
+Now, proceed as usual `cmake` project.
 
 ## How it works
 
