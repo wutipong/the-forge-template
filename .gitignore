@@ -2,3 +2,5 @@
 /cmake-build-release-visual-studio-2017/
 /build*
 /out
+/.idea/*
+/.vscode/*
