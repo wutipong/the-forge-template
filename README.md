@@ -9,13 +9,12 @@ This template has C++20 flags enabled.
 
 ### All Platforms
 
-* CMake version 3.19 or higher
+* CMake version 3.17 or higher
 
 ### Windows
 
 * Visual Studio 2019 with C++ Desktop Development components installed.
   * VS 2019 Build Tools also work.
-  * VS 2017 might work but it's untested.
 
 ### Manjaro
 
