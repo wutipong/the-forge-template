@@ -81,7 +81,7 @@ Now, proceed as usual `cmake` project. Specify `clang` as the compiler. This can
 the toolchain file when configuring the build directory.
 
 ```sh
-cmake <project-directory> -DCMAKE_TOOLCHAIN_FILE=<project-directory>/toolchain/linux.cmake    
+cmake <project-directory> -DCMAKE_TOOLCHAIN_FILE=<project-directory>/toolchain/steamrt.cmake    
 ```
 
 And lastly, to build the project.
