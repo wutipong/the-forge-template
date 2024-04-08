@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.17)
 
 project(the-forge-template)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-endif()
-
 enable_language(ASM)
 
 add_library(gainput 
@@ -46,6 +42,10 @@ endif ()
 target_include_directories(gainput PUBLIC
     "The-Forge/Common_3/Application/ThirdParty/OpenSource/gainput/lib/source"
 )
+
+target_compile_features(gainput PRIVATE cxx_std_14)
+set_property(TARGET gainput PROPERTY CXX_STANDARD 14)
+set_property(TARGET gainput PROPERTY CXX_STANDARD_REQUIRED ON)
 
 add_library(the-forge
     "The-Forge/Common_3/Application/CameraController.cpp"

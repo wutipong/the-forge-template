@@ -38,6 +38,8 @@ should work, but I haven't tested.
 
 Any OS that docker runs on should be able to perform the build, as it performs in the containerized environment.
 
+Also GCC 10.3.0 shipped with Steam Runtime SDK does not compile The-Forge 1.56 as is. As a workaround, Clang shipped with the SDK can be used. The libc++ that comes with the sdk seems to be broken so we will use the libstdc++, which is the default runtime library anyway. The version of Libstdc++ comes with the sdk seems to play nicely with The-Forge.
+
 ## Building
 
 ### Windows
@@ -59,6 +61,12 @@ the toolchain file when configuring the build directory.
 cmake <project-directory> -DCMAKE_TOOLCHAIN_FILE=<project-directory>/toolchain/linux.cmake    
 ```
 
+And lastly, to build the project.
+
+```sh
+make
+```
+
 ### Steam Runtime (experimental)
 
 Firstly, run `bash` shell inside the sniper container. I'm using `docker run` command here as I want to simply run the command once.
@@ -67,8 +75,22 @@ You could also tried create a container and run `bash` inside there as well.
 ```sh
 docker run -it --rm --mount type=bind,source=$(pwd),target=/app registry.gitlab.steamos.cloud/steamrt/sniper/sdk bash
 ```
+This will bind the project directory with the directory `/app` inside the container.
 
-Now, proceed as usual `cmake` project.
+Now, proceed as usual `cmake` project. Specify `clang` as the compiler. This can be done by specify `toolchain/steamrt.cmake` as
+the toolchain file when configuring the build directory.
+
+```sh
+cmake <project-directory> -DCMAKE_TOOLCHAIN_FILE=<project-directory>/toolchain/linux.cmake    
+```
+
+And lastly, to build the project.
+
+```sh
+make
+```
+
+After building the project. You can quit the container environemnt by `exit` the shell. Then just before runing the probject, make sure to `chown` the file to your user (otherwise the application would not run.).
 
 ## How it works
 
