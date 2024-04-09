@@ -21,3 +21,8 @@ jobs:
 
       - name: Build the project.
         run: cmake --build build --config Release
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: windows
+          path: build/Release
