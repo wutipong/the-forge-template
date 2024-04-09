@@ -20,4 +20,4 @@ jobs:
         working-directory: build
 
       - name: Build the project.
-        run: cmake --build out --config Release
+        run: cmake --build build --config Release
