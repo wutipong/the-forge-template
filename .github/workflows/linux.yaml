@@ -12,7 +12,7 @@ jobs:
         with:
           submodules: true
       - name: Install packages
-        run: sudo apt-get install libgtk-3-dev
+        run: sudo apt-get install libgtk-3-dev libudev-dev 
 
       - name: Change mode of glslangvalidator
         run: chmod +x ${GITHUB_WORKSPACE}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/glslangValidator
