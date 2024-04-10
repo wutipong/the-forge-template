@@ -1,0 +1,31 @@
+name: linux-build
+on: 
+  push
+#     branches:
+#       - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Change mode of glslangvalidator
+        run: chmod +x ${GITHUB_WORKSPACE}/The-Forge/Common_3/Graphics/ThirdParty/OpenSource/VulkanSDK/bin/Linux/glslangValidator
+
+      - name: Create output dir
+        run: mkdir build
+        
+      - name: Configure the project.
+        run: cmake ${GITHUB_WORKSPACE}
+        working-directory: build
+
+      - name: Build the project.
+        run: cmake --build build --config Release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/Release
