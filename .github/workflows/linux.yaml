@@ -29,5 +29,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: build/Release
+          name: linux
+          path: build
