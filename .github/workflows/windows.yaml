@@ -1,0 +1,28 @@
+name: windows-build
+on: 
+  push
+#     branches:
+#       - main
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Create output dir
+        run: mkdir build
+        
+      - name: Configure the project.
+        run: cmake $env:GITHUB_WORKSPACE
+        working-directory: build
+
+      - name: Build the project.
+        run: cmake --build build --config Release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/Release
