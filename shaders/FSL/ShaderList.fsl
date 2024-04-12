@@ -2,6 +2,10 @@
 #include "basic.frag.fsl"
 #end
 
-#vert VR_MULTIVIEW basic.vert
-#include "basic.vert.fsl"
+#vert VR_MULTIVIEW sphere.vert
+#include "sphere.vert.fsl"
+#end
+
+#vert VR_MULTIVIEW quad.vert
+#include "quad.vert.fsl"
 #end
