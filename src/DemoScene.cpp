@@ -34,27 +34,31 @@ namespace DemoScene
         vec4 color;
     } quadUniform = {};
 
-    Shader *pShaderSphere{nullptr};
-    RootSignature *pRSSphere{nullptr};
-    DescriptorSet *pDSSphereUniform{nullptr};
-    Buffer *pBufferSphereUniform{nullptr};
-    Buffer *pBufferSphereVertex{nullptr};
-    Pipeline *pPipelineSphere{nullptr};
+    Shader *pShaderSphere = nullptr;
+    Shader *pShaderSphereShadow = nullptr;
+    RootSignature *pRSSphere = nullptr;
+    DescriptorSet *pDSSphereUniform = nullptr;
+    Buffer *pBufferSphereUniform = nullptr;
+    Buffer *pBufferSphereVertex = nullptr;
+    Pipeline *pPipelineSphere = nullptr;
+    Pipeline *pPipelineSphereShadow = nullptr;
 
-    Shader *pShaderQuad{nullptr};
-    RootSignature *pRSQuad{nullptr};
-    DescriptorSet *pDSQuadUniform{nullptr};
-    Buffer *pBufferQuadVertex{nullptr};
-    Buffer *pBufferQuadIndex{nullptr};
-    Buffer *pBufferQuadUniform{nullptr};
-    Pipeline *pPipelineQuad{nullptr};
+    Shader *pShaderQuad = nullptr;
+    Shader *pShaderQuadShadow = nullptr;
+    RootSignature *pRSQuad = nullptr;
+    DescriptorSet *pDSQuadUniform = nullptr;
+    Buffer *pBufferQuadVertex = nullptr;
+    Buffer *pBufferQuadIndex = nullptr;
+    Buffer *pBufferQuadUniform = nullptr;
+    Pipeline *pPipelineQuad = nullptr;
+    Pipeline *pPipelineQuadShadow = nullptr;
 
-    ICameraController *pCameraController{nullptr};
+    ICameraController *pCameraController = nullptr;
 
-    RenderTarget *pDepthBuffer{nullptr};
+    RenderTarget *pDepthBuffer = nullptr;
 
     constexpr int SHADOW_MAP_SIZE = 2048;
-    RenderTarget *pShadowMap{nullptr};
+    RenderTarget *pShadowMap = nullptr;
     CameraMatrix lightViewProj{};
 
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
@@ -270,23 +274,66 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         addPipeline(pRenderer, &desc, &pPipelineSphere);
         ASSERT(pPipelineSphere);
 
-        desc.mGraphicsDesc = {
-            .pShaderProgram = pShaderQuad,
-            .pRootSignature = pRSQuad,
-            .pVertexLayout = &vertexLayout,
-            .pDepthState = &depthStateDesc,
-            .pRasterizerState = &sphereRasterizerStateDesc,
-            .pColorFormats = &pRenderTarget->mFormat,
-            .mRenderTargetCount = 1,
-            .mSampleCount = pRenderTarget->mSampleCount,
-            .mSampleQuality = pRenderTarget->mSampleQuality,
-            .mDepthStencilFormat = depthBufferFormat,
-            .mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST,
-            .mVRFoveatedRendering = true,
+        desc = {
+            .mGraphicsDesc{
+                .pShaderProgram = pShaderSphereShadow,
+                .pRootSignature = pRSSphere,
+                .pVertexLayout = &vertexLayout,
+                .pDepthState = &depthStateDesc,
+                .pRasterizerState = &sphereRasterizerStateDesc,
+                .mSampleCount = pRenderTarget->mSampleCount,
+                .mSampleQuality = pRenderTarget->mSampleQuality,
+                .mDepthStencilFormat = depthBufferFormat,
+                .mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST,
+                .mVRFoveatedRendering = true,
+            },
+            .mType = PIPELINE_TYPE_GRAPHICS,
+        };
+
+        addPipeline(pRenderer, &desc, &pPipelineSphereShadow);
+        ASSERT(pPipelineSphereShadow);
+
+        desc = {
+            .mGraphicsDesc =
+                {
+                    .pShaderProgram = pShaderQuad,
+                    .pRootSignature = pRSQuad,
+                    .pVertexLayout = &vertexLayout,
+                    .pDepthState = &depthStateDesc,
+                    .pRasterizerState = &sphereRasterizerStateDesc,
+                    .pColorFormats = &pRenderTarget->mFormat,
+                    .mRenderTargetCount = 1,
+                    .mSampleCount = pRenderTarget->mSampleCount,
+                    .mSampleQuality = pRenderTarget->mSampleQuality,
+                    .mDepthStencilFormat = depthBufferFormat,
+                    .mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST,
+                    .mVRFoveatedRendering = true,
+                },
+            .mType = PIPELINE_TYPE_GRAPHICS,
         };
 
         addPipeline(pRenderer, &desc, &pPipelineQuad);
         ASSERT(pPipelineQuad);
+
+        desc = {
+            .mGraphicsDesc =
+                {
+                    .pShaderProgram = pShaderQuadShadow,
+                    .pRootSignature = pRSQuad,
+                    .pVertexLayout = &vertexLayout,
+                    .pDepthState = &depthStateDesc,
+                    .pRasterizerState = &sphereRasterizerStateDesc,
+                    .mSampleCount = pRenderTarget->mSampleCount,
+                    .mSampleQuality = pRenderTarget->mSampleQuality,
+                    .mDepthStencilFormat = depthBufferFormat,
+                    .mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST,
+                    .mVRFoveatedRendering = true,
+                },
+            .mType = PIPELINE_TYPE_GRAPHICS,
+        };
+
+        addPipeline(pRenderer, &desc, &pPipelineQuadShadow);
+        ASSERT(pPipelineQuadShadow);
     }
 
     DescriptorData params = {
@@ -318,11 +365,24 @@ void DemoScene::AddSphereResources(Renderer *pRenderer)
     addShader(pRenderer, &shaderDesc, &pShaderSphere);
     ASSERT(pShaderSphere);
 
-    RootSignatureDesc rootDesc{
-        .ppShaders = &pShaderSphere,
-        .mShaderCount = 1,
+    shaderDesc = {
+        .mStages{
+            {
+                .pFileName = "sphere_shadow.vert",
+            },
+            {
+                .pFileName = "shadow.frag",
+            },
+        },
     };
+    addShader(pRenderer, &shaderDesc, &pShaderSphereShadow);
+    ASSERT(pShaderSphereShadow);
 
+    std::array<Shader *, 2> shaders = {pShaderSphere, pShaderSphereShadow};
+    RootSignatureDesc rootDesc{
+        .ppShaders = shaders.data(),
+        .mShaderCount = shaders.size(),
+    };
     addRootSignature(pRenderer, &rootDesc, &pRSSphere);
     ASSERT(pRSSphere);
 
@@ -348,9 +408,24 @@ void DemoScene::AddQuadResources(Renderer *pRenderer)
     addShader(pRenderer, &shaderDesc, &pShaderQuad);
     ASSERT(pShaderQuad);
 
+    shaderDesc = {
+        .mStages{
+            {
+                .pFileName = "quad_shadow.vert",
+            },
+            {
+                .pFileName = "shadow.frag",
+            },
+        },
+    };
+
+    addShader(pRenderer, &shaderDesc, &pShaderQuadShadow);
+    ASSERT(pShaderQuadShadow);
+
+    std::array<Shader *, 2> shaders = {pShaderQuad, pShaderQuadShadow};
     RootSignatureDesc rootDesc{
-        .ppShaders = &pShaderQuad,
-        .mShaderCount = 1,
+        .ppShaders = shaders.data(),
+        .mShaderCount = shaders.size(),
     };
 
     addRootSignature(pRenderer, &rootDesc, &pRSQuad);
@@ -367,7 +442,9 @@ void DemoScene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
     {
         removePipeline(pRenderer, pPipelineSphere);
+        removePipeline(pRenderer, pPipelineSphereShadow);
         removePipeline(pRenderer, pPipelineQuad);
+        removePipeline(pRenderer, pPipelineQuadShadow);
     }
 
     if (pReloadDesc->mType & RELOAD_TYPE_SHADER)
@@ -388,6 +465,7 @@ void DemoScene::RemoveSphereResources(Renderer *pRenderer)
     removeDescriptorSet(pRenderer, pDSSphereUniform);
     removeRootSignature(pRenderer, pRSSphere);
     removeShader(pRenderer, pShaderSphere);
+    removeShader(pRenderer, pShaderSphereShadow);
 }
 
 void DemoScene::RemoveQuadResources(Renderer *pRenderer)
@@ -395,6 +473,7 @@ void DemoScene::RemoveQuadResources(Renderer *pRenderer)
     removeDescriptorSet(pRenderer, pDSQuadUniform);
     removeRootSignature(pRenderer, pRSQuad);
     removeShader(pRenderer, pShaderQuad);
+    removeShader(pRenderer, pShaderQuadShadow);
 }
 
 void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
@@ -434,6 +513,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
+    constexpr uint32_t stride = sizeof(float) * 6;
     {
         RenderTargetBarrier barriers[]{
             {pShadowMap, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
@@ -448,7 +528,19 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
 
         cmdBindRenderTargets(pCmd, &bindRenderTargets);
     }
+    cmdSetViewport(pCmd, 0.0f, 0.0f, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 0.0f, 1.0f);
+    cmdSetScissor(pCmd, 0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 
+    cmdBindPipeline(pCmd, pPipelineSphereShadow);
+    cmdBindDescriptorSet(pCmd, 0, pDSSphereUniform);
+    cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &stride, nullptr);
+    cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
+
+    cmdBindPipeline(pCmd, pPipelineQuadShadow);
+    cmdBindDescriptorSet(pCmd, 0, pDSQuadUniform);
+    cmdBindVertexBuffer(pCmd, 1, &pBufferQuadVertex, &stride, nullptr);
+    cmdBindIndexBuffer(pCmd, pBufferQuadIndex, INDEX_TYPE_UINT16, 0);
+    cmdDrawIndexed(pCmd, 6, 0, 0);
 
     cmdBindRenderTargets(pCmd, nullptr);
     {
@@ -457,11 +549,6 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
         };
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
-
-    /*
-        barriers[0] = {pShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
-        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
-    */
 
     BindRenderTargetsDesc bindRenderTargets = {
         .mRenderTargetCount = 1,
@@ -478,10 +565,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
 
     cmdBindPipeline(pCmd, pPipelineSphere);
     cmdBindDescriptorSet(pCmd, 0, pDSSphereUniform);
-
-    constexpr uint32_t stride = sizeof(float) * 6;
     cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &stride, nullptr);
-
     cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
 
     cmdBindPipeline(pCmd, pPipelineQuad);
