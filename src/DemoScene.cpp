@@ -14,17 +14,17 @@ namespace DemoScene
     int spherePoints = 0;
     int quadPoints = 0;
 
-    constexpr size_t MAX_STARS = 768;
-    std::array<vec3, MAX_STARS> position{};
-    std::array<vec4, MAX_STARS> color{};
+    constexpr size_t MAX_SPHERE = 768;
+    std::array<vec3, MAX_SPHERE> position{};
+    std::array<vec4, MAX_SPHERE> color{};
     vec3 lightPosition{1.0f, 0, 0};
     vec3 lightColor{0.9f, 0.9f, 0.7f};
 
     struct SphereUniformBlock
     {
         CameraMatrix projectView;
-        std::array<mat4, MAX_STARS> world;
-        std::array<vec4, MAX_STARS> color;
+        std::array<mat4, MAX_SPHERE> world;
+        std::array<vec4, MAX_SPHERE> color;
 
         vec3 lightPosition;
         vec3 lightColor;
@@ -48,6 +48,7 @@ namespace DemoScene
     RootSignature *pRSQuad{nullptr};
     DescriptorSet *pDSQuadUniform{nullptr};
     Buffer *pBufferQuadVertex{nullptr};
+    Buffer *pBufferQuadIndex{nullptr};
     Buffer *pBufferQuadUniform{nullptr};
     Pipeline *pPipelineQuad{nullptr};
 
@@ -70,6 +71,8 @@ bool DemoScene::Init()
 
     float *quadVertices{};
     generateQuad(&quadVertices, &quadPoints);
+
+    uint16_t quadIndices[6] = {0, 1, 2, 1, 3, 2};
 
     SyncToken token{};
 
@@ -97,6 +100,17 @@ bool DemoScene::Init()
     };
     addResource(&quadVbDesc, &token);
 
+    BufferLoadDesc quadIdDesc{
+        .ppBuffer = &pBufferQuadIndex,
+        .pData = quadIndices,
+        .mDesc{
+            .mSize = sizeof(uint16_t) * 6,
+            .mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY,
+            .mDescriptors = DESCRIPTOR_TYPE_INDEX_BUFFER,
+        },
+    };
+    addResource(&quadIdDesc, &token);
+
     BufferLoadDesc ubDesc = {
         .ppBuffer = &pBufferSphereUniform,
         .mDesc{
@@ -119,7 +133,7 @@ bool DemoScene::Init()
     };
     addResource(&quadUniformDesc, &token);
 
-    for (size_t i = 0; i < MAX_STARS; i++)
+    for (size_t i = 0; i < MAX_SPHERE; i++)
     {
         position[i] = {randomFloat(-100, 100), randomFloat(-100, 100), randomFloat(-100, 100)};
         color[i] = {randomFloat01(), randomFloat01(), randomFloat01(), 1.0f};
@@ -147,6 +161,7 @@ void DemoScene::Exit()
 
     removeResource(pBufferQuadUniform);
     removeResource(pBufferQuadVertex);
+    removeResource(pBufferQuadIndex);
 
     exitCameraController(pCameraController);
 }
@@ -207,7 +222,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         };
 
         RasterizerStateDesc sphereRasterizerStateDesc = {};
-        sphereRasterizerStateDesc.mCullMode = CULL_MODE_FRONT;
+        sphereRasterizerStateDesc.mCullMode = CULL_MODE_NONE;
 
         DepthStateDesc depthStateDesc{
             .mDepthTest = true,
@@ -264,7 +279,6 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
     params.ppBuffers = &pBufferQuadUniform;
     updateDescriptorSet(pRenderer, 0, pDSQuadUniform, 1, &params);
-
 
     return true;
 }
@@ -372,7 +386,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     CameraMatrix mProjectView = projMat * pCameraController->getViewMatrix();
 
     sphereUniform.projectView = mProjectView;
-    for (int i = 0; i < MAX_STARS; i++)
+    for (int i = 0; i < MAX_SPHERE; i++)
     {
         position[i].setZ(position[i].getZ() + deltaTime * 100.0f);
         if (position[i].getZ() > 100)
@@ -391,7 +405,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     quadUniform.projectView = mProjectView;
     quadUniform.color = {1.0f, 1.0f, 1.0f, 1.0f};
-    quadUniform.world = mat4::scale({200, 200, 200});
+    quadUniform.world = mat4::translation({0, -100, 0}) * mat4::rotationX(degToRad(-90)) * mat4::scale({200, 200, 200});
 }
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
@@ -412,16 +426,27 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdBindPipeline(pCmd, pPipelineSphere);
     cmdBindDescriptorSet(pCmd, 0, pDSSphereUniform);
 
-    constexpr uint32_t sphereVbStride = sizeof(float) * 6;
-    cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &sphereVbStride, nullptr);
+    constexpr uint32_t stride = sizeof(float) * 6;
+    cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &stride, nullptr);
 
-    cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_STARS, 0);
+    cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
+
+    cmdBindPipeline(pCmd, pPipelineQuad);
+    cmdBindDescriptorSet(pCmd, 0, pDSQuadUniform);
+    cmdBindVertexBuffer(pCmd, 1, &pBufferQuadVertex, &stride, nullptr);
+    cmdBindIndexBuffer(pCmd, pBufferQuadIndex, INDEX_TYPE_UINT16, 0);
+    cmdDrawIndexed(pCmd, 6, 0, 0);
 }
 
 void DemoScene::PreDraw()
 {
-    BufferUpdateDesc viewProjCbv = {pBufferSphereUniform};
-    beginUpdateResource(&viewProjCbv);
-    *(SphereUniformBlock *)viewProjCbv.pMappedData = sphereUniform;
-    endUpdateResource(&viewProjCbv);
+    BufferUpdateDesc sphereUniformUpdateDesc = {pBufferSphereUniform};
+    beginUpdateResource(&sphereUniformUpdateDesc);
+    *(SphereUniformBlock *)sphereUniformUpdateDesc.pMappedData = sphereUniform;
+    endUpdateResource(&sphereUniformUpdateDesc);
+
+    BufferUpdateDesc quadUniformUpdateDesc = {pBufferQuadUniform};
+    beginUpdateResource(&quadUniformUpdateDesc);
+    *(QuadUniformBlock *)quadUniformUpdateDesc.pMappedData = quadUniform;
+    endUpdateResource(&quadUniformUpdateDesc);
 }
