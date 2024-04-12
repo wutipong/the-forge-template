@@ -194,20 +194,21 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         ASSERT(pDepthBuffer);
 
         desc = {
-            .mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT,
+            .mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT,
             .mWidth = SHADOW_MAP_SIZE,
             .mHeight = SHADOW_MAP_SIZE,
             .mDepth = 1,
             .mArraySize = 1,
             .mSampleCount = SAMPLE_COUNT_1,
             .mFormat = depthBufferFormat,
-            .mStartState = RESOURCE_STATE_DEPTH_WRITE,
+            .mStartState = RESOURCE_STATE_SHADER_RESOURCE,
             .mClearValue = {},
             .mSampleQuality = 0,
+            .mDescriptors = DESCRIPTOR_TYPE_TEXTURE,
         };
 
         addRenderTarget(pRenderer, &desc, &pShadowMap);
-        ASSERT(pDepthBuffer);
+        ASSERT(pShadowMap);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -433,22 +434,36 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
-    RenderTargetBarrier barriers[]{
-        {pShadowMap, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
-    };
-    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    {
+        RenderTargetBarrier barriers[]{
+            {pShadowMap, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
+        };
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    }
+
+    {
+        BindRenderTargetsDesc bindRenderTargets = {
+            .mDepthStencil = {pShadowMap, LOAD_ACTION_CLEAR},
+        };
+
+        cmdBindRenderTargets(pCmd, &bindRenderTargets);
+    }
+
+
+    cmdBindRenderTargets(pCmd, nullptr);
+    {
+        RenderTargetBarrier barriers[]{
+            {pShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
+        };
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    }
+
+    /*
+        barriers[0] = {pShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
+        cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+    */
 
     BindRenderTargetsDesc bindRenderTargets = {
-        .mRenderTargetCount = 0,
-        .mDepthStencil = {pShadowMap, LOAD_ACTION_CLEAR},
-    };
-
-    cmdBindRenderTargets(pCmd, &bindRenderTargets);
-
-    barriers[0] = {pShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
-    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
-
-    bindRenderTargets = {
         .mRenderTargetCount = 1,
         .mRenderTargets =
             {
