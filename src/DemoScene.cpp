@@ -17,22 +17,19 @@ namespace DemoScene
     constexpr size_t MAX_SPHERE = 768;
     std::array<vec3, MAX_SPHERE> position{};
     std::array<vec4, MAX_SPHERE> color{};
-    vec3 lightPosition{1.0f, 0, 0};
-    vec3 lightColor{0.9f, 0.9f, 0.7f};
 
-    struct SphereUniformBlock
+    struct SphereUniform
     {
         CameraMatrix projectView;
+        CameraMatrix lightProjectView;
         std::array<mat4, MAX_SPHERE> world;
         std::array<vec4, MAX_SPHERE> color;
-
-        vec3 lightPosition;
-        vec3 lightColor;
     } sphereUniform = {};
 
-    struct QuadUniformBlock
+    struct QuadUniform
     {
         CameraMatrix projectView;
+        CameraMatrix lightProjectView;
         mat4 world;
         vec4 color;
     } quadUniform = {};
@@ -55,6 +52,11 @@ namespace DemoScene
     ICameraController *pCameraController{nullptr};
 
     RenderTarget *pDepthBuffer{nullptr};
+
+    constexpr int SHADOW_MAP_SIZE = 2048;
+    RenderTarget *pShadowMap{nullptr};
+    CameraMatrix lightViewProj{};
+
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 
     void AddSphereResources(Renderer *pRenderer);
@@ -114,7 +116,7 @@ bool DemoScene::Init()
     BufferLoadDesc ubDesc = {
         .ppBuffer = &pBufferSphereUniform,
         .mDesc{
-            .mSize = sizeof(SphereUniformBlock),
+            .mSize = sizeof(SphereUniform),
             .mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU,
             .mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT,
             .mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -125,7 +127,7 @@ bool DemoScene::Init()
     BufferLoadDesc quadUniformDesc = {
         .ppBuffer = &pBufferQuadUniform,
         .mDesc{
-            .mSize = sizeof(QuadUniformBlock),
+            .mSize = sizeof(QuadUniform),
             .mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU,
             .mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT,
             .mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -189,6 +191,22 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
             .mSampleQuality = 0,
         };
         addRenderTarget(pRenderer, &desc, &pDepthBuffer);
+        ASSERT(pDepthBuffer);
+
+        desc = {
+            .mFlags = TEXTURE_CREATION_FLAG_ON_TILE | TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT,
+            .mWidth = SHADOW_MAP_SIZE,
+            .mHeight = SHADOW_MAP_SIZE,
+            .mDepth = 1,
+            .mArraySize = 1,
+            .mSampleCount = SAMPLE_COUNT_1,
+            .mFormat = depthBufferFormat,
+            .mStartState = RESOURCE_STATE_DEPTH_WRITE,
+            .mClearValue = {},
+            .mSampleQuality = 0,
+        };
+
+        addRenderTarget(pRenderer, &desc, &pShadowMap);
         ASSERT(pDepthBuffer);
     }
 
@@ -360,6 +378,7 @@ void DemoScene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
         removeRenderTarget(pRenderer, pDepthBuffer);
+        removeRenderTarget(pRenderer, pShadowMap);
     }
 }
 
@@ -379,6 +398,12 @@ void DemoScene::RemoveQuadResources(Renderer *pRenderer)
 
 void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 {
+    mat4 lightView = mat4::lookAtLH({0, 0, 20}, {0, 0, 0}, {0, 1, 0});
+    lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 0, 100) * lightView;
+
+    sphereUniform.lightProjectView = lightViewProj;
+    quadUniform.lightProjectView = lightViewProj;
+
     pCameraController->update(deltaTime);
     const float aspectInverse = (float)height / (float)width;
     const float horizontal_fov = PI / 2.0f;
@@ -400,8 +425,6 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
         sphereUniform.color[i] = color[i];
         sphereUniform.world[i] = mat4(0).identity().translation(position[i]);
     }
-    sphereUniform.lightColor = lightColor;
-    sphereUniform.lightPosition = lightPosition;
 
     quadUniform.projectView = mProjectView;
     quadUniform.color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -410,7 +433,22 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
 {
+    RenderTargetBarrier barriers[]{
+        {pShadowMap, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
+    };
+    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+
     BindRenderTargetsDesc bindRenderTargets = {
+        .mRenderTargetCount = 0,
+        .mDepthStencil = {pShadowMap, LOAD_ACTION_CLEAR},
+    };
+
+    cmdBindRenderTargets(pCmd, &bindRenderTargets);
+
+    barriers[0] = {pShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE};
+    cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
+
+    bindRenderTargets = {
         .mRenderTargetCount = 1,
         .mRenderTargets =
             {
@@ -442,11 +480,11 @@ void DemoScene::PreDraw()
 {
     BufferUpdateDesc sphereUniformUpdateDesc = {pBufferSphereUniform};
     beginUpdateResource(&sphereUniformUpdateDesc);
-    *(SphereUniformBlock *)sphereUniformUpdateDesc.pMappedData = sphereUniform;
+    *(SphereUniform *)sphereUniformUpdateDesc.pMappedData = sphereUniform;
     endUpdateResource(&sphereUniformUpdateDesc);
 
     BufferUpdateDesc quadUniformUpdateDesc = {pBufferQuadUniform};
     beginUpdateResource(&quadUniformUpdateDesc);
-    *(QuadUniformBlock *)quadUniformUpdateDesc.pMappedData = quadUniform;
+    *(QuadUniform *)quadUniformUpdateDesc.pMappedData = quadUniform;
     endUpdateResource(&quadUniformUpdateDesc);
 }

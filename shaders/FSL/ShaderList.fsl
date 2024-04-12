@@ -2,10 +2,22 @@
 #include "basic.frag.fsl"
 #end
 
+#frag shadow.frag
+#include "shadow.frag.fsl"
+#end
+
 #vert VR_MULTIVIEW sphere.vert
 #include "sphere.vert.fsl"
 #end
 
 #vert VR_MULTIVIEW quad.vert
 #include "quad.vert.fsl"
+#end
+
+#vert VR_MULTIVIEW sphere_shadow.vert
+#include "sphere_shadow.vert.fsl"
+#end
+
+#vert VR_MULTIVIEW quad_shadow.vert
+#include "quad_shadow.vert.fsl"
 #end
