@@ -1,6 +1,6 @@
 #include "sphere_resource.fsl"
 
-VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
+VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
 {
     INIT_MAIN;
     VSOutput Out;

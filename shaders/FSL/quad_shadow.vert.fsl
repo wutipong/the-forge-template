@@ -1,6 +1,6 @@
 #include "quad_resource.fsl"
 
-VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
+VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
 {
     INIT_MAIN;
     VSOutput Out;
@@ -9,6 +9,6 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
 
     Out.Position = mul(tempMat, float4(In.Position.xyz, 1.0f));
     Out.Color = Get(color);
-    
+
     RETURN(Out);
 }

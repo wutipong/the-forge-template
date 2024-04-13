@@ -522,7 +522,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     sphereUniform.projectView = mProjectView;
     for (int i = 0; i < MAX_SPHERE; i++)
     {
-        position[i].setZ(position[i].getZ() + deltaTime * 100.0f);
+        position[i].setZ(position[i].getZ() + deltaTime * 10.0f);
         if (position[i].getZ() > 100)
         {
             position[i].setX(randomFloat(-100, 100));

@@ -1,4 +1,4 @@
-void PS_MAIN( )
+void PS_MAIN()
 {
     INIT_MAIN;
     RETURN();

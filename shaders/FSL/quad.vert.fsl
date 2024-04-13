@@ -1,6 +1,6 @@
 #include "quad_resource.fsl"
 
-VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
+VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
 {
     INIT_MAIN;
     VSOutput Out;
@@ -12,7 +12,7 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
 #endif
     Out.Position = mul(wvp, float4(In.Position.xyz, 1.0f));
     Out.Color = Get(color);
-    
+
     float4x4 lightWVP = mul(Get(lightProjView), Get(toWorld));
     float4 lightSpacePos = mul(lightWVP, float4(In.Position.xyz, 1.0f));
 
