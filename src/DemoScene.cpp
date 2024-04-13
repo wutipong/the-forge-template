@@ -16,6 +16,7 @@ namespace DemoScene
 
     constexpr size_t MAX_SPHERE = 768;
     std::array<vec3, MAX_SPHERE> position{};
+    std::array<float, MAX_SPHERE> size{1.0f};
     std::array<vec4, MAX_SPHERE> color{};
 
     struct SphereUniform
@@ -147,6 +148,7 @@ bool DemoScene::Init(Renderer *pRenderer)
     {
         position[i] = {randomFloat(-100, 100), randomFloat(-100, 100), randomFloat(-100, 100)};
         color[i] = {randomFloat01(), randomFloat01(), randomFloat01(), 1.0f};
+        size[i] = randomFloat(0, 10);
     }
 
     CameraMotionParameters cmp{160.0f, 600.0f, 1000.0f};
@@ -159,7 +161,6 @@ bool DemoScene::Init(Renderer *pRenderer)
     SamplerDesc samplerDesc = {
         .mMinFilter = FILTER_LINEAR,
         .mMagFilter = FILTER_LINEAR,
-        .mMipMapMode = MIPMAP_MODE_NEAREST,
         .mAddressU = ADDRESS_MODE_CLAMP_TO_EDGE,
         .mAddressV = ADDRESS_MODE_CLAMP_TO_EDGE,
     };
@@ -532,7 +533,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
             color[i] = {randomFloat01(), randomFloat01(), randomFloat01(), 1.0};
         }
         sphereUniform.color[i] = color[i];
-        sphereUniform.world[i] = mat4(0).identity().translation(position[i]);
+        sphereUniform.world[i] = mat4::translation(position[i]) * mat4::scale({size[i], size[i], size[i]});
     }
 
     quadUniform.projectView = mProjectView;
