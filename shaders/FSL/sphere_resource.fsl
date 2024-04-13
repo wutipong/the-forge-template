@@ -1,9 +1,6 @@
 #ifndef SPHERE_RESOURCE
 #define SPHERE_RESOURCE
 
-RES(Tex2D(float), LightMap,  UPDATE_FREQ_NONE, t0, binding = 0);
-RES(SamplerState, uSampler, UPDATE_FREQ_NONE, s0, binding = 1);
-
 #ifndef MAX_PLANETS
     #define MAX_PLANETS 768
 #endif

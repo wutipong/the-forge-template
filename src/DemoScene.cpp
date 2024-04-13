@@ -55,10 +55,12 @@ namespace DemoScene
 
     ICameraController *pCameraController = nullptr;
 
-    RenderTarget *pDepthBuffer = nullptr;
+    RenderTarget *pRTDepth = nullptr;
 
     constexpr int SHADOW_MAP_SIZE = 2048;
-    RenderTarget *pShadowMap = nullptr;
+    RenderTarget *pRTShadowMap = nullptr;
+    DescriptorSet *pDSShadowMap = nullptr;
+
     CameraMatrix lightViewProj{};
 
     Sampler *pSampler;
@@ -191,6 +193,9 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
     {
         AddSphereResources(pRenderer);
         AddQuadResources(pRenderer);
+
+        DescriptorSetDesc dsDesc = {pRSSphere, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
+        addDescriptorSet(pRenderer, &dsDesc, &pDSShadowMap);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
@@ -207,8 +212,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
             .mClearValue = {},
             .mSampleQuality = 0,
         };
-        addRenderTarget(pRenderer, &desc, &pDepthBuffer);
-        ASSERT(pDepthBuffer);
+        addRenderTarget(pRenderer, &desc, &pRTDepth);
+        ASSERT(pRTDepth);
 
         desc = {
             .mFlags = TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT,
@@ -224,8 +229,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
             .mDescriptors = DESCRIPTOR_TYPE_TEXTURE,
         };
 
-        addRenderTarget(pRenderer, &desc, &pShadowMap);
-        ASSERT(pShadowMap);
+        addRenderTarget(pRenderer, &desc, &pRTShadowMap);
+        ASSERT(pRTShadowMap);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_SHADER | RELOAD_TYPE_RENDERTARGET))
@@ -356,8 +361,17 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
     updateDescriptorSet(pRenderer, 0, pDSSphereUniform, 1, &params);
 
-    params.ppBuffers = &pBufferQuadUniform;
+    params = {
+        .pName = "uniformBlock",
+        .ppBuffers = &pBufferQuadUniform,
+    };
     updateDescriptorSet(pRenderer, 0, pDSQuadUniform, 1, &params);
+
+    params = {
+        .pName = "lightMap",
+        .ppTextures = &pRTShadowMap->pTexture,
+    };
+    updateDescriptorSet(pRenderer, 0, pDSShadowMap, 1, &params);
 
     return true;
 }
@@ -464,12 +478,14 @@ void DemoScene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
     {
         RemoveSphereResources(pRenderer);
         RemoveQuadResources(pRenderer);
+
+        removeDescriptorSet(pRenderer, pDSShadowMap);
     }
 
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
-        removeRenderTarget(pRenderer, pDepthBuffer);
-        removeRenderTarget(pRenderer, pShadowMap);
+        removeRenderTarget(pRenderer, pRTDepth);
+        removeRenderTarget(pRenderer, pRTShadowMap);
     }
 }
 
@@ -529,14 +545,14 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     constexpr uint32_t stride = sizeof(float) * 6;
     {
         RenderTargetBarrier barriers[]{
-            {pShadowMap, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
+            {pRTShadowMap, RESOURCE_STATE_SHADER_RESOURCE, RESOURCE_STATE_DEPTH_WRITE},
         };
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
 
     {
         BindRenderTargetsDesc bindRenderTargets = {
-            .mDepthStencil = {pShadowMap, LOAD_ACTION_CLEAR},
+            .mDepthStencil = {pRTShadowMap, LOAD_ACTION_CLEAR},
         };
 
         cmdBindRenderTargets(pCmd, &bindRenderTargets);
@@ -558,7 +574,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdBindRenderTargets(pCmd, nullptr);
     {
         RenderTargetBarrier barriers[]{
-            {pShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
+            {pRTShadowMap, RESOURCE_STATE_DEPTH_WRITE, RESOURCE_STATE_SHADER_RESOURCE},
         };
         cmdResourceBarrier(pCmd, 0, nullptr, 0, nullptr, 1, barriers);
     }
@@ -569,7 +585,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
             {
                 {pRenderTarget, LOAD_ACTION_CLEAR},
             },
-        .mDepthStencil = {pDepthBuffer, LOAD_ACTION_CLEAR},
+        .mDepthStencil = {pRTDepth, LOAD_ACTION_CLEAR},
     };
 
     cmdBindRenderTargets(pCmd, &bindRenderTargets);

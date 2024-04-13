@@ -1,11 +1,24 @@
+RES(Tex2D(float), lightMap,  UPDATE_FREQ_NONE, t0, binding = 0);
+RES(SamplerState, uSampler, UPDATE_FREQ_NONE, s0, binding = 1);
+
 STRUCT(VSOutput)
 {
     DATA(float4, Position, SV_Position);
     DATA(float4, Color, COLOR);
+    DATA(float2, LightmapPos, TEXCOORD0);
+    DATA(float, LightmapHeight, TEXCOORD1);
 };
 
 float4 PS_MAIN( VSOutput In )
 {
     INIT_MAIN;
+
+    float2 coord = (In.LightmapPos + float2(1, 1)) / float2(2, 2);
+    float4 litDepth = SampleTex2D(Get(lightMap), Get(uSampler), coord);
+
+    In.Color.b = litDepth.x;
+    In.Color.r = coord.x;
+    In.Color.g = coord.y;
+
     RETURN(In.Color);
 }
