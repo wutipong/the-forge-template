@@ -18,6 +18,7 @@ namespace DemoScene
     std::array<vec3, MAX_SPHERE> position{};
     std::array<float, MAX_SPHERE> size{1.0f};
     std::array<vec4, MAX_SPHERE> color{};
+    std::array<vec3, MAX_SPHERE> speed{};
 
     struct SphereUniform
     {
@@ -35,18 +36,18 @@ namespace DemoScene
         vec4 color;
     } quadUniform = {};
 
-    Shader *pShaderSphere = nullptr;
-    Shader *pShaderSphereShadow = nullptr;
-    RootSignature *pRSSphere = nullptr;
+    Shader *pShaderInstancing = nullptr;
+    Shader *pShaderInstancingShadow = nullptr;
+    RootSignature *pRSInstancing = nullptr;
     DescriptorSet *pDSSphereUniform = nullptr;
     Buffer *pBufferSphereUniform = nullptr;
     Buffer *pBufferSphereVertex = nullptr;
     Pipeline *pPipelineSphere = nullptr;
     Pipeline *pPipelineSphereShadow = nullptr;
 
-    Shader *pShaderQuad = nullptr;
-    Shader *pShaderQuadShadow = nullptr;
-    RootSignature *pRSQuad = nullptr;
+    Shader *pShaderSingle = nullptr;
+    Shader *pShaderSingleShadow = nullptr;
+    RootSignature *pRSSingle = nullptr;
     DescriptorSet *pDSQuadUniform = nullptr;
     Buffer *pBufferQuadVertex = nullptr;
     Buffer *pBufferQuadIndex = nullptr;
@@ -146,9 +147,10 @@ bool DemoScene::Init(Renderer *pRenderer)
 
     for (size_t i = 0; i < MAX_SPHERE; i++)
     {
-        position[i] = {randomFloat(-100, 100), randomFloat(-100, 100), randomFloat(-100, 100)};
+        position[i] = {randomFloat(-200, 200), randomFloat(-200, 200), randomFloat(-200, 200)};
         color[i] = {randomFloat01(), randomFloat01(), randomFloat01(), 1.0f};
         size[i] = randomFloat(0, 10);
+        speed[i] = {randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f)};
     }
 
     CameraMotionParameters cmp{160.0f, 600.0f, 1000.0f};
@@ -195,7 +197,7 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         AddSphereResources(pRenderer);
         AddQuadResources(pRenderer);
 
-        DescriptorSetDesc dsDesc = {pRSSphere, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
+        DescriptorSetDesc dsDesc = {pRSInstancing, DESCRIPTOR_UPDATE_FREQ_NONE, 1};
         addDescriptorSet(pRenderer, &dsDesc, &pDSShadowMap);
     }
 
@@ -274,8 +276,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
         PipelineDesc desc = {
             .mGraphicsDesc{
-                .pShaderProgram = pShaderSphere,
-                .pRootSignature = pRSSphere,
+                .pShaderProgram = pShaderInstancing,
+                .pRootSignature = pRSInstancing,
                 .pVertexLayout = &vertexLayout,
                 .pDepthState = &depthStateDesc,
                 .pRasterizerState = &sphereRasterizerStateDesc,
@@ -295,8 +297,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
         desc = {
             .mGraphicsDesc{
-                .pShaderProgram = pShaderSphereShadow,
-                .pRootSignature = pRSSphere,
+                .pShaderProgram = pShaderInstancingShadow,
+                .pRootSignature = pRSInstancing,
                 .pVertexLayout = &vertexLayout,
                 .pDepthState = &depthStateDesc,
                 .pRasterizerState = &sphereRasterizerStateDesc,
@@ -315,8 +317,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         desc = {
             .mGraphicsDesc =
                 {
-                    .pShaderProgram = pShaderQuad,
-                    .pRootSignature = pRSQuad,
+                    .pShaderProgram = pShaderSingle,
+                    .pRootSignature = pRSSingle,
                     .pVertexLayout = &vertexLayout,
                     .pDepthState = &depthStateDesc,
                     .pRasterizerState = &sphereRasterizerStateDesc,
@@ -337,8 +339,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         desc = {
             .mGraphicsDesc =
                 {
-                    .pShaderProgram = pShaderQuadShadow,
-                    .pRootSignature = pRSQuad,
+                    .pShaderProgram = pShaderSingleShadow,
+                    .pRootSignature = pRSSingle,
                     .pVertexLayout = &vertexLayout,
                     .pDepthState = &depthStateDesc,
                     .pRasterizerState = &sphereRasterizerStateDesc,
@@ -390,8 +392,8 @@ void DemoScene::AddSphereResources(Renderer *pRenderer)
         },
     };
 
-    addShader(pRenderer, &shaderDesc, &pShaderSphere);
-    ASSERT(pShaderSphere);
+    addShader(pRenderer, &shaderDesc, &pShaderInstancing);
+    ASSERT(pShaderInstancing);
 
     shaderDesc = {
         .mStages{
@@ -403,18 +405,18 @@ void DemoScene::AddSphereResources(Renderer *pRenderer)
             },
         },
     };
-    addShader(pRenderer, &shaderDesc, &pShaderSphereShadow);
-    ASSERT(pShaderSphereShadow);
+    addShader(pRenderer, &shaderDesc, &pShaderInstancingShadow);
+    ASSERT(pShaderInstancingShadow);
 
-    std::array<Shader *, 2> shaders = {pShaderSphere, pShaderSphereShadow};
+    std::array<Shader *, 2> shaders = {pShaderInstancing, pShaderInstancingShadow};
     RootSignatureDesc rootDesc{
         .ppShaders = shaders.data(),
         .mShaderCount = shaders.size(),
     };
-    addRootSignature(pRenderer, &rootDesc, &pRSSphere);
-    ASSERT(pRSSphere);
+    addRootSignature(pRenderer, &rootDesc, &pRSInstancing);
+    ASSERT(pRSInstancing);
 
-    DescriptorSetDesc dsDesc = {pRSSphere, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, 1};
+    DescriptorSetDesc dsDesc = {pRSInstancing, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, 1};
     addDescriptorSet(pRenderer, &dsDesc, &pDSSphereUniform);
 
     ASSERT(pDSSphereUniform);
@@ -433,8 +435,8 @@ void DemoScene::AddQuadResources(Renderer *pRenderer)
         },
     };
 
-    addShader(pRenderer, &shaderDesc, &pShaderQuad);
-    ASSERT(pShaderQuad);
+    addShader(pRenderer, &shaderDesc, &pShaderSingle);
+    ASSERT(pShaderSingle);
 
     shaderDesc = {
         .mStages{
@@ -447,19 +449,19 @@ void DemoScene::AddQuadResources(Renderer *pRenderer)
         },
     };
 
-    addShader(pRenderer, &shaderDesc, &pShaderQuadShadow);
-    ASSERT(pShaderQuadShadow);
+    addShader(pRenderer, &shaderDesc, &pShaderSingleShadow);
+    ASSERT(pShaderSingleShadow);
 
-    std::array<Shader *, 2> shaders = {pShaderQuad, pShaderQuadShadow};
+    std::array<Shader *, 2> shaders = {pShaderSingle, pShaderSingleShadow};
     RootSignatureDesc rootDesc{
         .ppShaders = shaders.data(),
         .mShaderCount = shaders.size(),
     };
 
-    addRootSignature(pRenderer, &rootDesc, &pRSQuad);
-    ASSERT(pRSQuad);
+    addRootSignature(pRenderer, &rootDesc, &pRSSingle);
+    ASSERT(pRSSingle);
 
-    DescriptorSetDesc dsDesc = {pRSQuad, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, 1};
+    DescriptorSetDesc dsDesc = {pRSSingle, DESCRIPTOR_UPDATE_FREQ_PER_FRAME, 1};
     addDescriptorSet(pRenderer, &dsDesc, &pDSQuadUniform);
 
     ASSERT(pDSQuadUniform);
@@ -493,23 +495,23 @@ void DemoScene::Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer)
 void DemoScene::RemoveSphereResources(Renderer *pRenderer)
 {
     removeDescriptorSet(pRenderer, pDSSphereUniform);
-    removeRootSignature(pRenderer, pRSSphere);
-    removeShader(pRenderer, pShaderSphere);
-    removeShader(pRenderer, pShaderSphereShadow);
+    removeRootSignature(pRenderer, pRSInstancing);
+    removeShader(pRenderer, pShaderInstancing);
+    removeShader(pRenderer, pShaderInstancingShadow);
 }
 
 void DemoScene::RemoveQuadResources(Renderer *pRenderer)
 {
     removeDescriptorSet(pRenderer, pDSQuadUniform);
-    removeRootSignature(pRenderer, pRSQuad);
-    removeShader(pRenderer, pShaderQuad);
-    removeShader(pRenderer, pShaderQuadShadow);
+    removeRootSignature(pRenderer, pRSSingle);
+    removeShader(pRenderer, pShaderSingle);
+    removeShader(pRenderer, pShaderSingleShadow);
 }
 
 void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 {
-    mat4 lightView = mat4::lookAtLH({0, 0, 20}, {0, 0, 0}, {0, 1, 0});
-    lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 0, 100) * lightView;
+    mat4 lightView = mat4::lookAtLH({0, 100, 20}, {0, -100, 0}, {0, 1, 0});
+    lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 0, 200) * lightView;
 
     sphereUniform.lightProjectView = lightViewProj;
     quadUniform.lightProjectView = lightViewProj;
@@ -523,14 +525,15 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     sphereUniform.projectView = mProjectView;
     for (int i = 0; i < MAX_SPHERE; i++)
     {
-        position[i].setZ(position[i].getZ() + deltaTime * 10.0f);
-        if (position[i].getZ() > 100)
+        position[i] = position[i] + (deltaTime * speed[i]);
+        if (fabs(position[i].getX()) > 200 || fabs(position[i].getY()) > 200 || fabs(position[i].getZ()) > 200)
         {
-            position[i].setX(randomFloat(-100, 100));
-            position[i].setY(randomFloat(-100, 100));
-            position[i].setZ(randomFloat(-100, 100));
+            position[i].setX(randomFloat(-200, 200));
+            position[i].setY(randomFloat(-200, 200));
+            position[i].setZ(randomFloat(-200, 200));
 
             color[i] = {randomFloat01(), randomFloat01(), randomFloat01(), 1.0};
+            size[i] = randomFloat(1.0f, 10.0f);
         }
         sphereUniform.color[i] = color[i];
         sphereUniform.world[i] = mat4::translation(position[i]) * mat4::scale({size[i], size[i], size[i]});
@@ -538,7 +541,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     quadUniform.projectView = mProjectView;
     quadUniform.color = {1.0f, 1.0f, 1.0f, 1.0f};
-    quadUniform.world = mat4::translation({0, -100, 0}) * mat4::rotationX(degToRad(-90)) * mat4::scale({200, 200, 200});
+    quadUniform.world = mat4::translation({0, -200, 0}) * mat4::rotationX(degToRad(-90)) * mat4::scale({200, 200, 200});
 }
 
 void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget)
