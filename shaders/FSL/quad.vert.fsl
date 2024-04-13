@@ -6,12 +6,18 @@ VSOutput VS_MAIN( VSInput In, SV_InstanceID(uint) InstanceID )
     VSOutput Out;
 
 #if VR_MULTIVIEW_ENABLED
-    float4x4 tempMat = mul(Get(mvp)[VR_VIEW_ID], Get(toWorld));
+    float4x4 wvp = mul(Get(mvp)[VR_VIEW_ID], Get(toWorld));
 #else
-    float4x4 tempMat = mul(Get(mvp), Get(toWorld));
+    float4x4 wvp = mul(Get(mvp), Get(toWorld));
 #endif
-    Out.Position = mul(tempMat, float4(In.Position.xyz, 1.0f));
+    Out.Position = mul(wvp, float4(In.Position.xyz, 1.0f));
     Out.Color = Get(color);
     
+    float4x4 lightWVP = mul(Get(lightProjView), Get(toWorld));
+    float4 lightSpacePos = mul(lightWVP, float4(In.Position.xyz, 1.0f));
+
+    Out.LightmapPos = lightSpacePos.xy;
+    Out.LightmapHeight = lightSpacePos.z;
+
     RETURN(Out);
 }

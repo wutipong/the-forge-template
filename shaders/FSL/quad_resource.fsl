@@ -23,6 +23,8 @@ STRUCT(VSOutput)
 {
 	DATA(float4, Position, SV_Position);
 	DATA(float4, Color,    COLOR);
+    DATA(float2, LightmapPos, TEXCOORD0);
+    DATA(float, LightmapHeight, TEXCOORD1);
 };
 
 #endif
