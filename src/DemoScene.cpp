@@ -594,11 +594,13 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
 
     cmdBindPipeline(pCmd, pPipelineSphere);
     cmdBindDescriptorSet(pCmd, 0, pDSSphereUniform);
+    cmdBindDescriptorSet(pCmd, 0, pDSShadowMap);
     cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &stride, nullptr);
     cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
 
     cmdBindPipeline(pCmd, pPipelineQuad);
     cmdBindDescriptorSet(pCmd, 0, pDSQuadUniform);
+    cmdBindDescriptorSet(pCmd, 0, pDSShadowMap);
     cmdBindVertexBuffer(pCmd, 1, &pBufferQuadVertex, &stride, nullptr);
     cmdBindIndexBuffer(pCmd, pBufferQuadIndex, INDEX_TYPE_UINT16, 0);
     cmdDrawIndexed(pCmd, 6, 0, 0);
