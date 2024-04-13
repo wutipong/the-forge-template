@@ -5,8 +5,8 @@
 
 namespace DemoScene
 {
-    bool Init();
-    void Exit();
+    bool Init(Renderer *pRenderer);
+    void Exit(Renderer *pRenderer);
     bool Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget *pRenderTarget);
     void Unload(ReloadDesc *pReloadDesc, Renderer *pRenderer);
     void Update(float deltaTime, uint32_t width, uint32_t height);

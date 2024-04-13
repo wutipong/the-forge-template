@@ -156,7 +156,7 @@ bool MainApp::Init()
     GlobalInputActionDesc globalInputActionDesc = {GlobalInputActionDesc::ANY_BUTTON_ACTION, onAnyInput, this};
     setGlobalInputAction(&globalInputActionDesc);
 
-    if (!Scene::Init())
+    if (!Scene::Init(pRenderer))
     {
         return false;
     };
@@ -166,7 +166,7 @@ bool MainApp::Init()
 
 void MainApp::Exit()
 {
-    Scene::Exit();
+    Scene::Exit(pRenderer);
     exitInputSystem();
     exitUserInterface();
     exitFontSystem();

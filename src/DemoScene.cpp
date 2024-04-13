@@ -61,6 +61,8 @@ namespace DemoScene
     RenderTarget *pShadowMap = nullptr;
     CameraMatrix lightViewProj{};
 
+    Sampler *pSampler;
+
     TinyImageFormat depthBufferFormat = TinyImageFormat_D32_SFLOAT;
 
     void AddSphereResources(Renderer *pRenderer);
@@ -70,7 +72,7 @@ namespace DemoScene
     void RemoveQuadResources(Renderer *pRenderer);
 } // namespace DemoScene
 
-bool DemoScene::Init()
+bool DemoScene::Init(Renderer *pRenderer)
 {
     float *sphereVertices{};
     generateSpherePoints(&sphereVertices, &spherePoints, 12, 1.0f);
@@ -152,6 +154,15 @@ bool DemoScene::Init()
     pCameraController = initFpsCameraController(camPos, lookAt);
     pCameraController->setMotionParameters(cmp);
 
+    SamplerDesc samplerDesc = {
+        .mMinFilter = FILTER_LINEAR,
+        .mMagFilter = FILTER_LINEAR,
+        .mMipMapMode = MIPMAP_MODE_NEAREST,
+        .mAddressU = ADDRESS_MODE_CLAMP_TO_EDGE,
+        .mAddressV = ADDRESS_MODE_CLAMP_TO_EDGE,
+    };
+    addSampler(pRenderer, &samplerDesc, &pSampler);
+
     waitForToken(&token);
 
     tf_free(sphereVertices);
@@ -160,7 +171,7 @@ bool DemoScene::Init()
     return true;
 }
 
-void DemoScene::Exit()
+void DemoScene::Exit(Renderer *pRenderer)
 {
     removeResource(pBufferSphereUniform);
     removeResource(pBufferSphereVertex);
@@ -168,6 +179,8 @@ void DemoScene::Exit()
     removeResource(pBufferQuadUniform);
     removeResource(pBufferQuadVertex);
     removeResource(pBufferQuadIndex);
+
+    removeSampler(pRenderer, pSampler);
 
     exitCameraController(pCameraController);
 }

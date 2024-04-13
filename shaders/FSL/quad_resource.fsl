@@ -1,6 +1,9 @@
 #ifndef QUAD_RESOURCE
 #define QUAD_RESOURCE
 
+RES(Tex2D(float), LightMap,  UPDATE_FREQ_NONE, t0, binding = 0);
+RES(SamplerState, uSampler, UPDATE_FREQ_NONE, s0, binding = 1);
+
 CBUFFER(uniformBlock, UPDATE_FREQ_PER_FRAME, b0, binding = 0)
 {
 #if VR_MULTIVIEW_ENABLED
