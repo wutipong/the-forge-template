@@ -566,7 +566,7 @@ void DemoScene::RemoveQuadResources(Renderer *pRenderer)
 void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 {
     mat4 lightView = mat4::lookAtLH({0, 100, 20}, {0, -100, 0}, {0, 1, 0});
-    lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 0, 200) * lightView;
+    lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 0, 400) * lightView;
 
     sphereUniform.lightProjectView = lightViewProj;
     quadUniform.lightProjectView = lightViewProj;
