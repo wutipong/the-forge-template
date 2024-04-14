@@ -2,6 +2,7 @@
 
 #include <ICameraController.h>
 #include <IGraphics.h>
+#include <IInput.h>
 #include <IOperatingSystem.h>
 #include <IResourceLoader.h>
 #include <IUI.h>
@@ -167,6 +168,60 @@ bool DemoScene::Init(Renderer *pRenderer)
         .mAddressV = ADDRESS_MODE_CLAMP_TO_EDGE,
     };
     addSampler(pRenderer, &samplerDesc, &pSampler);
+
+    typedef bool (*CameraInputHandler)(InputActionContext *ctx, DefaultInputActions::DefaultInputAction action);
+    static CameraInputHandler onCameraInput =
+        [](InputActionContext *ctx, DefaultInputActions::DefaultInputAction action)
+    {
+        if (*(ctx->pCaptured))
+        {
+            float2 delta = uiIsFocused() ? float2(0.f, 0.f) : ctx->mFloat2;
+            switch (action)
+            {
+            case DefaultInputActions::ROTATE_CAMERA:
+                pCameraController->onRotate(delta);
+                break;
+            case DefaultInputActions::TRANSLATE_CAMERA:
+                pCameraController->onMove(delta);
+                break;
+            case DefaultInputActions::TRANSLATE_CAMERA_VERTICAL:
+                pCameraController->onMoveY(delta[0]);
+                break;
+            default:
+                break;
+            }
+        }
+        return true;
+    };
+    InputActionDesc actionDesc = {DefaultInputActions::CAPTURE_INPUT,
+                                  [](InputActionContext *ctx)
+                                  {
+                                      setEnableCaptureInput(!uiIsFocused() &&
+                                                            INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
+                                      return true;
+                                  },
+                                  NULL};
+    addInputAction(&actionDesc);
+    actionDesc = {DefaultInputActions::ROTATE_CAMERA,
+                  [](InputActionContext *ctx) { return onCameraInput(ctx, DefaultInputActions::ROTATE_CAMERA); }, NULL};
+    addInputAction(&actionDesc);
+    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA,
+                  [](InputActionContext *ctx) { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA); },
+                  NULL};
+    addInputAction(&actionDesc);
+    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA_VERTICAL,
+                  [](InputActionContext *ctx)
+                  { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA_VERTICAL); },
+                  NULL};
+    addInputAction(&actionDesc);
+    actionDesc = {DefaultInputActions::RESET_CAMERA,
+                  [](InputActionContext *ctx)
+                  {
+                      if (!uiWantTextInput())
+                          pCameraController->resetView();
+                      return true;
+                  }};
+    addInputAction(&actionDesc);
 
     waitForToken(&token);
 
