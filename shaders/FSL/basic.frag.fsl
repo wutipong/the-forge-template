@@ -14,15 +14,14 @@ float4 PS_MAIN(VSOutput In)
     INIT_MAIN;
 
     float2 coord = (In.LightmapPos + float2(1, 1)) / float2(2, 2);
+    coord.y = 1 - coord.y;
+
     float4 litDepth = SampleTex2D(Get(lightMap), Get(uSampler), coord);
 
-    if (litDepth.x > In.LightmapHeight)
+    if (litDepth.x > In.LightmapHeight + 0.05)
     {
         In.Color -= float4(0.8, 0.8, 0.8, 0.0);
     }
-    // In.Color.b = litDepth.x;
-    // In.Color.r = coord.x;
-    // In.Color.g = coord.y;
 
     RETURN(In.Color);
 }

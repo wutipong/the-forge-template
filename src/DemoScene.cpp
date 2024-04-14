@@ -146,7 +146,6 @@ bool DemoScene::Init(Renderer *pRenderer)
     };
     addResource(&quadUniformDesc, &token);
 
-    /*
     for (size_t i = 0; i < MAX_SPHERE; i++)
     {
         position[i] = {randomFloat(-200, 200), randomFloat(-200, 200), randomFloat(-200, 200)};
@@ -154,7 +153,7 @@ bool DemoScene::Init(Renderer *pRenderer)
         size[i] = randomFloat(0, 10);
         speed[i] = {randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f)};
     }
-    */
+    
     CameraMotionParameters cmp{160.0f, 600.0f, 1000.0f};
     vec3 camPos{0.0f, 0.0f, 20.0f};
     vec3 lookAt{vec3(0)};
@@ -569,12 +568,11 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     const float aspectInverse = (float)height / (float)width;
     const float horizontal_fov = PI / 2.0f;
 
-    Point3 lightPos{0, 0, 500};
+    Point3 lightPos{0, 300, 500};
     Point3 lightLookAt{0, -200, 0};
     mat4 lightView = mat4::lookAtLH(lightPos, lightLookAt, {0, 1, 0});
     lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 1000, 0.1) * lightView;
-    // lightViewProj = CameraMatrix::perspective(-200, 200, -200, 200, 0, 800) * lightView;
-
+    
     sphereUniform.lightProjectView = lightViewProj;
     quadUniform.lightProjectView = lightViewProj;
 
@@ -584,7 +582,6 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
 
     sphereUniform.projectView = mProjectView;
 
-    /*
     for (int i = 0; i < MAX_SPHERE; i++)
     {
         position[i] = position[i] + (deltaTime * speed[i]);
@@ -600,22 +597,6 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
         sphereUniform.color[i] = color[i];
         sphereUniform.world[i] = mat4::translation(position[i]) * mat4::scale({size[i], size[i], size[i]});
     }
-    */
-
-    {
-        sphereUniform.world[0] = mat4::translation(vec3(lightPos)) * mat4::scale({1, 1, 1});
-        sphereUniform.color[0] = {1.0, 0, 0, 1.0};
-
-        sphereUniform.world[1] = mat4::translation(vec3(lightLookAt)) * mat4::scale({1, 1, 1});
-        sphereUniform.color[1] = {0.5, 0.5, 0, 1.0};
-
-        sphereUniform.world[2] = mat4::translation({50, -150, 0}) * mat4::scale({50, 50, 50});
-        sphereUniform.color[2] = {1.0, 0, 1.0, 1.0};
-
-        sphereUniform.world[3] = mat4::translation({-100, -180, 50}) * mat4::scale({20, 20, 20});
-        sphereUniform.color[3] = {0.5, 0.5, 1.0, 1.0};
-    }
-
 
     quadUniform.projectView = mProjectView;
     quadUniform.color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -645,8 +626,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdBindPipeline(pCmd, pPipelineSphereShadow);
     cmdBindDescriptorSet(pCmd, 0, pDSSphereUniform);
     cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &stride, nullptr);
-    // cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
-    cmdDrawInstanced(pCmd, spherePoints / 6, 0, 4, 0);
+    cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
 
     cmdBindPipeline(pCmd, pPipelineQuadShadow);
     cmdBindDescriptorSet(pCmd, 0, pDSQuadUniform);
@@ -679,8 +659,7 @@ void DemoScene::Draw(Cmd *pCmd, Renderer *pRenderer, RenderTarget *pRenderTarget
     cmdBindDescriptorSet(pCmd, 0, pDSSphereUniform);
     cmdBindDescriptorSet(pCmd, 0, pDSShadowMap);
     cmdBindVertexBuffer(pCmd, 1, &pBufferSphereVertex, &stride, nullptr);
-    // cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
-    cmdDrawInstanced(pCmd, spherePoints / 6, 0, 4, 0);
+    cmdDrawInstanced(pCmd, spherePoints / 6, 0, MAX_SPHERE, 0);
 
     cmdBindPipeline(pCmd, pPipelineQuad);
     cmdBindDescriptorSet(pCmd, 0, pDSQuadUniform);
