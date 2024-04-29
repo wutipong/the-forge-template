@@ -1,0 +1,5 @@
+void PS_MAIN()
+{
+    INIT_MAIN;
+    RETURN();
+}

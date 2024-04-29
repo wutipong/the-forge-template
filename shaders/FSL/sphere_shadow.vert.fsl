@@ -1,0 +1,13 @@
+#include "sphere_resource.fsl"
+
+VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
+{
+    INIT_MAIN;
+    VSOutput Out;
+
+    float4x4 tempMat = mul(Get(lightProjView), Get(toWorld)[InstanceID]);
+    Out.Position = mul(tempMat, float4(In.Position.xyz, 1.0f));
+    Out.Color = Get(color)[InstanceID];
+
+    RETURN(Out);
+}

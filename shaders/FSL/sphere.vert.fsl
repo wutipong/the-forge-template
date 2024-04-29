@@ -1,0 +1,23 @@
+#include "sphere_resource.fsl"
+
+VSOutput VS_MAIN(VSInput In, SV_InstanceID(uint) InstanceID)
+{
+    INIT_MAIN;
+    VSOutput Out;
+
+#if VR_MULTIVIEW_ENABLED
+    float4x4 wvp = mul(Get(mvp)[VR_VIEW_ID], Get(toWorld)[InstanceID]);
+#else
+    float4x4 wvp = mul(Get(mvp), Get(toWorld)[InstanceID]);
+#endif
+    Out.Position = mul(wvp, float4(In.Position.xyz, 1.0f));
+    Out.Color = Get(color)[InstanceID];
+
+    float4x4 lightWVP = mul(Get(lightProjView), Get(toWorld)[InstanceID]);
+    float4 lightSpacePos = mul(lightWVP, float4(In.Position.xyz, 1.0f));
+
+    Out.LightmapPos = lightSpacePos.xy;
+    Out.LightmapHeight = lightSpacePos.z;
+
+    RETURN(Out);
+}
