@@ -104,7 +104,8 @@ bool MainApp::Init()
 
     // Load fonts
     FontDesc font = {};
-    font.pFontPath = "TitilliumText/TitilliumText-Bold.otf", fntDefineFonts(&font, 1, &gFontID);
+    font.pFontPath = "Lato/Lato-Bold.ttf"; 
+    fntDefineFonts(&font, 1, &gFontID);
 
     FontSystemDesc fontRenderDesc = {};
     fontRenderDesc.pRenderer = pRenderer;

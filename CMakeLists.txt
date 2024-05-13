@@ -298,8 +298,8 @@ add_custom_target(CopyGpuCfg ALL
 )
 
 add_custom_target(CopyFonts ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Visibility_Buffer/Resources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Fonts/Lato/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/assets/Fonts/Lato/Lato-Bold.ttf" "$<TARGET_FILE_DIR:main>/Fonts/Lato/"
 )
 
 if(WIN32)
