@@ -66,10 +66,9 @@ bool MainApp::Init()
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SCRIPTS, "Scripts");
 
     // window and renderer setup
-    RendererDesc settings{
-        .mD3D11Supported = false,
-        .mGLESSupported = false,
-    };
+    RendererDesc settings{};
+    settings.mD3D11Supported = false;
+    settings.mGLESSupported = false;
 
     initRenderer(GetName(), &settings, &pRenderer);
     if (!pRenderer)
@@ -77,18 +76,15 @@ bool MainApp::Init()
         return false;
     }
 
-    QueueDesc queueDesc = {
-        .mType = QUEUE_TYPE_GRAPHICS,
-        .mFlag = QUEUE_FLAG_INIT_MICROPROFILE,
-    };
+    QueueDesc queueDesc = {};
+    queueDesc.mType = QUEUE_TYPE_GRAPHICS;
+    queueDesc.mFlag = QUEUE_FLAG_INIT_MICROPROFILE;
     addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
 
-    GpuCmdRingDesc cmdRingDesc = {
-        .pQueue = pGraphicsQueue,
-        .mPoolCount = gDataBufferCount,
-        .mCmdPerPoolCount = 1,
-        .mAddSyncPrimitives = true,
-    };
+    GpuCmdRingDesc cmdRingDesc = {};
+    cmdRingDesc.pQueue = pGraphicsQueue, cmdRingDesc.mPoolCount = gDataBufferCount, cmdRingDesc.mCmdPerPoolCount = 1,
+    cmdRingDesc.mAddSyncPrimitives = true,
+
     addGpuCmdRing(pRenderer, &cmdRingDesc, &gGraphicsCmdRing);
 
     addSemaphore(pRenderer, &pImageAcquiredSemaphore);
@@ -96,38 +92,34 @@ bool MainApp::Init()
     initResourceLoaderInterface(pRenderer);
 
     // Initialize micro profiler and its UI.
-    ProfilerDesc profiler = {
-        .pRenderer = pRenderer,
-        .mWidthUI = static_cast<uint32_t>(mSettings.mWidth),
-        .mHeightUI = static_cast<uint32_t>(mSettings.mHeight),
-    };
+    ProfilerDesc profiler = {};
+    profiler.pRenderer = pRenderer;
+    profiler.mWidthUI = static_cast<uint32_t>(mSettings.mWidth);
+    profiler.mHeightUI = static_cast<uint32_t>(mSettings.mHeight);
+
     initProfiler(&profiler);
 
     // Gpu profiler can only be added after initProfile.
     gGpuProfileToken = addGpuProfiler(pRenderer, pGraphicsQueue, "Graphics");
 
     // Load fonts
-    FontDesc font = {
-        .pFontPath = "TitilliumText/TitilliumText-Bold.otf",
-    };
-    fntDefineFonts(&font, 1, &gFontID);
+    FontDesc font = {};
+    font.pFontPath = "TitilliumText/TitilliumText-Bold.otf", fntDefineFonts(&font, 1, &gFontID);
 
-    FontSystemDesc fontRenderDesc = {
-        .pRenderer = pRenderer,
-    };
+    FontSystemDesc fontRenderDesc = {};
+    fontRenderDesc.pRenderer = pRenderer;
+
     if (!initFontSystem(&fontRenderDesc))
     {
         return false;
     }
 
-    UserInterfaceDesc uiRenderDesc = {
-        .pRenderer = pRenderer,
-    };
+    UserInterfaceDesc uiRenderDesc = {};
+    uiRenderDesc.pRenderer = pRenderer;
     initUserInterface(&uiRenderDesc);
 
-    UIComponentDesc guiDesc = {
-        .mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f),
-    };
+    UIComponentDesc guiDesc = {};
+    guiDesc.mStartPosition = vec2(mSettings.mWidth * 0.01f, mSettings.mHeight * 0.2f);
     uiCreateComponent(GetName(), &guiDesc, &pGuiWindow);
 
     // Take a screenshot with a button.
@@ -136,10 +128,10 @@ bool MainApp::Init()
 
     waitForAllResourceLoads();
 
-    InputSystemDesc inputDesc{
-        .pRenderer = pRenderer,
-        .pWindow = pWindow,
-    };
+    InputSystemDesc inputDesc = {};
+    inputDesc.pRenderer = pRenderer;
+    inputDesc.pWindow = pWindow;
+
     if (!initInputSystem(&inputDesc))
     {
         return false;
@@ -186,18 +178,18 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
 {
     if (pReloadDesc->mType & (RELOAD_TYPE_RESIZE | RELOAD_TYPE_RENDERTARGET))
     {
-        SwapChainDesc swapChainDesc = {
-            .mWindowHandle = pWindow->handle,
-            .ppPresentQueues = &pGraphicsQueue,
-            .mPresentQueueCount = 1,
-            .mImageCount = getRecommendedSwapchainImageCount(pRenderer, &pWindow->handle),
-            .mWidth = static_cast<uint32_t>(mSettings.mWidth),
-            .mHeight = static_cast<uint32_t>(mSettings.mHeight),
-            .mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB),
-            .mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR,
-            .mEnableVsync = mSettings.mVSyncEnabled,
-            .mColorSpace = COLOR_SPACE_SDR_SRGB,
-        };
+        SwapChainDesc swapChainDesc = {};
+        swapChainDesc.mWindowHandle = pWindow->handle;
+        swapChainDesc.ppPresentQueues = &pGraphicsQueue;
+        swapChainDesc.mPresentQueueCount = 1;
+        swapChainDesc.mImageCount = getRecommendedSwapchainImageCount(pRenderer, &pWindow->handle);
+        swapChainDesc.mWidth = static_cast<uint32_t>(mSettings.mWidth);
+        swapChainDesc.mHeight = static_cast<uint32_t>(mSettings.mHeight);
+        swapChainDesc.mColorFormat = getSupportedSwapchainFormat(pRenderer, &swapChainDesc, COLOR_SPACE_SDR_SRGB);
+        swapChainDesc.mFlags = SWAP_CHAIN_CREATION_FLAG_ENABLE_FOVEATED_RENDERING_VR;
+        swapChainDesc.mEnableVsync = mSettings.mVSyncEnabled;
+        swapChainDesc.mColorSpace = COLOR_SPACE_SDR_SRGB;
+
         addSwapChain(pRenderer, &swapChainDesc, &pSwapChain);
 
         if (pSwapChain == nullptr)
@@ -206,20 +198,18 @@ bool MainApp::Load(ReloadDesc *pReloadDesc)
         }
     }
 
-    FontSystemLoadDesc fontLoad = {
-        .mLoadType = pReloadDesc->mType,
-        .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
-        .mWidth = static_cast<uint32_t>(mSettings.mWidth),
-        .mHeight = static_cast<uint32_t>(mSettings.mHeight),
-    };
+    FontSystemLoadDesc fontLoad = {};
+    fontLoad.mLoadType = pReloadDesc->mType;
+    fontLoad.mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat);
+    fontLoad.mWidth = static_cast<uint32_t>(mSettings.mWidth);
+    fontLoad.mHeight = static_cast<uint32_t>(mSettings.mHeight);
     loadFontSystem(&fontLoad);
 
-    UserInterfaceLoadDesc uiLoad = {
-        .mLoadType = static_cast<uint32_t>(pReloadDesc->mType),
-        .mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat),
-        .mWidth = static_cast<uint32_t>(mSettings.mWidth),
-        .mHeight = static_cast<uint32_t>(mSettings.mHeight),
-    };
+    UserInterfaceLoadDesc uiLoad = {};
+    uiLoad.mLoadType = static_cast<uint32_t>(pReloadDesc->mType);
+    uiLoad.mColorFormat = static_cast<uint32_t>(pSwapChain->ppRenderTargets[0]->mFormat);
+    uiLoad.mWidth = static_cast<uint32_t>(mSettings.mWidth);
+    uiLoad.mHeight = static_cast<uint32_t>(mSettings.mHeight);
     loadUserInterface(&uiLoad);
 
     initScreenshotInterface(pRenderer, pGraphicsQueue);
@@ -301,20 +291,19 @@ void MainApp::Draw()
     cmdSetViewport(cmd, 0, 0, (float)pRenderTarget->mWidth, (float)pRenderTarget->mHeight, 0.0f, 1.0f);
     cmdSetScissor(cmd, 0, 0, pRenderTarget->mWidth, pRenderTarget->mHeight);
 
-    BindRenderTargetsDesc bindRenderTargets = {
-        .mRenderTargetCount = 1,
-        .mRenderTargets = {{pRenderTarget, LOAD_ACTION_LOAD}},
-    };
+    BindRenderTargetsDesc bindRenderTargets = {};
+    bindRenderTargets.mRenderTargetCount = 1;
+    bindRenderTargets.mRenderTargets[0] = {pRenderTarget, LOAD_ACTION_LOAD};
 
     cmdBindRenderTargets(cmd, &bindRenderTargets);
 
     cmdBeginGpuTimestampQuery(cmd, gGpuProfileToken, "Draw UI");
 
-    FontDrawDesc gFrameTimeDraw{
-        .mFontID = gFontID,
-        .mFontColor = 0xff00ffff,
-        .mFontSize = 18.0f,
-    };
+    FontDrawDesc gFrameTimeDraw = {};
+    gFrameTimeDraw.mFontID = gFontID;
+    gFrameTimeDraw.mFontColor = 0xff00ffff;
+    gFrameTimeDraw.mFontSize = 18.0f;
+
     float2 txtSizePx = cmdDrawCpuProfile(cmd, float2(8.f, 15.f), &gFrameTimeDraw);
     cmdDrawGpuProfile(cmd, float2(8.f, txtSizePx.y + 75.f), gGpuProfileToken, &gFrameTimeDraw);
 
@@ -333,9 +322,8 @@ void MainApp::Draw()
     cmdEndGpuFrameProfile(cmd, gGpuProfileToken);
     endCmd(cmd);
 
-    FlushResourceUpdateDesc flushUpdateDesc = {
-        .mNodeIndex = 0,
-    };
+    FlushResourceUpdateDesc flushUpdateDesc = {};
+    flushUpdateDesc.mNodeIndex = 0;
     flushResourceUpdates(&flushUpdateDesc);
 
     Semaphore *waitSemaphores[2] = {
@@ -343,26 +331,24 @@ void MainApp::Draw()
         pImageAcquiredSemaphore,
     };
 
-    QueueSubmitDesc submitDesc = {
-        .ppCmds = &cmd,
-        .pSignalFence = elem.pFence,
-        .ppWaitSemaphores = waitSemaphores,
-        .ppSignalSemaphores = &elem.pSemaphore,
-        .mCmdCount = 1,
-        .mWaitSemaphoreCount = 2,
-        .mSignalSemaphoreCount = 1,
-    };
+    QueueSubmitDesc submitDesc = {};
+    submitDesc.ppCmds = &cmd;
+    submitDesc.pSignalFence = elem.pFence;
+    submitDesc.ppWaitSemaphores = waitSemaphores;
+    submitDesc.ppSignalSemaphores = &elem.pSemaphore;
+    submitDesc.mCmdCount = 1;
+    submitDesc.mWaitSemaphoreCount = 2;
+    submitDesc.mSignalSemaphoreCount = 1;
     queueSubmit(pGraphicsQueue, &submitDesc);
 
-    QueuePresentDesc presentDesc = {
-        .pSwapChain = pSwapChain,
-        .ppWaitSemaphores = waitSemaphores,
-        .mWaitSemaphoreCount = 2,
-        .mIndex = static_cast<uint8_t>(swapchainImageIndex),
-        .mSubmitDone = true,
-    };
+    QueuePresentDesc presentDesc = {};
+    presentDesc.pSwapChain = pSwapChain;
+    presentDesc.ppWaitSemaphores = waitSemaphores;
+    presentDesc.mWaitSemaphoreCount = 2;
+    presentDesc.mIndex = static_cast<uint8_t>(swapchainImageIndex);
+    presentDesc.mSubmitDone = true;
     queuePresent(pGraphicsQueue, &presentDesc);
-    
+
     flipProfiler();
 }
 

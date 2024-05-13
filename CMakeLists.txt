@@ -263,12 +263,12 @@ elseif (LINUX)
     )
 endif()
 
-target_compile_features(main PRIVATE cxx_std_20)
-set_property(TARGET main PROPERTY CXX_STANDARD 20)
+target_compile_features(main PRIVATE cxx_std_17)
+set_property(TARGET main PROPERTY CXX_STANDARD 17)
 set_property(TARGET main PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
-    # set_property(TARGET main PROPERTY WIN32_EXECUTABLE ON)
+    add_compile_definitions(D3D12_AGILITY_SDK_VERSION 611)
     target_compile_options(main PRIVATE /Zc:__cplusplus)
 endif ()
 
@@ -299,7 +299,7 @@ add_custom_target(CopyGpuCfg ALL
 
 add_custom_target(CopyFonts ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Unit_Tests/UnitTestResources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge/Examples_3/Visibility_Buffer/Resources/Fonts/TitilliumText/TitilliumText-Bold.otf" "$<TARGET_FILE_DIR:main>/Fonts/TitilliumText/"
 )
 
 if(WIN32)
