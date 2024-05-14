@@ -3,8 +3,6 @@
 This is a CMake-based template project for creating project with [ConfettifFX's The-Forge](https://github.com/ConfettiFX/The-Forge). 
 Currently Windows and Manjaro Linux is tested.
 
-This template has C++20 flags enabled.
-
 ## Requirements
 
 ### All Platforms

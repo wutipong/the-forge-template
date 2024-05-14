@@ -263,8 +263,8 @@ elseif (LINUX)
     )
 endif()
 
-target_compile_features(main PRIVATE cxx_std_17)
-set_property(TARGET main PROPERTY CXX_STANDARD 17)
+target_compile_features(main PRIVATE cxx_std_11)
+set_property(TARGET main PROPERTY CXX_STANDARD 11)
 set_property(TARGET main PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
