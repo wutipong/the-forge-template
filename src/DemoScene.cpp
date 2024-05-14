@@ -97,7 +97,7 @@ bool DemoScene::Init(Renderer *pRenderer)
     sphereVbDesc.mDesc.mSize = sphereDataSize;
     sphereVbDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
     sphereVbDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
-        
+
     addResource(&sphereVbDesc, &token);
 
     uint64_t quadDataSize = quadPoints * sizeof(float);
@@ -108,7 +108,7 @@ bool DemoScene::Init(Renderer *pRenderer)
     quadVbDesc.mDesc.mSize = quadDataSize;
     quadVbDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
     quadVbDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_VERTEX_BUFFER;
-        
+
     addResource(&quadVbDesc, &token);
 
     BufferLoadDesc quadIdDesc = {};
@@ -118,7 +118,7 @@ bool DemoScene::Init(Renderer *pRenderer)
     quadIdDesc.mDesc.mSize = sizeof(uint16_t) * 6;
     quadIdDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_GPU_ONLY;
     quadIdDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_INDEX_BUFFER;
-        
+
     addResource(&quadIdDesc, &token);
 
     BufferLoadDesc ubDesc = {};
@@ -132,12 +132,12 @@ bool DemoScene::Init(Renderer *pRenderer)
 
     BufferLoadDesc quadUniformDesc = {};
     quadUniformDesc.ppBuffer = &pBufferQuadUniform;
-    quadUniformDesc.mDesc ={};
+    quadUniformDesc.mDesc = {};
     quadUniformDesc.mDesc.mSize = sizeof(QuadUniform);
     quadUniformDesc.mDesc.mMemoryUsage = RESOURCE_MEMORY_USAGE_CPU_TO_GPU;
     quadUniformDesc.mDesc.mFlags = BUFFER_CREATION_FLAG_PERSISTENT_MAP_BIT;
     quadUniformDesc.mDesc.mDescriptors = DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    
+
     addResource(&quadUniformDesc, &token);
 
     for (size_t i = 0; i < MAX_SPHERE; i++)
@@ -147,7 +147,7 @@ bool DemoScene::Init(Renderer *pRenderer)
         size[i] = randomFloat(0, 10);
         speed[i] = {randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f)};
     }
-    
+
     CameraMotionParameters cmp{160.0f, 600.0f, 1000.0f};
     vec3 camPos{0.0f, 0.0f, 20.0f};
     vec3 lookAt{vec3(0)};
@@ -160,7 +160,7 @@ bool DemoScene::Init(Renderer *pRenderer)
     samplerDesc.mMagFilter = FILTER_LINEAR;
     samplerDesc.mAddressU = ADDRESS_MODE_CLAMP_TO_EDGE;
     samplerDesc.mAddressV = ADDRESS_MODE_CLAMP_TO_EDGE;
-    
+
     addSampler(pRenderer, &samplerDesc, &pSampler);
 
     typedef bool (*CameraInputHandler)(InputActionContext *ctx, DefaultInputActions::DefaultInputAction action);
@@ -202,17 +202,13 @@ bool DemoScene::Init(Renderer *pRenderer)
     actionDesc = {DefaultInputActions::ROTATE_CAMERA,
                   [](InputActionContext *ctx) { return onCameraInput(ctx, DefaultInputActions::ROTATE_CAMERA); }, NULL};
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA,
-                  [](InputActionContext *ctx) { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA); },
-                  NULL};
+    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA, [](InputActionContext *ctx)
+                  { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA); }, NULL};
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA_VERTICAL,
-                  [](InputActionContext *ctx)
-                  { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA_VERTICAL); },
-                  NULL};
+    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA_VERTICAL, [](InputActionContext *ctx)
+                  { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA_VERTICAL); }, NULL};
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::RESET_CAMERA,
-                  [](InputActionContext *ctx)
+    actionDesc = {DefaultInputActions::RESET_CAMERA, [](InputActionContext *ctx)
                   {
                       if (!uiWantTextInput())
                           pCameraController->resetView();
@@ -293,20 +289,20 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         VertexLayout vertexLayout = {};
         vertexLayout.mBindingCount = 1;
         vertexLayout.mBindings[0].mStride = sizeof(float) * 6;
-        
+
         vertexLayout.mAttribCount = 2;
         vertexLayout.mAttribs[0].mSemantic = SEMANTIC_POSITION;
         vertexLayout.mAttribs[0].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
         vertexLayout.mAttribs[0].mBinding = 0;
         vertexLayout.mAttribs[0].mLocation = 0;
         vertexLayout.mAttribs[0].mOffset = 0;
-                
+
         vertexLayout.mAttribs[1].mSemantic = SEMANTIC_NORMAL;
         vertexLayout.mAttribs[1].mFormat = TinyImageFormat_R32G32B32_SFLOAT;
         vertexLayout.mAttribs[1].mBinding = 0;
         vertexLayout.mAttribs[1].mLocation = 1;
         vertexLayout.mAttribs[1].mOffset = 3 * sizeof(float);
-                
+
 
         RasterizerStateDesc sphereRasterizerStateDesc = {};
         sphereRasterizerStateDesc.mCullMode = CULL_MODE_NONE;
@@ -318,8 +314,8 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
 
         PipelineDesc desc = {};
         desc.mType = PIPELINE_TYPE_GRAPHICS;
-        
-        desc.mGraphicsDesc ={};
+
+        desc.mGraphicsDesc = {};
         desc.mGraphicsDesc.pShaderProgram = pShaderInstancing;
         desc.mGraphicsDesc.pRootSignature = pRSInstancing;
         desc.mGraphicsDesc.pVertexLayout = &vertexLayout;
@@ -333,7 +329,6 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         desc.mGraphicsDesc.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
         desc.mGraphicsDesc.mVRFoveatedRendering = true;
 
-        
 
         addPipeline(pRenderer, &desc, &pPipelineSphere);
         ASSERT(pPipelineSphere);
@@ -351,13 +346,13 @@ bool DemoScene::Load(ReloadDesc *pReloadDesc, Renderer *pRenderer, RenderTarget 
         desc.mGraphicsDesc.mDepthStencilFormat = depthBufferFormat;
         desc.mGraphicsDesc.mPrimitiveTopo = PRIMITIVE_TOPO_TRI_LIST;
         desc.mGraphicsDesc.mVRFoveatedRendering = true;
-            
+
         addPipeline(pRenderer, &desc, &pPipelineSphereShadow);
         ASSERT(pPipelineSphereShadow);
 
         desc = {};
         desc.mType = PIPELINE_TYPE_GRAPHICS;
-        desc.mGraphicsDesc ={};
+        desc.mGraphicsDesc = {};
         desc.mGraphicsDesc.pShaderProgram = pShaderSingle;
         desc.mGraphicsDesc.pRootSignature = pRSSingle;
         desc.mGraphicsDesc.pVertexLayout = &vertexLayout;
@@ -516,7 +511,7 @@ void DemoScene::Update(float deltaTime, uint32_t width, uint32_t height)
     Point3 lightLookAt{0, -200, 0};
     mat4 lightView = mat4::lookAtLH(lightPos, lightLookAt, {0, 1, 0});
     lightViewProj = CameraMatrix::orthographic(-200, 200, -200, 200, 1000, 0.1) * lightView;
-    
+
     sphereUniform.lightProjectView = lightViewProj;
     quadUniform.lightProjectView = lightViewProj;
 
