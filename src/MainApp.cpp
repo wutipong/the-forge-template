@@ -58,12 +58,12 @@ bool MainApp::Init()
     }
 
     // FILE PATHS
-    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_BINARIES, "CompiledShaders");
-    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_GPU_CONFIG, "GPUCfg");
-    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_TEXTURES, "Textures");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_FONTS, "Fonts");
-    fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
+    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_GPU_CONFIG, "GPUCfg");
     fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SCRIPTS, "Scripts");
+    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_SHADER_BINARIES, "CompiledShaders");
+    fsSetPathForResourceDir(pSystemFileIO, RM_CONTENT, RD_TEXTURES, "Textures");
+    fsSetPathForResourceDir(pSystemFileIO, RM_DEBUG, RD_SCREENSHOTS, "Screenshots");
 
     // window and renderer setup
     RendererDesc settings{};
@@ -82,8 +82,10 @@ bool MainApp::Init()
     addQueue(pRenderer, &queueDesc, &pGraphicsQueue);
 
     GpuCmdRingDesc cmdRingDesc = {};
-    cmdRingDesc.pQueue = pGraphicsQueue, cmdRingDesc.mPoolCount = gDataBufferCount, cmdRingDesc.mCmdPerPoolCount = 1,
-    cmdRingDesc.mAddSyncPrimitives = true,
+    cmdRingDesc.pQueue = pGraphicsQueue;
+    cmdRingDesc.mPoolCount = gDataBufferCount;
+    cmdRingDesc.mCmdPerPoolCount = 1;
+    cmdRingDesc.mAddSyncPrimitives = true;
 
     addGpuCmdRing(pRenderer, &cmdRingDesc, &gGraphicsCmdRing);
 
@@ -104,7 +106,7 @@ bool MainApp::Init()
 
     // Load fonts
     FontDesc font = {};
-    font.pFontPath = "Lato/Lato-Bold.ttf"; 
+    font.pFontPath = "Lato/Lato-Bold.ttf";
     fntDefineFonts(&font, 1, &gFontID);
 
     FontSystemDesc fontRenderDesc = {};
@@ -138,7 +140,9 @@ bool MainApp::Init()
         return false;
     }
 
-    InputActionCallback onAnyInput = [](InputActionContext *ctx)
+    GlobalInputActionDesc globalInputActionDesc = {};
+    globalInputActionDesc.mGlobalInputActionType = GlobalInputActionDesc::ANY_BUTTON_ACTION;
+    globalInputActionDesc.pFunction = [](InputActionContext *ctx)
     {
         if (ctx->mActionId > UISystemInputActions::UI_ACTION_START_ID_)
         {
@@ -146,7 +150,7 @@ bool MainApp::Init()
         }
         return true;
     };
-    GlobalInputActionDesc globalInputActionDesc = {GlobalInputActionDesc::ANY_BUTTON_ACTION, onAnyInput, this};
+
     setGlobalInputAction(&globalInputActionDesc);
 
     if (!Scene::Init(pRenderer))

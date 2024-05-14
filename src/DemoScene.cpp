@@ -148,7 +148,7 @@ bool DemoScene::Init(Renderer *pRenderer)
         speed[i] = {randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f), randomFloat(-10.0f, 10.0f)};
     }
 
-    CameraMotionParameters cmp{160.0f, 600.0f, 1000.0f};
+    CameraMotionParameters cmp = {};
     vec3 camPos{0.0f, 0.0f, 20.0f};
     vec3 lookAt{vec3(0)};
 
@@ -190,30 +190,41 @@ bool DemoScene::Init(Renderer *pRenderer)
         }
         return true;
     };
-    InputActionDesc actionDesc = {DefaultInputActions::CAPTURE_INPUT,
-                                  [](InputActionContext *ctx)
-                                  {
-                                      setEnableCaptureInput(!uiIsFocused() &&
-                                                            INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
-                                      return true;
-                                  },
-                                  NULL};
+    InputActionDesc actionDesc = {};
+    actionDesc.mActionId = DefaultInputActions::CAPTURE_INPUT;
+    actionDesc.pFunction = [](InputActionContext *ctx)
+    {
+        setEnableCaptureInput(!uiIsFocused() && INPUT_ACTION_PHASE_CANCELED != ctx->mPhase);
+        return true;
+    };
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::ROTATE_CAMERA,
-                  [](InputActionContext *ctx) { return onCameraInput(ctx, DefaultInputActions::ROTATE_CAMERA); }, NULL};
+
+    actionDesc = {};
+    actionDesc.mActionId = DefaultInputActions::ROTATE_CAMERA;
+    actionDesc.pFunction = [](InputActionContext *ctx)
+    { return onCameraInput(ctx, DefaultInputActions::ROTATE_CAMERA); };
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA, [](InputActionContext *ctx)
-                  { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA); }, NULL};
+
+    actionDesc = {};
+    actionDesc.mActionId = DefaultInputActions::TRANSLATE_CAMERA;
+    actionDesc.pFunction = [](InputActionContext *ctx)
+    { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA); };
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::TRANSLATE_CAMERA_VERTICAL, [](InputActionContext *ctx)
-                  { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA_VERTICAL); }, NULL};
+
+    actionDesc = {};
+    actionDesc.mActionId = DefaultInputActions::TRANSLATE_CAMERA_VERTICAL;
+    actionDesc.pFunction = [](InputActionContext *ctx)
+    { return onCameraInput(ctx, DefaultInputActions::TRANSLATE_CAMERA_VERTICAL); };
     addInputAction(&actionDesc);
-    actionDesc = {DefaultInputActions::RESET_CAMERA, [](InputActionContext *ctx)
-                  {
-                      if (!uiWantTextInput())
-                          pCameraController->resetView();
-                      return true;
-                  }};
+
+    actionDesc = {};
+    actionDesc.mActionId = DefaultInputActions::RESET_CAMERA;
+    actionDesc.pFunction = [](InputActionContext *ctx)
+    {
+        if (!uiWantTextInput())
+            pCameraController->resetView();
+        return true;
+    };
     addInputAction(&actionDesc);
 
     waitForToken(&token);
